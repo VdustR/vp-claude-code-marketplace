@@ -285,7 +285,7 @@ Comment Received
 | File not found | Ask user for correct path |
 | Commit fails | Report error, do not resolve |
 | Push fails | Report error, suggest manual intervention |
-| GraphQL API error | Retry once, then report to user |
+| GraphQL API error | See the "Fallback Behavior" section |
 
 ## Additional Resources
 
