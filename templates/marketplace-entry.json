@@ -1,5 +1,4 @@
 {
-  "_comment": "Copy this object into .claude-plugin/marketplace.json plugins array",
   "name": "PLUGIN_NAME",
   "source": "./plugins/PLUGIN_NAME",
   "description": "PLUGIN_DESCRIPTION",
