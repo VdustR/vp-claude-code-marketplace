@@ -13,6 +13,7 @@ Automate the process of handling GitHub PR review comments: evaluate each commen
 2. **Smart Grouping** - When one commit fixes multiple comments, reply to all with the same commit info
 3. **Human Collaboration** - Ask the user when uncertain about a fix or interpretation
 4. **Detailed Replies** - Include fix explanation, commit hash, and link in every resolution
+5. **Reply to Thread** - Always reply directly to each review thread, NOT as a general PR comment at the bottom
 
 ## Quick Start
 
@@ -89,6 +90,8 @@ For each unresolved comment, determine:
 ### Phase 4: Reply and Resolve
 
 After each action, reply to the comment thread and resolve it.
+
+> **⚠️ CRITICAL:** You MUST use the GraphQL `addPullRequestReviewThreadReply` mutation to reply directly to each review thread. Do NOT use `gh pr comment` as it posts to the PR bottom instead of the specific thread.
 
 **Reply format for fixes:**
 
@@ -272,6 +275,7 @@ Comment Received
 - Make assumptions about ambiguous requests
 - Force push or rewrite history
 - Skip verification steps
+- **Use `gh pr comment` for replies** - This posts to PR bottom, not to the review thread. Always use GraphQL `addPullRequestReviewThreadReply` mutation instead
 
 ## Error Handling
 
@@ -291,6 +295,32 @@ For detailed workflows and templates:
 
 - **`references/workflow.md`** - Step-by-step workflow with examples
 - **`references/reply-templates.md`** - Copy-paste reply templates for common scenarios
+
+## Fallback Behavior
+
+If the GraphQL API fails to reply to a thread (e.g., network error, permission issue, thread already resolved):
+
+1. **Retry once** after a brief delay
+2. **If retry fails**, fall back to `gh pr comment` with clear context:
+
+```bash
+gh pr comment <PR_NUMBER> --body "$(cat <<'EOF'
+**Re: Review comment on `<FILE_PATH>:<LINE>`**
+
+> <ORIGINAL_COMMENT_EXCERPT>
+
+<YOUR_REPLY_CONTENT>
+
+---
+*Note: Unable to reply directly to the review thread. This is a fallback comment.*
+EOF
+)"
+```
+
+3. **Report to user** that the reply was posted as a general comment instead of a thread reply
+4. **Continue processing** remaining comments
+
+> **Important:** The fallback should only be used when GraphQL truly fails. Always attempt GraphQL first.
 
 ## Notes
 
