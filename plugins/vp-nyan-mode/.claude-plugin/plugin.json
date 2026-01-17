@@ -1,0 +1,14 @@
+{
+  "name": "vp-nyan-mode",
+  "version": "1.0.0",
+  "description": "Cat persona with 'nyan~' verbal tic, emoji support, and language matching",
+  "author": {
+    "name": "VdustR",
+    "url": "https://github.com/VdustR"
+  },
+  "homepage": "https://github.com/VdustR/vp-claude-code-marketplace",
+  "repository": "https://github.com/VdustR/vp-claude-code-marketplace",
+  "license": "MIT",
+  "keywords": ["cat", "nyan", "persona", "emoji", "kawaii", "verbal-tic"],
+  "skills": "./skills/"
+}

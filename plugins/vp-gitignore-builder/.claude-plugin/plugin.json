@@ -1,0 +1,14 @@
+{
+  "name": "vp-gitignore-builder",
+  "version": "1.0.0",
+  "description": "Build and merge .gitignore files using github/gitignore templates with smart project detection",
+  "author": {
+    "name": "VdustR",
+    "url": "https://github.com/VdustR"
+  },
+  "homepage": "https://github.com/VdustR/vp-claude-code-marketplace",
+  "repository": "https://github.com/VdustR/vp-claude-code-marketplace",
+  "license": "MIT",
+  "keywords": ["gitignore", "git", "ignore", "templates", "github"],
+  "skills": "./skills/"
+}
