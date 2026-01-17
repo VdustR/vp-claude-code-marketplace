@@ -1,0 +1,14 @@
+{
+  "name": "vp-pr-comment-resolver",
+  "version": "1.0.0",
+  "description": "Automate PR comment review, fix, and resolution workflow",
+  "author": {
+    "name": "VdustR",
+    "url": "https://github.com/VdustR"
+  },
+  "homepage": "https://github.com/VdustR/vp-claude-code-marketplace",
+  "repository": "https://github.com/VdustR/vp-claude-code-marketplace",
+  "license": "MIT",
+  "keywords": ["pr", "pull-request", "review", "comments", "github", "automation"],
+  "skills": "./skills/"
+}
