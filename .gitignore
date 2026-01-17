@@ -1,0 +1,26 @@
+# Claude Code local settings
+.claude/settings.local.json
+.claude/*.local.json
+.claude/*.local.md
+
+# Local files (generic)
+*.local
+*.local.*
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Editor/IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+*.temp
+*.log

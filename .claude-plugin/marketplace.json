@@ -1,0 +1,32 @@
+{
+  "name": "vdustr",
+  "owner": {
+    "name": "VdustR"
+  },
+  "metadata": {
+    "description": "Claude Code plugins by VdustR"
+  },
+  "plugins": [
+    {
+      "name": "vp-add-skill",
+      "source": "./plugins/vp-add-skill",
+      "description": "Manage agent skills installation with registry tracking",
+      "license": "MIT",
+      "keywords": ["skills", "registry", "management"]
+    },
+    {
+      "name": "vp-nyan-mode",
+      "source": "./plugins/vp-nyan-mode",
+      "description": "Cat persona with verbal tic, emoji support, and language matching",
+      "license": "MIT",
+      "keywords": ["cat", "nyan", "persona", "emoji", "kawaii", "verbal-tic"]
+    },
+    {
+      "name": "vp-gitignore-builder",
+      "source": "./plugins/vp-gitignore-builder",
+      "description": "Build and merge .gitignore files using github/gitignore templates",
+      "license": "MIT",
+      "keywords": ["gitignore", "git", "ignore", "templates", "github"]
+    }
+  ]
+}
