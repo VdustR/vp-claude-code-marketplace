@@ -275,7 +275,7 @@ Comment Received
 - Make assumptions about ambiguous requests
 - Force push or rewrite history
 - Skip verification steps
-- **Use `gh pr comment` for replies** - This posts to PR bottom, not to the review thread. Always use GraphQL `addPullRequestReviewThreadReply` mutation instead
+- **Use `gh pr comment` for replies** - This posts to PR bottom, not to the review thread. Always use GraphQL `addPullRequestReviewThreadReply` for direct replies; use `gh pr comment` only as a fallback.
 
 ## Error Handling
 
