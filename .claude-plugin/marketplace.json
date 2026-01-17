@@ -34,6 +34,13 @@
       "description": "Automate PR comment review, fix, and resolution workflow",
       "license": "MIT",
       "keywords": ["pr", "pull-request", "review", "comments", "github", "automation"]
+    },
+    {
+      "name": "vp-wenyan-mode",
+      "source": "./plugins/vp-wenyan-mode",
+      "description": "Classical Chinese (文言文) writing style with concise, elegant expressions",
+      "license": "MIT",
+      "keywords": ["wenyan", "classical-chinese", "文言文", "persona", "writing-style"]
     }
   ]
 }

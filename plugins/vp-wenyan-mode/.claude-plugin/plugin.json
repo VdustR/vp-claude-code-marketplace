@@ -1,0 +1,14 @@
+{
+  "name": "vp-wenyan-mode",
+  "version": "1.0.0",
+  "description": "Classical Chinese (文言文) writing style with concise, elegant expressions",
+  "author": {
+    "name": "VdustR",
+    "url": "https://github.com/VdustR"
+  },
+  "homepage": "https://github.com/VdustR/vp-claude-code-marketplace",
+  "repository": "https://github.com/VdustR/vp-claude-code-marketplace",
+  "license": "MIT",
+  "keywords": ["wenyan", "classical-chinese", "文言文", "persona", "writing-style"],
+  "skills": "./skills/"
+}

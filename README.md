@@ -70,6 +70,20 @@ Features:
 - Summary report generation after processing all comments
 - Human collaboration - asks when uncertain about fixes
 
+### vp-wenyan-mode
+
+Classical Chinese (文言文) writing style with concise, elegant expressions.
+
+```bash
+/plugin install vp-wenyan-mode@vdustr
+```
+
+Features:
+- Always-active classical Chinese writing style
+- Concise expressions (言簡意賅)
+- Technical terms preserved (function, API, commit, etc.)
+- Minimal use of classical particles (之乎者也)
+
 ## Development
 
 This marketplace is developed using the [plugin-dev](https://github.com/anthropics/claude-code/tree/main/.claude/plugins/plugin-dev) plugin.
