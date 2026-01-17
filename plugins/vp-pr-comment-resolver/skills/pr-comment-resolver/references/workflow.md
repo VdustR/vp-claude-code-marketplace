@@ -116,19 +116,6 @@ git push origin <branchName>
 #### Using GraphQL API
 
 ```bash
-# First, get the review ID from the thread
-REVIEW_ID=$(gh api graphql -f query='
-  query($owner: String!, $repo: String!, $number: Int!) {
-    repository(owner: $owner, name: $repo) {
-      pullRequest(number: $number) {
-        reviews(last: 1) {
-          nodes { id }
-        }
-      }
-    }
-  }
-' -f owner="<OWNER>" -f repo="<REPO>" -F number=<NUMBER> --jq '.data.repository.pullRequest.reviews.nodes[0].id')
-
 # Add reply comment
 gh api graphql -f query='
   mutation($body: String!, $threadId: ID!) {

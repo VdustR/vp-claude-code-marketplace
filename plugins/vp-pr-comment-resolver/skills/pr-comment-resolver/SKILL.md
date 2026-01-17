@@ -160,16 +160,15 @@ gh pr view <NUMBER> --json reviewThreads --jq '[.reviewThreads[] | select(.isRes
 
 ```bash
 gh api graphql -f query='
-  mutation {
-    addPullRequestReviewComment(input: {
-      pullRequestReviewId: "<REVIEW_ID>",
-      body: "<REPLY_BODY>",
-      inReplyTo: "<COMMENT_ID>"
+  mutation($body: String!, $threadId: ID!) {
+    addPullRequestReviewThreadReply(input: {
+      pullRequestReviewThreadId: $threadId,
+      body: $body
     }) {
       comment { id }
     }
   }
-'
+' -f threadId="<THREAD_ID>" -f body="<REPLY_BODY>"
 ```
 
 ### Resolve Thread
