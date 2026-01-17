@@ -8,7 +8,7 @@ This repository uses the `plugin-dev` plugin for development and maintenance. Th
 
 All plugins in this marketplace use the `vp-` prefix (VdustR Plugin).
 
-Example: `vp-add-skill`, `vp-nyan-mode`, `vp-gitignore-builder`
+Example: `vp-add-skill`, `vp-nyan-mode`, `vp-gitignore-builder`, `vp-pr-comment-resolver`
 
 ## Project Structure
 
@@ -130,6 +130,19 @@ Add entry to `.claude-plugin/marketplace.json`:
 - No trailing commas
 - Keys in logical order: name → version → description → author → ...
 
+## Plugin Change Checklist
+
+**IMPORTANT:** When any plugin is added, modified, or deleted, ALWAYS verify:
+
+1. **`marketplace.json`** - Plugin registry is updated
+2. **`README.md`** - Plugin documentation is updated
+
+This applies to ALL plugin changes including:
+- New plugin creation
+- Plugin feature updates
+- Plugin removal
+- Skill additions/modifications
+
 ## Checklist Before Commit
 
 - [ ] Plugin name has `vp-` prefix
@@ -139,7 +152,8 @@ Add entry to `.claude-plugin/marketplace.json`:
 - [ ] Version updated if modifying existing plugin
 - [ ] No sensitive data or credentials
 - [ ] All paths are relative and correct
-- [ ] README.md updated if adding/modifying plugins
+- [ ] **README.md updated** (required for any plugin change)
+- [ ] **marketplace.json updated** (required for any plugin change)
 
 ## Git Conventions
 
