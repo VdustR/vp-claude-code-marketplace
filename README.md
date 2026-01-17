@@ -55,6 +55,21 @@ Features:
 - Auto-suggest `*.local` and `*.local.*` patterns
 - Support for both project-level and global gitignore
 
+### vp-pr-comment-resolver
+
+Automate PR comment review, fix, and resolution workflow.
+
+```bash
+/plugin install vp-pr-comment-resolver@vdustr
+```
+
+Features:
+- Interactive mode (review each comment) and auto mode (process all automatically)
+- Atomic commits per fix with smart grouping for related comments
+- Detailed reply format with commit links: `- [hash message](url)`
+- Summary report generation after processing all comments
+- Human collaboration - asks when uncertain about fixes
+
 ## Development
 
 This marketplace is developed using the [plugin-dev](https://github.com/anthropics/claude-code/tree/main/.claude/plugins/plugin-dev) plugin.
