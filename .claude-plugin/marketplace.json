@@ -27,6 +27,13 @@
       "description": "Build and merge .gitignore files using github/gitignore templates",
       "license": "MIT",
       "keywords": ["gitignore", "git", "ignore", "templates", "github"]
+    },
+    {
+      "name": "vp-pr-comment-resolver",
+      "source": "./plugins/vp-pr-comment-resolver",
+      "description": "Automate PR comment review, fix, and resolution workflow",
+      "license": "MIT",
+      "keywords": ["pr", "pull-request", "review", "comments", "github", "automation"]
     }
   ]
 }
