@@ -1,5 +1,9 @@
 # Claude Code Marketplace - Project Guidelines
 
+## Development
+
+This repository uses the `plugin-dev` plugin for development and maintenance. The `.claude/settings.json` file includes this plugin intentionally.
+
 ## Plugin Naming Convention
 
 All plugins in this marketplace use the `vp-` prefix (VdustR Plugin).

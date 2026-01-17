@@ -11,8 +11,7 @@
     },
     "lastUpdated": {
       "type": "string",
-      "format": "date-time",
-      "description": "Last update timestamp (ISO8601)"
+      "description": "Last update timestamp (ISO8601 format, empty string if never updated)"
     },
     "skills": {
       "type": "object",

@@ -151,7 +151,6 @@ main() {
     fi
 
     local templates=("$@")
-    local fetched_files=""
 
     # Fetch all templates
     for template in "${templates[@]}"; do
@@ -162,7 +161,6 @@ main() {
         if ! fetch_template "$template" "$output_file"; then
             exit 1
         fi
-        fetched_files="${fetched_files}${template}:${output_file}\n"
     done
 
     # Check for EOL conflicts
