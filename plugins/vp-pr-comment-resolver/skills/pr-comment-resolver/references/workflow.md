@@ -75,16 +75,28 @@ Read file: <filePath> (offset: <start>, limit: <count>)
 
 #### 4.2 Analyze Comment
 
-Determine action based on comment type:
+**First, critically evaluate whether the comment is correct:**
+
+| Verification Check | Questions to Ask |
+|-------------------|------------------|
+| Technical accuracy | Is the suggestion based on correct understanding of the code? |
+| Architecture fit | Does it align with existing patterns and design principles? |
+| Side effects | Would implementing this introduce bugs or break other code? |
+| Context awareness | Does the reviewer have full context of the implementation? |
+
+**Then determine action based on assessment:**
 
 | Comment Type | Example | Action |
 |--------------|---------|--------|
-| Bug fix request | "This will throw if x is null" | Fix and commit |
-| Style suggestion | "Use const instead of let" | Fix and commit |
+| Valid bug fix | "This will throw if x is null" (verified true) | Fix and commit |
+| Valid style suggestion | "Use const instead of let" | Fix and commit |
 | Question | "Why is this needed?" | Reply with explanation |
 | Design discussion | "Should this be a class?" | Ask user |
 | Already done | "Add logging" (logging exists) | Reply explaining it's done |
 | Out of scope | "Refactor entire module" | Reply explaining scope |
+| **Incorrect suggestion** | "Add null check" (but value is guaranteed non-null) | Politely disagree with evidence |
+| **Would introduce bug** | "Remove this validation" (validation is necessary) | Explain why change is problematic |
+| **Misunderstands architecture** | "Use pattern X" (conflicts with existing design) | Explain architectural constraints |
 
 #### 4.3 Execute Fix (if needed)
 
@@ -95,10 +107,10 @@ Determine action based on comment type:
 # Stage changes
 git add <filePath>
 
-# Commit with descriptive message
+# Commit with descriptive message (describe the change, not the comment)
 git commit -m "fix(<scope>): <description>
 
-Addresses PR review comment by @<author>"
+<why this change was needed - optional>"
 
 # Get commit info for reply
 COMMIT_HASH=$(git rev-parse --short HEAD)
@@ -140,31 +152,48 @@ gh api graphql -f query='
 ' -f threadId="<THREAD_ID>"
 ```
 
-### Step 6: Handle Grouped Fixes
+### Step 6: Commit by Topic
 
-When one commit fixes multiple comments:
+**Principle:** Group commits by **logical change**, not by comment count.
 
-1. Track all related thread IDs
-2. Make the single fix
-3. Create one commit
-4. Loop through all related threads:
-   - Reply with same commit info
-   - Resolve each thread
+#### Same topic → One commit, multiple replies
 
 ```
-Example:
-Comment A (thread-1): "Validate input"
-Comment B (thread-3): "Add error handling"
-Comment C (thread-5): "Check for null"
+Comment A (thread-1): "Add null check for session"
+Comment B (thread-3): "Session might be undefined"
+Comment C (thread-5): "Handle missing session"
 
-All in same function → One fix addresses all three
+All three are about session null safety → ONE topic
 
 Action:
-1. Implement validation + error handling + null check
-2. Commit: "fix(validator): add comprehensive input validation"
+1. Implement session null check
+2. Commit: "fix(auth): add null check for user session"
 3. Reply to thread-1, thread-3, thread-5 with same commit link
-4. Resolve all three threads
+4. Resolve all three
 ```
+
+#### Different topics → Separate commits
+
+```
+Comment A (thread-1): "Add input validation"
+Comment B (thread-3): "Improve performance"
+Comment C (thread-5): "Fix typo in error message"
+
+Three different concerns → THREE commits
+
+Action:
+1. Fix A → Commit "fix(form): add input validation" → Reply thread-1
+2. Fix B → Commit "perf(query): optimize database call" → Reply thread-3
+3. Fix C → Commit "fix(error): correct typo in message" → Reply thread-5
+```
+
+#### Decision guide
+
+| Question | If Yes | If No |
+|----------|--------|-------|
+| Same logical change? | One commit | Separate commits |
+| Can be reverted independently? | Separate commits | Consider grouping |
+| Different code areas but same topic? | One commit | - |
 
 ## Interactive Mode Flow
 
@@ -182,13 +211,17 @@ Action:
 │  │                                                       │ │
 │  │ "Consider adding a null check for the session        │ │
 │  │  object before accessing its properties"             │ │
+│  │                                                       │ │
+│  │ Analysis: Session is guaranteed non-null by          │ │
+│  │ middleware. Adding check would be redundant.         │ │
 │  └──────────────────────────────────────────────────────┘ │
 │                                                            │
 │  Options:                                                  │
-│  [1] Fix this issue                                        │
-│  [2] No fix needed (explain why)                           │
-│  [3] Skip for now                                          │
-│  [4] Discuss with user                                     │
+│  [1] Fix this issue (comment is valid)                     │
+│  [2] No fix needed (already addressed/out of scope)        │
+│  [3] Disagree (comment is incorrect - explain why)         │
+│  [4] Skip for now                                          │
+│  [5] Discuss with user (need clarification)                │
 │                                                            │
 │  User selects → Execute → Next comment                     │
 │                                                            │
@@ -202,35 +235,74 @@ Action:
 │                      AUTO MODE                              │
 ├────────────────────────────────────────────────────────────┤
 │                                                            │
-│  Processing 5 comments automatically...                    │
+│  Processing 6 comments automatically...                    │
 │                                                            │
-│  [1/5] src/auth.ts:42 - Null check                        │
-│        → Analyzing... Fix needed                           │
+│  [1/6] src/auth.ts:42 - Null check                        │
+│        → Verifying... Comment is valid                     │
 │        → Fixing... Done                                    │
 │        → Committed: abc1234                                │
 │        → Replied and resolved ✓                            │
 │                                                            │
-│  [2/5] src/api.ts:87 - Error handling                     │
-│        → Analyzing... Fix needed                           │
+│  [2/6] src/api.ts:87 - Error handling                     │
+│        → Verifying... Comment is valid                     │
 │        → Fixing... Done                                    │
 │        → Committed: def5678                                │
 │        → Replied and resolved ✓                            │
 │                                                            │
-│  [3/5] src/utils.ts:15 - "Why this approach?"             │
+│  [3/6] src/utils.ts:15 - "Why this approach?"             │
 │        → Analyzing... Question, no fix needed              │
 │        → Replied with explanation ✓                        │
 │        → Resolved ✓                                        │
 │                                                            │
-│  [4/5] src/config.ts:33 - Ambiguous request               │
+│  [4/6] src/config.ts:33 - Ambiguous request               │
 │        → PAUSED: Need user input                           │
 │        → [Asking user for clarification...]                │
 │                                                            │
-│  [5/5] Waiting...                                          │
+│  [5/6] src/db.ts:99 - "Remove this validation"            │
+│        → Verifying... DISAGREE - would introduce bug       │
+│        → PAUSED: Reviewer suggestion may be incorrect      │
+│        → [Presenting analysis to user...]                  │
+│                                                            │
+│  [6/6] Waiting...                                          │
 │                                                            │
 └────────────────────────────────────────────────────────────┘
 ```
 
+> **Note:** In Auto Mode, the system will automatically PAUSE and ask for user confirmation when:
+> - The comment is ambiguous or unclear
+> - **The comment appears to be incorrect or would introduce issues**
+>
+> Auto Mode will NEVER auto-reply disagreements without user approval.
+
 ## Edge Cases
+
+### Incorrect or Harmful Suggestions
+
+When you determine a reviewer's suggestion is technically incorrect:
+
+1. **Verify your assessment thoroughly**
+   - Read the surrounding code context
+   - Check if there are edge cases the reviewer might be considering
+   - Understand why the reviewer might have made this suggestion
+
+2. **Document your reasoning**
+   - What specifically is incorrect about the suggestion?
+   - What evidence from the codebase supports your position?
+   - What would happen if the suggestion were implemented?
+
+3. **Present to user before responding**
+   - Explain your analysis to the user
+   - Let them decide whether to push back or defer to the reviewer
+
+4. **Respond politely with evidence**
+   - Acknowledge the reviewer's concern
+   - Explain the technical reasons for disagreement
+   - Provide code references or examples
+   - Offer to discuss further
+
+5. **Do NOT auto-resolve**
+   - Leave the thread open for the reviewer to respond
+   - Only resolve after reaching consensus or user instruction
 
 ### Comment on Deleted Lines
 

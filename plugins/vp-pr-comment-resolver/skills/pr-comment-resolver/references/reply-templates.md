@@ -50,12 +50,14 @@ Example:
 - `{FILE_PATH_3}`
 ```
 
-### Fix Addressing Multiple Comments
+### Fix Addressing Multiple Comments (Same Topic)
+
+> **Note:** Use when multiple comments point to the same logical change.
 
 ```markdown
 - [{SHORT_HASH} {COMMIT_MESSAGE}]({COMMIT_URL})
 
-This commit also addresses related comments in this PR.
+This commit also addresses related comments on this topic.
 
 **Files modified:**
 - `{FILE_PATH}`
@@ -120,6 +122,111 @@ No changes needed.
 - {HOW_IT_WORKS}
 
 See `{FILE_PATH}:{LINE_NUMBER}` for the implementation.
+```
+
+## Politely Disagree Templates
+
+> **Note:** Use these templates when you've verified that a reviewer's suggestion is technically incorrect. Always present your reasoning to the user first before sending.
+
+### General Disagreement
+
+```markdown
+Thanks for the review! I'd like to share some context on this:
+
+**Your suggestion:** {THEIR_SUGGESTION}
+
+**Current behavior:** {WHAT_CODE_ACTUALLY_DOES}
+
+**Why I believe the current approach is correct:**
+- {REASON_1}
+- {REASON_2}
+
+See `{FILE_PATH}:{LINE_NUMBER}` for reference.
+
+Happy to discuss further if I'm missing something!
+```
+
+### Would Introduce Bug
+
+```markdown
+I appreciate the suggestion, but I have a concern about this change:
+
+**Your suggestion:** {THEIR_SUGGESTION}
+
+**Potential issue:** Implementing this would {DESCRIBE_THE_BUG_OR_ISSUE}
+
+**Evidence:**
+- {CODE_REFERENCE_1}
+- {CODE_REFERENCE_2}
+
+The current implementation handles this by {HOW_CURRENT_CODE_HANDLES_IT}.
+
+Let me know if you see something I'm missing!
+```
+
+### Value Already Guaranteed
+
+```markdown
+Good catch for defensive coding! In this case, a check isn't needed because:
+
+**Guarantee:** `{VARIABLE}` is guaranteed to be {GUARANTEED_STATE} at this point.
+
+**Why:**
+- {EXPLANATION_OF_GUARANTEE}
+
+See `{FILE_PATH}:{LINE_NUMBER}` where this is ensured.
+
+Adding the check would be redundant but not harmful. Let me know if you'd prefer I add it anyway for readability.
+```
+
+### Conflicts with Architecture
+
+```markdown
+Thanks for the suggestion! This would conflict with our current architecture:
+
+**Your suggestion:** {THEIR_SUGGESTION}
+
+**Current architecture:** We use {PATTERN_NAME} pattern where {HOW_IT_WORKS}.
+
+**Why the current approach:**
+- {REASON_1}
+- {REASON_2}
+
+See `{ARCHITECTURE_FILE_OR_DOCS}` for our design decisions.
+
+Would you like to discuss this further, or should we consider updating the architecture in a separate PR?
+```
+
+### Different Best Practice
+
+```markdown
+Interesting point! I went with a different approach here:
+
+**Your suggestion:** {THEIR_SUGGESTION}
+
+**Current approach:** {WHAT_WAS_DONE}
+
+**Trade-offs I considered:**
+| Approach | Pros | Cons |
+|----------|------|------|
+| Your suggestion | {PROS} | {CONS} |
+| Current | {PROS} | {CONS} |
+
+I chose the current approach because {MAIN_REASON}. Open to changing if you feel strongly about it!
+```
+
+### Reviewer May Have Outdated Context
+
+```markdown
+Thanks for flagging this! The context may have changed since you reviewed:
+
+**Your concern:** {THEIR_CONCERN}
+
+**Recent update:** In {COMMIT_OR_PR_REFERENCE}, we changed {WHAT_CHANGED}, which addresses this.
+
+See `{FILE_PATH}:{LINE_NUMBER}` for the current implementation.
+
+Let me know if you have further concerns!
 ```
 
 ## Question Response Templates
@@ -272,19 +379,23 @@ No changes needed - {BRIEF_REASON}.
 
 ### DO
 
-- Be appreciative of feedback: "Good catch!", "Thanks for noticing!"
+- Be appreciative of feedback: "Good catch!", "Thanks for the review!"
 - Be clear and concise
 - Provide context when helpful
 - Offer to discuss further
 - Use "I" statements: "I've fixed...", "I've added..."
+- When disagreeing: acknowledge their perspective, provide evidence, stay collaborative
+- Frame disagreements as discussions, not corrections: "I'd like to share some context..."
 
 ### DON'T
 
 - Be defensive about code
 - Over-explain simple fixes
-- Use dismissive language
+- Use dismissive language: "That's wrong", "You're mistaken"
 - Leave comments unaddressed
 - Be vague about what was changed
+- Disagree without evidence or code references
+- Be condescending when explaining why a suggestion won't work
 
 ## Language Matching
 
@@ -329,6 +440,7 @@ After processing all comments, output a summary:
 |--------|-------|
 | Fixed | <n> |
 | No fix needed | <n> |
+| Disagreed (pending) | <n> |
 | Skipped | <n> |
 
 ### Details
@@ -336,4 +448,12 @@ After processing all comments, output a summary:
 |---------|------|--------|--------|
 | <summary> | `<path>` | Fixed | [<hash>](<url>) |
 | <summary> | `<path>` | No fix | - |
+| <summary> | `<path>` | Disagreed | (pending reviewer response) |
+
+### Pending Discussions
+> These comments were flagged as potentially incorrect. Replies have been posted but threads remain open for reviewer response.
+
+| Comment | File | Concern |
+|---------|------|---------|
+| <summary> | `<path>` | <why this may be incorrect> |
 ```
