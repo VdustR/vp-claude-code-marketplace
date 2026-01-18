@@ -307,17 +307,12 @@ Comment Received
 
 ### DO
 
-- **Critically evaluate each comment** before acting - reviewers can be wrong
-- **Commit by topic** - group commits by logical change, not by comment count
-- **Describe the change** in commit messages, not "address comment"
-- Verify the technical validity of suggestions against the codebase
-- Create atomic commits (one logical change per commit)
-- Reply to multiple comments with the same commit if they share the same topic
-- Include commit links in replies
-- Ask the user when uncertain OR when you disagree with a comment
-- Use conventional commit messages
-- Verify fixes compile/pass linting before committing
-- Politely push back with evidence when a comment is incorrect
+- **Critically evaluate comments:** Verify the technical validity of each suggestion against the codebase before acting. Reviewers can be wrong.
+- **Commit by topic:** Create atomic commits for each logical change. Group related fixes into one commit, never bundle unrelated changes. Reply to all related comments with the same commit link.
+- **Write descriptive commit messages:** Describe the *what* and *why* of the change using conventional commit format. Avoid messages like "address PR comments".
+- **Collaborate with the user:** Ask for clarification on ambiguous comments. Always discuss with the user before pushing back on a reviewer.
+- **Provide detailed replies:** Include commit links for fixes. When disagreeing, use polite, technical reasoning with evidence.
+- **Maintain code quality:** Verify fixes compile and pass linting before committing.
 
 ### DON'T
 
