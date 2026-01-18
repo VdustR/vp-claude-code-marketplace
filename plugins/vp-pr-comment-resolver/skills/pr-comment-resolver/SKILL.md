@@ -9,11 +9,12 @@ Automate the process of handling GitHub PR review comments: evaluate each commen
 
 ## Core Principles
 
-1. **Atomic Commits** - Create one commit per logical fix, never bundle unrelated changes
-2. **Smart Grouping** - When one commit fixes multiple comments, reply to all with the same commit info
-3. **Human Collaboration** - Ask the user when uncertain about a fix or interpretation
-4. **Detailed Replies** - Include fix explanation, commit hash, and link in every resolution
-5. **Reply to Thread** - Always reply directly to each review thread, NOT as a general PR comment at the bottom
+1. **Critical Thinking First** - Evaluate whether each comment is correct before acting; reviewers can make mistakes too
+2. **Commit by Topic, Not by Comment** - Group commits by logical change, not by comment count; one commit can address multiple related comments
+3. **Atomic Commits** - Each commit should be a single logical fix; different concerns require separate commits
+4. **Human Collaboration** - Ask the user when uncertain about a fix, interpretation, or when you disagree with a comment
+5. **Detailed Replies** - Include fix explanation, commit hash, and link in every resolution
+6. **Reply to Thread** - Always reply directly to each review thread, NOT as a general PR comment at the bottom
 
 ## Quick Start
 
@@ -56,13 +57,16 @@ Extract key information:
 
 ### Phase 2: Evaluate Each Comment
 
-For each unresolved comment, determine:
+For each unresolved comment, **critically assess whether the suggestion is correct** before determining action:
 
 | Decision | Criteria |
 |----------|----------|
-| **Needs Fix** | Code issue, bug, style violation, missing feature |
+| **Needs Fix** | Valid point: actual bug, code issue, style violation, missing feature |
 | **No Fix Needed** | Already addressed, misunderstanding, design choice, out of scope |
+| **Disagree** | Reviewer's suggestion is incorrect, would introduce bugs, violates architecture, or is technically flawed |
 | **Uncertain** | Ambiguous request, multiple interpretations, needs clarification |
+
+> **⚠️ Important:** Do not blindly accept all comments. Reviewers can make mistakes. Always verify the technical validity of each suggestion before implementing.
 
 ### Phase 3: Execute Action
 
@@ -79,6 +83,17 @@ For each unresolved comment, determine:
 1. Compose explanation of why no change is required
 2. Reply with the explanation
 3. Resolve the comment
+
+#### If Disagree
+
+1. **Verify your assessment** - Double-check your reasoning against the codebase
+2. **Present to user first** - Always discuss with the user before responding to the reviewer
+3. Explain why the suggestion may be problematic:
+   - Would it introduce a bug?
+   - Does it violate existing architecture patterns?
+   - Is it based on incorrect assumptions about the code?
+4. Compose a polite, technical response with evidence
+5. **Do NOT auto-resolve** - Let the reviewer respond or the user decide
 
 #### If Uncertain
 
@@ -138,6 +153,7 @@ After processing all comments, output a summary report:
 |--------|-------|
 | Fixed | <n> |
 | No fix needed | <n> |
+| Disagreed (pending) | <n> |
 | Skipped | <n> |
 
 ### Details
@@ -145,6 +161,7 @@ After processing all comments, output a summary report:
 |---------|------|--------|--------|
 | <summary> | `<path>` | Fixed | [<hash>](<url>) |
 | <summary> | `<path>` | No fix | - |
+| <summary> | `<path>` | Disagreed | (pending reviewer response) |
 ```
 
 ## GitHub CLI Commands
@@ -190,17 +207,17 @@ gh api graphql -f query='
 
 ## Commit Message Format
 
-Follow conventional commit style:
+Follow conventional commit style. **Describe the change, not the comment:**
 
 ```
-fix(<scope>): <short description>
+<type>(<scope>): <what was changed>
 
-<detailed explanation if needed>
-
-Addresses PR review comment by <author>
+<why this change was needed - optional>
 ```
 
-Example:
+> **Important:** Commit messages should describe the modification topic, NOT "address comment" or "per reviewer request". The commit should make sense even without PR context.
+
+Example - Good:
 
 ```
 fix(auth): add null check for user session
@@ -208,27 +225,54 @@ fix(auth): add null check for user session
 The session object may be undefined when the user
 is not logged in. Added defensive check to prevent
 TypeError.
+```
+
+Example - Bad:
+
+```
+fix: address PR review comments
 
 Addresses PR review comment by @reviewer
 ```
 
-## Handling Multiple Comments with One Fix
+## Commit Grouping Strategy
 
-When a single code change addresses multiple comments:
+> **Key principle:** Group by **modification topic**, not by comment count.
 
-1. Make the fix and commit once
-2. Reply to ALL related comments with the same content
-3. Resolve all related threads
+### When to use ONE commit for multiple comments
 
-Example scenario:
-- Comment A: "Add error handling here"
-- Comment B: "This function should validate input"
-- Both are in the same function
+Use one commit when comments point to the **same logical change**:
 
-Resolution:
-- One commit: `fix(validator): add input validation and error handling`
-- Reply to both A and B with identical commit info
-- Resolve both threads
+```
+Comment A: "Add null check for session"
+Comment B: "Handle undefined session gracefully"
+Comment C: "Session might be null here"
+
+All three → same topic (session null safety) → ONE commit
+→ Reply to all three comments with the same commit link
+```
+
+### When to use SEPARATE commits
+
+Use separate commits when comments are **different concerns**:
+
+```
+Comment A: "Add error handling"
+Comment B: "Improve performance here"
+Comment C: "Add input validation"
+
+Three different topics → THREE separate commits
+→ Each comment gets its own commit link
+```
+
+### Decision guide
+
+| Scenario | Commits | Why |
+|----------|---------|-----|
+| Same topic, different locations | 1 | Same logical change |
+| Same function, different concerns | N | Different modifications |
+| Same line, same fix | 1 | Literally one change |
+| Related but independent | N | Can be reverted separately |
 
 ## Decision Tree
 
@@ -237,8 +281,15 @@ Comment Received
       │
       ▼
 ┌─────────────────┐
-│ Is it clear     │──No──▶ Ask user for clarification
-│ what to fix?    │
+│ Is the comment  │──No──▶ Ask user for clarification
+│ clear?          │
+└────────┬────────┘
+         │Yes
+         ▼
+┌─────────────────┐
+│ Is the comment  │──No──▶ Discuss with user first
+│ technically     │        └──▶ Politely disagree with evidence
+│ correct?        │             (Do NOT auto-resolve)
 └────────┬────────┘
          │Yes
          ▼
@@ -248,29 +299,28 @@ Comment Received
 └────────┬────────┘
          │Yes
          ▼
-┌─────────────────┐
-│ Does this fix   │──Yes─▶ Group with related comments
-│ multiple items? │
-└────────┬────────┘
-         │No
-         ▼
    Fix → Commit → Push → Reply → Resolve
+   (Group by topic - one commit may address multiple comments)
 ```
 
 ## Important Guidelines
 
 ### DO
 
-- Create atomic commits (one logical change per commit)
-- Include commit links in replies
-- Ask when uncertain
-- Group related fixes
-- Use conventional commit messages
-- Verify fixes compile/pass linting before committing
+- **Critically evaluate comments:** Verify the technical validity of each suggestion against the codebase before acting. Reviewers can be wrong.
+- **Commit by topic:** Create atomic commits for each logical change. Group related fixes into one commit, never bundle unrelated changes. Reply to all related comments with the same commit link.
+- **Write descriptive commit messages:** Describe the *what* and *why* of the change using conventional commit format. Avoid messages like "address PR comments".
+- **Collaborate with the user:** Ask for clarification on ambiguous comments. Always discuss with the user before pushing back on a reviewer.
+- **Provide detailed replies:** Include commit links for fixes. When disagreeing, use polite, technical reasoning with evidence.
+- **Maintain code quality:** Verify fixes compile and pass linting before committing.
 
 ### DON'T
 
-- Bundle unrelated fixes in one commit
+- **Blindly accept all comments** - always verify correctness first
+- **Bundle different concerns** into one commit - separate topics need separate commits
+- Write commit messages like "address PR comments" or "per reviewer request"
+- Implement changes that would introduce bugs or violate architecture
+- Auto-resolve disagreements without user confirmation
 - Resolve without replying
 - Make assumptions about ambiguous requests
 - Force push or rewrite history
