@@ -1,6 +1,6 @@
 {
   "name": "vp-gitignore-builder",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Build and merge .gitignore files using github/gitignore templates with smart project detection",
   "author": {
     "name": "VdustR",

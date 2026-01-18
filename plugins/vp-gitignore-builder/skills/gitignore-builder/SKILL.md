@@ -164,7 +164,7 @@ These patterns prevent accidentally committing local overrides.
 
 When discussing or modifying gitignore:
 
-- **Negation (`!`)**: A prefix `!` negates the pattern; previously excluded files become included again. Order matters - negation must come after the exclusion.
+- **Negation**: The exclamation mark prefix negates a pattern, re-including previously excluded files. Order is important: the negation must come after the exclusion. Example: `!important.log` re-includes `important.log`.
 - **Order matters**: Later patterns override earlier ones.
 - **Comments**: Lines starting with `#` are comments.
 - **Directory**: Trailing `/` matches only directories (e.g., `build/`).
