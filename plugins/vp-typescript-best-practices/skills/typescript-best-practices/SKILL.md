@@ -321,11 +321,16 @@ const anyObj: any = {};
 
 // Test 1: Extracts correct keys with basic types
 (() => {
+  type Input = {
+    key1: string;
+    key2: number;
+    other: boolean;
+  };
   type Expected = {
     key1: string;
     key2: number;
   };
-  type Result = MyGenericType<typeof anyObj, 'key1' | 'key2'>;
+  type Result = MyGenericType<Input, 'key1' | 'key2'>;
 
   // Bidirectional satisfies ensures strict equality
   (anyObj as Result satisfies Expected);
