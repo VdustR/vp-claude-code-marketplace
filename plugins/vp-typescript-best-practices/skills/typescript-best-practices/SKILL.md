@@ -107,16 +107,21 @@ export { debounce };
 
 ### Multiple Call Signatures
 
-When a function has overloads, define separate interfaces and extend:
+When a function has overloads, define separate interfaces and extend.
+
+**Why separate interfaces?**
+- Each signature can be **reused independently** in other types
+- Simplifies **runtime implementation** — complex overload types in a single interface make it hard to implement without `as any` or type errors
+- Better **type inference** for polymorphic components — TypeScript handles extends-based composition more predictably than inline overloads
 
 ```typescript
 // ✓ DO: Extend separate interfaces
 namespace myFunction {
   export interface TypeBasic {
-    (options: Options): ReturnType;
+    (options: Options): Ret;
   }
   export interface TypeWithExtra {
-    (options: Options, extra: boolean): ReturnTypeWithExtra;
+    (options: Options, extra: boolean): RetWithExtra;
   }
   export interface Type extends TypeBasic, TypeWithExtra {}
 }
@@ -124,8 +129,8 @@ namespace myFunction {
 // ✗ DON'T: Define all signatures in one interface
 namespace myFunction {
   export interface Type {
-    (options: Options): ReturnType;
-    (options: Options, extra: boolean): ReturnTypeWithExtra;
+    (options: Options): Ret;
+    (options: Options, extra: boolean): RetWithExtra;
   }
 }
 ```
@@ -222,13 +227,13 @@ import * as SelectLib from 'my-lib';       // Namespace access: SelectLib.AutoCo
 |----|-------|
 | `interface User { id: string }` for objects | `type User = { id: string }` for simple objects |
 | `type Status = 'active' \| 'inactive'` for unions | `interface` for union types (impossible) |
-| `type Nullable<T> = { [P in keyof T]: T[P] \| null }` | `interface` for mapped types (impossible) |
+| `type Nullable<TObj> = { [TProp in keyof TObj]: TObj[TProp] \| null }` | `interface` for mapped types (impossible) |
 
 ### any Usage
 
 | DO | DON'T |
 |----|-------|
-| `function debounce<T extends (...args: any[]) => any>` | `const data: any = response` |
+| `function debounce<TFunc extends (...args: any[]) => any>` | `const data: any = response` |
 | Use `unknown` for truly unknown types | Use `any` to silence errors |
 | Parse with zod/arktype, then use inferred type | Cast with `as any` |
 
