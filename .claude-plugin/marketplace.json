@@ -15,18 +15,18 @@
       "keywords": ["skills", "registry", "management"]
     },
     {
-      "name": "vp-nyan-mode",
-      "source": "./plugins/vp-nyan-mode",
-      "description": "Cat persona with verbal tic, emoji support, and language matching",
-      "license": "MIT",
-      "keywords": ["cat", "nyan", "persona", "emoji", "kawaii", "verbal-tic"]
-    },
-    {
       "name": "vp-gitignore-builder",
       "source": "./plugins/vp-gitignore-builder",
       "description": "Build and merge .gitignore files using github/gitignore templates",
       "license": "MIT",
       "keywords": ["gitignore", "git", "ignore", "templates", "github"]
+    },
+    {
+      "name": "vp-nyan-mode",
+      "source": "./plugins/vp-nyan-mode",
+      "description": "Cat persona with verbal tic, emoji support, and language matching",
+      "license": "MIT",
+      "keywords": ["cat", "nyan", "persona", "emoji", "kawaii", "verbal-tic"]
     },
     {
       "name": "vp-pr-comment-resolver",
@@ -36,18 +36,18 @@
       "keywords": ["pr", "pull-request", "review", "comments", "github", "automation"]
     },
     {
-      "name": "vp-wenyan-mode",
-      "source": "./plugins/vp-wenyan-mode",
-      "description": "Classical Chinese (文言文) writing style with concise, elegant expressions",
-      "license": "MIT",
-      "keywords": ["wenyan", "classical-chinese", "文言文", "persona", "writing-style"]
-    },
-    {
       "name": "vp-typescript-best-practices",
       "source": "./plugins/vp-typescript-best-practices",
       "description": "TypeScript coding guidelines with dos and don'ts for type design and patterns",
       "license": "MIT",
       "keywords": ["typescript", "best-practices", "type-design", "coding-guidelines", "style-guide"]
+    },
+    {
+      "name": "vp-wenyan-mode",
+      "source": "./plugins/vp-wenyan-mode",
+      "description": "Classical Chinese (文言文) writing style with concise, elegant expressions",
+      "license": "MIT",
+      "keywords": ["wenyan", "classical-chinese", "文言文", "persona", "writing-style"]
     }
   ]
 }
