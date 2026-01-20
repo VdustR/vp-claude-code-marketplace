@@ -98,7 +98,7 @@ is_ai_comment=false
 author_lower=$(echo "$author_login" | tr '[:upper:]' '[:lower:]')
 
 # Combined pattern: [bot] suffix OR known AI services
-ai_patterns='(\[bot\]|coderabbitai|codiumai|sourcery-ai|deepsource|sonarcloud|codeclimate|snyk|copilot|claude|gemini|codex|openai|anthropic|chatgpt|gpt|github-actions|dependabot|renovate)'
+ai_patterns='(\[bot\]$|coderabbitai|codiumai|sourcery-ai|deepsource|sonarcloud|codeclimate|snyk|copilot|claude|gemini|codex|openai|anthropic|chatgpt|gpt|github-actions|dependabot|renovate)'
 
 if [[ "$author_lower" =~ $ai_patterns ]]; then
   is_ai_comment=true
