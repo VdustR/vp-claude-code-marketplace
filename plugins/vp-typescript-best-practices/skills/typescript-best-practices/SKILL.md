@@ -219,6 +219,59 @@ import { Select, AutoComplete } from 'my-lib';  // Both
 import * as SelectLib from 'my-lib';       // Namespace access: SelectLib.AutoComplete
 ```
 
+### Generic Defaults for Better DX
+
+Use default type parameters to improve developer experience while maintaining type safety.
+
+#### Default Type for Narrowing
+
+When a generic could be anything but commonly is a specific type, provide a default:
+
+```typescript
+// ✓ DO: Default allows narrowing with instanceof
+function logError<TError = Error>(error: TError) {
+  // error is unknown here (TError could be anything)
+  if (error instanceof Error) {
+    console.error(error.message);  // error is narrowed to Error
+    console.error(error.stack);
+  }
+}
+
+logError(new Error('failed'));           // TError = Error
+logError(new TypeError('type error'));   // TError = TypeError
+logError({ code: 500, msg: 'error' });   // TError = { code: number, msg: string }
+```
+
+#### StringOrLiteral Pattern
+
+Allow both known literal values (with autocomplete) and arbitrary strings:
+
+```typescript
+type StringOrLiteral<TLiteral extends string> = TLiteral | (string & {});
+
+// ✓ DO: Autocomplete for known values, but accepts any string
+function on<TEvent extends string = 'click' | 'focus' | 'blur'>(
+  event: StringOrLiteral<TEvent>,
+  handler: () => void,
+) {
+  // ...
+}
+
+on('click', () => {});     // ✓ Autocomplete suggests 'click', 'focus', 'blur'
+on('custom', () => {});    // ✓ Also accepts arbitrary strings
+```
+
+**Why `string & {}`?**
+- `TLiteral | string` would widen to just `string`, losing autocomplete
+- `string & {}` is still `string` but tricks TypeScript into keeping literals separate
+- Result: IDE shows literal suggestions while accepting any string
+
+**Common use cases:**
+- Event names with known defaults
+- CSS property values with common options
+- API endpoints with documented routes
+- Config keys with typical values
+
 ## DO and DON'T
 
 ### Type Declarations
