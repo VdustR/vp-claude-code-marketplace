@@ -256,9 +256,9 @@ const user = UserSchema.parse(response); // typed as User
 const data: any = await fetch('/api/user').then(r => r.json());
 ```
 
-### Avoid `as` Type Assertions
+### Avoid `as` and `!` Assertions
 
-`as` bypasses type checking and creates "type lies" — telling TypeScript something is a type without proving it.
+`as` and `!` bypass type checking and create "type lies" — telling TypeScript something is true without proving it.
 
 | DO | DON'T |
 |----|-------|
@@ -266,6 +266,7 @@ const data: any = await fetch('/api/user').then(r => r.json());
 | `satisfies` for compile-time checks | `value as unknown as TargetType` |
 | Type guards (`if ('prop' in obj)`) | `as any` to silence errors |
 | `as const` for literal inference | Force types without validation |
+| Explicit null checks (`if (x !== null)`) | `x!` non-null assertion |
 
 ```typescript
 // ✓ DO: Runtime validation with Zod
@@ -295,11 +296,22 @@ if (isUser(response)) {
   console.log(response.name); // Narrowed to User
 }
 
+// ✓ DO: Explicit null check
+const element = document.getElementById('app');
+if (element === null) {
+  throw new Error('Element not found');
+}
+element.textContent = 'Hello'; // element is HTMLElement
+
 // ✗ DON'T: Type assertion without validation
 const user = response as User; // No runtime check, could be wrong
 
 // ✗ DON'T: Double assertion to bypass type system
 const value = someData as unknown as TargetType;
+
+// ✗ DON'T: Non-null assertion
+const element = document.getElementById('app')!; // Dangerous if null
+element.textContent = 'Hello'; // Runtime error if element is null
 ```
 
 **When `as` is acceptable:**
@@ -407,6 +419,45 @@ const looseConfig: BaseConfig = {
 | `namespace myFunc { export interface Options {} }` | `namespace Utils { export function helper() {} }` |
 | Group types with their function | Use namespace for runtime code |
 | Types only in namespaces | Mix types and implementation |
+
+### Safe Array Access
+
+With `noUncheckedIndexedAccess` enabled, array index access returns `T | undefined`. Handle this properly:
+
+```typescript
+const items: string[] = ['a', 'b', 'c'];
+
+// ✗ DON'T: Index access without null check
+for (let i = 0; i < items.length + 10; i++) {
+  console.log(items[i].toUpperCase()); // Error: items[i] is string | undefined
+}
+
+// ✗ DON'T: Non-null assertion to bypass check
+for (let i = 0; i < items.length; i++) {
+  console.log(items[i]!.toUpperCase()); // Dangerous: suppresses real errors
+}
+
+// ✓ DO: Explicit undefined check
+for (let i = 0; i < items.length; i++) {
+  const item = items[i];
+  if (item === undefined) {
+    continue; // or throw new Error('Unreachable');
+  }
+  console.log(item.toUpperCase()); // item is narrowed to string
+}
+
+// ✓ DO: Use for-of when index is not needed
+for (const item of items) {
+  console.log(item.toUpperCase()); // item is string, no undefined
+}
+
+// ✓ DO: Use forEach or map
+items.forEach((item) => {
+  console.log(item.toUpperCase());
+});
+```
+
+**Prefer iteration methods over index access** — `for-of`, `forEach`, `map`, `filter` all provide properly typed values without the `undefined` concern.
 
 ### Avoid enum
 
@@ -796,6 +847,26 @@ npm install -D @tsconfig/strictest
 }
 ```
 
+### Important Strict Options
+
+`@tsconfig/strictest` already enables these options. Ensure they remain enabled:
+
+| Option | Effect |
+|--------|--------|
+| `noUncheckedIndexedAccess` | Array/object index access returns `T \| undefined`, forcing null checks |
+| `noPropertyAccessFromIndexSignature` | Requires bracket notation for index signatures, making dynamic access explicit |
+
+If not using `@tsconfig/strictest`, add them manually:
+
+```json
+{
+  "compilerOptions": {
+    "noUncheckedIndexedAccess": true,
+    "noPropertyAccessFromIndexSignature": true
+  }
+}
+```
+
 ### ts-reset
 
 Install [ts-reset](https://github.com/mattpocock/ts-reset) for better built-in types:
@@ -832,7 +903,7 @@ Benefits:
 Before committing TypeScript code, verify:
 
 - [ ] Used `interface` for object types, `type` for unions/mapped/conditional
-- [ ] No `as` assertions — use Zod, `satisfies`, or type guards instead
+- [ ] No `as` or `!` assertions — use Zod, `satisfies`, type guards, or explicit null checks
 - [ ] Branded types use Zod `.brand()` or type-fest `Tagged` (not manual casting)
 - [ ] Naming follows conventions (PascalCase types, `T` prefix for generics, `Id` not `ID`)
 - [ ] Types extracted from existing definitions where possible
