@@ -265,7 +265,7 @@ const data: any = await fetch('/api/user').then(r => r.json());
 | Zod/arktype for runtime validation | `response as User` |
 | `satisfies` for compile-time checks | `value as unknown as TargetType` |
 | Type guards (`if ('prop' in obj)`) | `as any` to silence errors |
-| Explicit narrowing logic | `as const` on mutable values (use `satisfies`) |
+| `as const` for literal inference | Force types without validation |
 
 ```typescript
 // ✓ DO: Runtime validation with Zod
@@ -306,6 +306,7 @@ const value = someData as unknown as TargetType;
 
 | Context | Example | Why OK |
 |---------|---------|--------|
+| `as const` | `['a', 'b'] as const` | Strictens inference to literal/readonly, not a type lie |
 | Generic constraints | `(...args: any[]) => any` | Required for flexible function types |
 | Type test files | `anyObj as Result satisfies Expected` | Testing type behavior, not runtime |
 | DOM APIs with known context | `document.getElementById('app') as HTMLDivElement` | When you control the HTML |
