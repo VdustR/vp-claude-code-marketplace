@@ -181,6 +181,8 @@ After each action, reply to the comment thread. **Only auto-resolve if the comme
 
 **Files modified:**
 - `<file-path>`
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
 ```
 
 Example:
@@ -190,6 +192,8 @@ Example:
 
 **Files modified:**
 - `src/auth/session.ts`
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
 ```
 
 **Reply format for no-fix:**
@@ -198,6 +202,8 @@ Example:
 No changes needed.
 
 **Reason:** <explanation of why no fix is required>
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
 ```
 
 ### Phase 5: Summary Report
