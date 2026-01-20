@@ -43,10 +43,31 @@ Process all comments automatically, only pausing for truly ambiguous cases.
 
 ### Phase 1: Fetch Comments
 
-Use `gh` CLI to retrieve all unresolved review comments:
+Use `gh api graphql` to retrieve all unresolved review comments:
 
 ```bash
-gh pr view <PR_NUMBER> --json reviewThreads --jq '.reviewThreads[] | select(.isResolved == false)'
+gh api graphql -f query='
+query($owner: String!, $repo: String!, $pr: Int!) {
+  repository(owner: $owner, name: $repo) {
+    pullRequest(number: $pr) {
+      reviewThreads(first: 100) {
+        nodes {
+          id
+          isResolved
+          path
+          line
+          comments(first: 10) {
+            nodes {
+              body
+              author { login }
+            }
+          }
+        }
+      }
+    }
+  }
+}' -f owner="<OWNER>" -f repo="<REPO>" -F pr=<PR_NUMBER> \
+  --jq '.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false)'
 ```
 
 Extract key information:
@@ -218,11 +239,28 @@ After processing all comments, output a summary report:
 ### Fetch PR Comments
 
 ```bash
-# Get all review threads
-gh pr view <NUMBER> --json reviewThreads
+# Get all review threads (requires GraphQL - gh pr view does not support reviewThreads)
+gh api graphql -f query='
+query($owner: String!, $repo: String!, $pr: Int!) {
+  repository(owner: $owner, name: $repo) {
+    pullRequest(number: $pr) {
+      reviewThreads(first: 100) {
+        nodes {
+          id
+          isResolved
+          path
+          line
+          comments(first: 10) {
+            nodes { body, author { login } }
+          }
+        }
+      }
+    }
+  }
+}' -f owner="<OWNER>" -f repo="<REPO>" -F pr=<NUMBER>
 
-# Get unresolved threads only
-gh pr view <NUMBER> --json reviewThreads --jq '[.reviewThreads[] | select(.isResolved == false)]'
+# Get unresolved threads only (add jq filter)
+# ... --jq '.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false)'
 ```
 
 ### Reply to Comment
