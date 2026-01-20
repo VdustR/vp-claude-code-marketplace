@@ -73,30 +73,16 @@ Determine if each comment is from an AI reviewer. **Only AI comments will be aut
 #### Detection Logic
 
 ```bash
-# Check if author is a bot (from GraphQL response)
-# The author object contains: login, __typename (User or Bot)
+# AI/Bot Detection Logic (case-insensitive)
+is_ai_comment=false
+author_lower=$(echo "$author_login" | tr '[:upper:]' '[:lower:]')
 
-# Method 1: Check [bot] suffix
-if [[ "$author_login" == *"[bot]" ]]; then
+# Combined pattern: [bot] suffix OR known AI services
+ai_patterns='(\[bot\]|coderabbitai|codiumai|sourcery-ai|deepsource|sonarcloud|codeclimate|snyk|copilot|claude|gemini|codex|openai|anthropic|chatgpt|gpt|github-actions|dependabot|renovate)'
+
+if [[ "$author_lower" =~ $ai_patterns ]]; then
   is_ai_comment=true
 fi
-
-# Method 2: Check known AI services (case-insensitive)
-known_ai_services=(
-  # Code Review Bots
-  "coderabbitai" "codiumai" "sourcery-ai" "deepsource" "sonarcloud" "codeclimate" "snyk"
-  # LLM Assistants
-  "copilot" "claude" "gemini" "codex" "openai" "anthropic" "chatgpt" "gpt"
-  # CI/Automation
-  "github-actions" "dependabot" "renovate"
-)
-author_lower=$(echo "$author_login" | tr '[:upper:]' '[:lower:]')
-for service in "${known_ai_services[@]}"; do
-  if [[ "$author_lower" == *"$service"* ]]; then
-    is_ai_comment=true
-    break
-  fi
-done
 ```
 
 #### Classification Result
