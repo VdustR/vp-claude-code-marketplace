@@ -1,0 +1,20 @@
+{
+  "name": "vp-typescript-best-practices",
+  "version": "1.0.0",
+  "description": "TypeScript coding guidelines with dos and don'ts for type design, naming, and patterns",
+  "author": {
+    "name": "VdustR",
+    "url": "https://github.com/VdustR"
+  },
+  "homepage": "https://github.com/VdustR/vp-claude-code-marketplace",
+  "repository": "https://github.com/VdustR/vp-claude-code-marketplace",
+  "license": "MIT",
+  "keywords": [
+    "typescript",
+    "best-practices",
+    "type-design",
+    "coding-guidelines",
+    "style-guide"
+  ],
+  "skills": "./skills/"
+}

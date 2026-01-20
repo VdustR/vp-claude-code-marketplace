@@ -41,6 +41,13 @@
       "description": "Classical Chinese (文言文) writing style with concise, elegant expressions",
       "license": "MIT",
       "keywords": ["wenyan", "classical-chinese", "文言文", "persona", "writing-style"]
+    },
+    {
+      "name": "vp-typescript-best-practices",
+      "source": "./plugins/vp-typescript-best-practices",
+      "description": "TypeScript coding guidelines with dos and don'ts for type design and patterns",
+      "license": "MIT",
+      "keywords": ["typescript", "best-practices", "type-design", "coding-guidelines", "style-guide"]
     }
   ]
 }

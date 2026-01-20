@@ -84,6 +84,23 @@ Features:
 - Technical terms preserved (function, API, commit, etc.)
 - Minimal use of classical particles (之乎者也)
 
+### vp-typescript-best-practices
+
+TypeScript coding guidelines with dos and don'ts for type design and patterns.
+
+```bash
+/plugin install vp-typescript-best-practices@vdustr
+```
+
+Features:
+- Type-first design with namespace pattern for organizing types
+- Clear DO/DON'T tables for interface vs type, any usage, function declarations
+- Naming conventions (PascalCase, `T` prefix for generics, `Id` not `ID`)
+- Type extraction patterns (prefer extracting over redefining)
+- Generic const pattern for strict literal inference
+- Type testing guidelines with `*.test-d.ts`
+- Environment setup with strictest tsconfig and ts-reset
+
 ## Development
 
 This marketplace is developed using the [plugin-dev](https://github.com/anthropics/claude-code/tree/main/.claude/plugins/plugin-dev) plugin.
