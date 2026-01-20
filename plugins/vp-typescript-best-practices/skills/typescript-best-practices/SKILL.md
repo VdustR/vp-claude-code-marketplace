@@ -229,6 +229,35 @@ import * as SelectLib from 'my-lib';       // Namespace access: SelectLib.AutoCo
 | `type Status = 'active' \| 'inactive'` for unions | `interface` for union types (impossible) |
 | `type NullableProps<TObj> = { [TProp in keyof TObj]: TObj[TProp] \| null }` | `interface` for mapped types (impossible) |
 
+### Array Type Syntax
+
+| DO | DON'T |
+|----|-------|
+| `Array<TItem>` | `TItem[]` |
+| `ReadonlyArray<TItem>` | `readonly TItem[]` |
+
+```typescript
+// ✓ DO: Generic syntax is more explicit
+type Users = Array<User>;
+type ReadonlyUsers = ReadonlyArray<User>;
+type Matrix = Array<Array<number>>;
+
+function getItems(): Array<Item> { /* ... */ }
+
+// ✗ DON'T: Bracket syntax is less visible
+type Users = User[];
+type ReadonlyUsers = readonly User[];
+type Matrix = number[][];
+
+function getItems(): Item[] { /* ... */ }
+```
+
+**Why prefer `Array<T>`:**
+- More explicit and visible than `[]` suffix
+- Consistent with other generic types (`Map<K, V>`, `Set<T>`, `Promise<T>`)
+- `ReadonlyArray<T>` is cleaner than `readonly T[]`
+- Nested arrays are more readable: `Array<Array<T>>` vs `T[][]`
+
 ### any Usage
 
 | DO | DON'T |
