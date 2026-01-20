@@ -45,22 +45,22 @@ The `T` prefix applies to **all** generic type parameters, not just top-level on
 // ✓ DO: Use T prefix everywhere
 type Nullable<TValue> = TValue | null;
 
-type Pick<TObj, TKey extends keyof TObj> = {
+type MyPick<TObj, TKey extends keyof TObj> = {
   [TProp in TKey]: TObj[TProp];
 };
 
-type IsArray<TValue> = TValue extends Array<infer TItem> ? TItem : never;
+type ArrayElement<TValue> = TValue extends Array<infer TItem> ? TItem : never;
 
 function merge<TTarget, TSource>(target: TTarget, source: TSource): TTarget & TSource;
 
 // ✗ DON'T: Use single letters
 type Nullable<T> = T | null;
 
-type Pick<T, K extends keyof T> = {
+type MyPick<T, K extends keyof T> = {
   [P in K]: T[P];
 };
 
-type IsArray<T> = T extends Array<infer U> ? U : never;
+type ArrayElement<T> = T extends Array<infer U> ? U : never;
 
 function merge<A, B>(target: A, source: B): A & B;
 ```
@@ -322,19 +322,23 @@ function defineConfig<const TConfig extends BaseConfig>(config: TConfig): TConfi
   return config;
 }
 
-const config = defineConfig({
+const strictConfig = defineConfig({
   routes: ['/home', '/about'], // inferred as readonly ['/home', '/about']
   debug: true,
 });
+```
 
+```typescript
 // ✓ DO: as const satisfies for one-off definitions
-const config = {
+const literalConfig = {
   routes: ['/home', '/about'],
   debug: true,
 } as const satisfies BaseConfig;
+```
 
+```typescript
 // ✗ DON'T: Lose literal types
-const config: BaseConfig = {
+const looseConfig: BaseConfig = {
   routes: ['/home', '/about'], // widened to string[]
   debug: true,
 };
@@ -439,53 +443,133 @@ function reducer(state: number, action: Action): number {
 **Best practices:**
 - Use `type`, `kind`, or `status` as discriminator names
 - Discriminator values should be string literals for readability
-- Exhaustive switch with `never` check catches missing cases
+- Use `satisfies never` for exhaustive handling (see below)
+
+### Exhaustive Handling
+
+Use `satisfies never` to ensure all cases are handled. TypeScript will error if any case is missed.
+
+#### Switch Statement
+
+```typescript
+type Route = '/home' | '/about' | '/contact';
+
+function handleRoute(route: Route) {
+  switch (route) {
+    case '/home':
+      return <HomePage />;
+    case '/about':
+      return <AboutPage />;
+    case '/contact':
+      return <ContactPage />;
+    default:
+      route satisfies never; // Error if any route is unhandled
+  }
+}
+```
+
+#### Ternary with IIFE
+
+For ternary expressions, use an IIFE to add exhaustive check:
+
+```typescript
+type MessageType = 'error' | 'warning' | 'info';
+
+const Component = messageType === 'error'
+  ? ErrorMessage
+  : messageType === 'warning'
+  ? WarningMessage
+  : messageType === 'info'
+  ? InfoMessage
+  : (() => {
+      messageType satisfies never;
+      throw new Error(`Unknown message type: ${messageType}`);
+    })();
+```
+
+#### Partial Exhaustive (Subset Handling)
+
+When you need to handle a subset of types and explicitly allow others to pass through:
+
+```typescript
+type ActionType = 'create' | 'update' | 'delete' | 'login' | 'signUp';
+
+// Define which actions bypass normal handling
+type PassthroughActions = readonly ['login', 'signUp'];
+const passthroughActions: PassthroughActions = ['login', 'signUp'] satisfies readonly ActionType[];
+type PassthroughAction = PassthroughActions[number];
+
+function handleAction(actionType: ActionType) {
+  switch (actionType) {
+    case 'create':
+      return createItem();
+    case 'update':
+      return updateItem();
+    case 'delete':
+      return deleteItem();
+    default:
+      // Ensure only PassthroughActions reach here, not forgotten cases
+      actionType satisfies PassthroughAction;
+      return handlePassthrough(actionType);
+  }
+}
+```
+
+If you add a new `ActionType` but forget to handle it, the `satisfies PassthroughAction` will error unless you explicitly add it to `PassthroughActions`.
 
 ### Branded Types
 
-Use branded types to create nominal types that prevent accidental mixing:
+Use branded types to create nominal types that prevent accidental mixing. **Avoid using `as` for branding** — use Zod or type-fest instead for proper runtime validation.
 
-```typescript
-// ✓ DO: Brand primitive types for type safety
-type UserId = string & { readonly __brand: 'UserId' };
-type OrderId = string & { readonly __brand: 'OrderId' };
-
-function getUser(id: UserId): User { /* ... */ }
-function getOrder(id: OrderId): Order { /* ... */ }
-
-// Type-safe: can't pass OrderId where UserId is expected
-const userId = 'user-123' as UserId;
-const orderId = 'order-456' as OrderId;
-
-getUser(userId);  // ✓ OK
-getUser(orderId); // ✗ Error: OrderId is not assignable to UserId
-```
-
-#### Branded Types with Zod 4
-
-Zod 4 has built-in support for branded types:
+#### With Zod (Recommended)
 
 ```typescript
 import { z } from 'zod';
 
-// Define branded schema
-const UserId = z.string().uuid().brand('UserId');
-const OrderId = z.string().uuid().brand('OrderId');
+// Define branded schemas (Schema suffix for clarity)
+const UserIdSchema = z.string().uuid().brand('UserId');
+const OrderIdSchema = z.string().uuid().brand('OrderId');
 
 // Infer branded types
-type UserId = z.infer<typeof UserId>;  // string & { __brand: 'UserId' }
-type OrderId = z.infer<typeof OrderId>;
+type UserId = z.infer<typeof UserIdSchema>;  // string & { __brand: 'UserId' }
+type OrderId = z.infer<typeof OrderIdSchema>;
 
 // Parse and validate with branding
-const userId = UserId.parse('550e8400-e29b-41d4-a716-446655440000');
+const userId = UserIdSchema.parse('550e8400-e29b-41d4-a716-446655440000');
 // userId is now typed as UserId, not just string
 
 // Use in functions
 function getUser(id: UserId): User { /* ... */ }
 
-getUser(userId);                    // ✓ OK - properly branded
-getUser('raw-string');              // ✗ Error - not branded
-getUser(OrderId.parse('...'));      // ✗ Error - wrong brand
+getUser(userId);                        // ✓ OK - properly branded
+getUser('raw-string');                  // ✗ Error - not branded
+getUser(OrderIdSchema.parse('...'));    // ✗ Error - wrong brand
+```
+
+#### With type-fest
+
+[type-fest](https://github.com/sindresorhus/type-fest) provides `Tagged` for branding without runtime validation:
+
+```typescript
+import type { Tagged } from 'type-fest';
+
+type UserId = Tagged<string, 'UserId'>;
+type OrderId = Tagged<string, 'OrderId'>;
+
+// Create branded values through validated functions
+function createUserId(id: string): UserId {
+  if (!isValidUuid(id)) throw new Error('Invalid UUID');
+  return id as UserId;  // as is acceptable inside factory functions
+}
+
+const userId = createUserId('550e8400-e29b-41d4-a716-446655440000');
+```
+
+#### ✗ DON'T: Use `as` directly
+
+```typescript
+// ✗ DON'T: Direct casting bypasses validation
+const userId = 'invalid-string' as UserId;  // No validation!
 ```
 
 **When to use branded types:**
@@ -692,7 +776,8 @@ Benefits:
 Before committing TypeScript code, verify:
 
 - [ ] Used `interface` for object types, `type` for unions/mapped/conditional
-- [ ] No `as any` except in generic constraints
+- [ ] No `as any` or `as Type` except in generic constraints
+- [ ] Branded types use Zod `.brand()` or type-fest `Tagged` (not manual `as` casting)
 - [ ] Naming follows conventions (PascalCase types, `T` prefix for generics, `Id` not `ID`)
 - [ ] Types extracted from existing definitions where possible
 - [ ] Functions use namespace pattern for complex type organization
