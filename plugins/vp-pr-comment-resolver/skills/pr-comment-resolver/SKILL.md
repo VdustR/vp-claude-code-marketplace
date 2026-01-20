@@ -47,9 +47,9 @@ Use `gh api graphql` to retrieve all unresolved review comments:
 
 ```bash
 gh api graphql -f query='
-query($owner: String!, $repo: String!, $pr: Int!) {
-  repository(owner: $owner, name: $repo) {
-    pullRequest(number: $pr) {
+{
+  repository(owner: "<OWNER>", name: "<REPO>") {
+    pullRequest(number: <PR_NUMBER>) {
       reviewThreads(first: 100) {
         nodes {
           id
@@ -66,8 +66,7 @@ query($owner: String!, $repo: String!, $pr: Int!) {
       }
     }
   }
-}' -f owner="<OWNER>" -f repo="<REPO>" -F pr=<PR_NUMBER> \
-  --jq '.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false)'
+}' --jq '.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false)'
 ```
 
 Extract key information:
@@ -241,9 +240,9 @@ After processing all comments, output a summary report:
 ```bash
 # Get all review threads (requires GraphQL - gh pr view does not support reviewThreads)
 gh api graphql -f query='
-query($owner: String!, $repo: String!, $pr: Int!) {
-  repository(owner: $owner, name: $repo) {
-    pullRequest(number: $pr) {
+{
+  repository(owner: "<OWNER>", name: "<REPO>") {
+    pullRequest(number: <NUMBER>) {
       reviewThreads(first: 100) {
         nodes {
           id
@@ -251,13 +250,13 @@ query($owner: String!, $repo: String!, $pr: Int!) {
           path
           line
           comments(first: 10) {
-            nodes { body, author { login } }
+            nodes { body author { login } }
           }
         }
       }
     }
   }
-}' -f owner="<OWNER>" -f repo="<REPO>" -F pr=<NUMBER>
+}'
 
 # Get unresolved threads only (add jq filter)
 # ... --jq '.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false)'
