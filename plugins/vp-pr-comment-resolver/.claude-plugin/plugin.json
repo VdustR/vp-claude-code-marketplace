@@ -1,6 +1,6 @@
 {
   "name": "vp-pr-comment-resolver",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Automate PR comment review, fix, and resolution workflow",
   "author": {
     "name": "VdustR",

@@ -43,17 +43,77 @@ Process all comments automatically, only pausing for truly ambiguous cases.
 
 ### Phase 1: Fetch Comments
 
-Use `gh` CLI to retrieve all unresolved review comments:
+Use `gh api graphql` to retrieve all unresolved review comments:
 
 ```bash
-gh pr view <PR_NUMBER> --json reviewThreads --jq '.reviewThreads[] | select(.isResolved == false)'
+gh api graphql -f query='
+{
+  repository(owner: "<OWNER>", name: "<REPO>") {
+    pullRequest(number: <PR_NUMBER>) {
+      reviewThreads(first: 100) {
+        nodes {
+          id
+          isResolved
+          path
+          line
+          comments(first: 10) {
+            nodes {
+              body
+              author { login }
+            }
+          }
+        }
+      }
+    }
+  }
+}' --jq '.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false)'
 ```
 
 Extract key information:
 - Comment ID and thread ID
 - File path and line number
 - Comment body (the feedback)
-- Author information
+- Author information (login, isBot flag)
+
+### Phase 1.5: Identify AI Comments
+
+Determine if each comment is from an AI reviewer. **Only AI comments will be auto-resolved; human comments will only receive replies.**
+
+#### Detection Methods
+
+1. **Bot Account Suffix**: Check if author login ends with `[bot]`
+   - Examples: `github-actions[bot]`, `dependabot[bot]`, `copilot[bot]`
+
+2. **Known AI Services**: Match against known AI code review services and LLMs
+   - **Code Review Bots**: `coderabbitai`, `codiumai`, `sourcery-ai`, `deepsource`, `sonarcloud`, `codeclimate`, `snyk`
+   - **LLM Assistants**: `copilot`, `claude`, `gemini`, `codex`, `openai`, `anthropic`, `chatgpt`, `gpt`
+   - **CI/Automation**: `github-actions`, `dependabot`, `renovate`
+   - (Extend this list as needed)
+
+#### Detection Logic
+
+```bash
+# AI/Bot Detection Logic (case-insensitive)
+is_ai_comment=false
+author_lower=$(echo "$author_login" | tr '[:upper:]' '[:lower:]')
+
+# Combined pattern: [bot] suffix OR known AI services
+ai_patterns='(\[bot\]$|coderabbitai|codiumai|sourcery-ai|deepsource|sonarcloud|codeclimate|snyk|copilot|claude|gemini|codex|openai|anthropic|chatgpt|gpt|github-actions|dependabot|renovate)'
+
+if [[ "$author_lower" =~ $ai_patterns ]]; then
+  is_ai_comment=true
+fi
+```
+
+#### Classification Result
+
+| Author Type | Auto-Resolve | Action |
+|-------------|--------------|--------|
+| AI/Bot | Yes | Reply and resolve after fix |
+| Human | No | Reply only, let human resolve |
+| Uncertain | Ask user | Prompt user: "Should I resolve this comment from @{author}?" |
+
+> **Note:** If the author doesn't match known AI patterns but has bot-like characteristics (e.g., automated messages, service accounts), ask the user whether to auto-resolve.
 
 ### Phase 2: Evaluate Each Comment
 
@@ -76,13 +136,14 @@ For each unresolved comment, **critically assess whether the suggestion is corre
 2. Implement the fix
 3. Create an atomic commit with descriptive message
 4. Push to the PR branch
-5. Reply with fix details and resolve
+5. Reply with fix details
+6. **If AI comment**: Resolve the thread | **If human**: Leave unresolved
 
 #### If No Fix Needed
 
 1. Compose explanation of why no change is required
 2. Reply with the explanation
-3. Resolve the comment
+3. **If AI comment**: Resolve the thread | **If human**: Leave unresolved
 
 #### If Disagree
 
@@ -102,9 +163,14 @@ For each unresolved comment, **critically assess whether the suggestion is corre
 3. Ask for guidance
 4. Proceed based on user input
 
-### Phase 4: Reply and Resolve
+### Phase 4: Reply (and Conditionally Resolve)
 
-After each action, reply to the comment thread and resolve it.
+After each action, reply to the comment thread. **Only auto-resolve if the comment is from an AI/bot; human comments require manual resolution.**
+
+| Comment Source | After Reply |
+|----------------|-------------|
+| AI/Bot | Auto-resolve the thread |
+| Human | Do NOT resolve - let the reviewer close it |
 
 > **⚠️ CRITICAL:** You MUST use the GraphQL `addPullRequestReviewThreadReply` mutation to reply directly to each review thread. Do NOT use `gh pr comment` as it posts to the PR bottom instead of the specific thread.
 
@@ -115,6 +181,8 @@ After each action, reply to the comment thread and resolve it.
 
 **Files modified:**
 - `<file-path>`
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
 ```
 
 Example:
@@ -124,6 +192,8 @@ Example:
 
 **Files modified:**
 - `src/auth/session.ts`
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
 ```
 
 **Reply format for no-fix:**
@@ -132,6 +202,8 @@ Example:
 No changes needed.
 
 **Reason:** <explanation of why no fix is required>
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
 ```
 
 ### Phase 5: Summary Report
@@ -149,19 +221,22 @@ After processing all comments, output a summary report:
 - [<hash> <message>](<url>)
 
 ### Statistics
-| Status | Count |
-|--------|-------|
-| Fixed | <n> |
-| No fix needed | <n> |
-| Disagreed (pending) | <n> |
-| Skipped | <n> |
+| Status | AI/Bot | Human | Total |
+|--------|--------|-------|-------|
+| Fixed & Resolved | <n> | - | <n> |
+| Fixed (reply only) | - | <n> | <n> |
+| No fix & Resolved | <n> | - | <n> |
+| No fix (reply only) | - | <n> | <n> |
+| Disagreed (pending) | <n> | <n> | <n> |
+| Skipped | <n> | <n> | <n> |
 
 ### Details
-| Comment | File | Action | Commit |
-|---------|------|--------|--------|
-| <summary> | `<path>` | Fixed | [<hash>](<url>) |
-| <summary> | `<path>` | No fix | - |
-| <summary> | `<path>` | Disagreed | (pending reviewer response) |
+| Comment | Author | Type | File | Action | Resolved |
+|---------|--------|------|------|--------|----------|
+| <summary> | @bot | 🤖 AI | `<path>` | Fixed [<hash>](<url>) | ✅ |
+| <summary> | @human | 👤 Human | `<path>` | Fixed [<hash>](<url>) | ⏳ Pending |
+| <summary> | @bot | 🤖 AI | `<path>` | No fix | ✅ |
+| <summary> | @human | 👤 Human | `<path>` | Disagreed | ⏳ Pending |
 ```
 
 ## GitHub CLI Commands
@@ -169,11 +244,28 @@ After processing all comments, output a summary report:
 ### Fetch PR Comments
 
 ```bash
-# Get all review threads
-gh pr view <NUMBER> --json reviewThreads
+# Get all review threads (requires GraphQL - gh pr view does not support reviewThreads)
+gh api graphql -f query='
+{
+  repository(owner: "<OWNER>", name: "<REPO>") {
+    pullRequest(number: <NUMBER>) {
+      reviewThreads(first: 100) {
+        nodes {
+          id
+          isResolved
+          path
+          line
+          comments(first: 10) {
+            nodes { body author { login } }
+          }
+        }
+      }
+    }
+  }
+}'
 
-# Get unresolved threads only
-gh pr view <NUMBER> --json reviewThreads --jq '[.reviewThreads[] | select(.isResolved == false)]'
+# Get unresolved threads only (add jq filter)
+# ... --jq '.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false)'
 ```
 
 ### Reply to Comment
@@ -281,6 +373,22 @@ Comment Received
       │
       ▼
 ┌─────────────────┐
+│ Is author       │──Yes──▶ is_ai_comment = true
+│ AI/Bot?         │
+└────────┬────────┘
+         │No
+         ▼
+┌─────────────────┐
+│ Uncertain?      │──Yes──▶ Ask user: "Resolve comment from @{author}?"
+│ (bot-like but   │         └──▶ User decides
+│ not in list)    │
+└────────┬────────┘
+         │No
+         ▼
+   is_ai_comment = false
+         │
+         ▼
+┌─────────────────┐
 │ Is the comment  │──No──▶ Ask user for clarification
 │ clear?          │
 └────────┬────────┘
@@ -294,13 +402,20 @@ Comment Received
          │Yes
          ▼
 ┌─────────────────┐
-│ Is a code       │──No──▶ Reply with explanation, resolve
-│ change needed?  │
+│ Is a code       │──No──▶ Reply with explanation
+│ change needed?  │        └──▶ If AI: resolve | If human: skip resolve
 └────────┬────────┘
          │Yes
          ▼
-   Fix → Commit → Push → Reply → Resolve
-   (Group by topic - one commit may address multiple comments)
+   Fix → Commit → Push → Reply
+         │
+         ▼
+┌─────────────────┐
+│ is_ai_comment?  │──Yes──▶ Resolve thread
+└────────┬────────┘
+         │No
+         ▼
+   Leave unresolved (human reviewer will close)
 ```
 
 ## Important Guidelines
@@ -308,6 +423,8 @@ Comment Received
 ### DO
 
 - **Critically evaluate comments:** Verify the technical validity of each suggestion against the codebase before acting. Reviewers can be wrong.
+- **Check comment author type:** Determine if the comment is from AI/bot before deciding whether to auto-resolve.
+- **Only auto-resolve AI comments:** After replying to an AI/bot comment, resolve the thread. Human comments should only receive replies.
 - **Commit by topic:** Create atomic commits for each logical change. Group related fixes into one commit, never bundle unrelated changes. Reply to all related comments with the same commit link.
 - **Write descriptive commit messages:** Describe the *what* and *why* of the change using conventional commit format. Avoid messages like "address PR comments".
 - **Collaborate with the user:** Ask for clarification on ambiguous comments. Always discuss with the user before pushing back on a reviewer.
@@ -317,6 +434,7 @@ Comment Received
 ### DON'T
 
 - **Blindly accept all comments** - always verify correctness first
+- **Auto-resolve human reviewer comments** - only AI/bot comments should be auto-resolved; let humans close their own threads
 - **Bundle different concerns** into one commit - separate topics need separate commits
 - Write commit messages like "address PR comments" or "per reviewer request"
 - Implement changes that would introduce bugs or violate architecture
