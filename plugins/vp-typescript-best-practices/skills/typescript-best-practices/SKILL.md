@@ -14,7 +14,7 @@ Guidelines for writing clean, type-safe, and maintainable TypeScript code.
 1. **Type-First Design** - Define types before implementation; minimize reliance on inference
 2. **Interface for Structure** - Use `interface` for objects, `type` for unions/mapped/conditional
 3. **Namespace for Type Organization** - Group related types with namespaces (types only, not runtime)
-4. **Generic Const for Strictness** - Use `<const T>` for strict literal inference
+4. **Generic Const for Strictness** - Use `<const TConfig>` for strict literal inference
 5. **Extract, Don't Redefine** - Get types from existing definitions instead of duplicating
 6. **Strictest Config** - Use strictest tsconfig base; install `ts-reset` for saner built-in types
 
@@ -276,7 +276,7 @@ const onClick = ((event) => {
 }) satisfies React.ComponentProps<'button'>['onClick'];
 
 // ✗ DON'T: Redundant inline type annotations
-const myFunction = (options: myFunction.Options): myFunction.ReturnType => {
+const myFunction = (options: myFunction.Options): myFunction.Ret => {
   // implementation
 };
 
@@ -347,6 +347,190 @@ const config: BaseConfig = {
 | `namespace myFunc { export interface Options {} }` | `namespace Utils { export function helper() {} }` |
 | Group types with their function | Use namespace for runtime code |
 | Types only in namespaces | Mix types and implementation |
+
+### Avoid enum
+
+TypeScript `enum` generates runtime code that can't be stripped by type-only transpilers (esbuild, swc in strip-only mode). Use const arrays instead:
+
+```typescript
+// ✗ DON'T: enum generates runtime code
+enum State {
+  Loading = 'loading',
+  Success = 'success',
+  Error = 'error',
+}
+
+// ✓ DO: const array + derived type
+const states = ['loading', 'success', 'error'] as const;
+type State = (typeof states)[number];  // 'loading' | 'success' | 'error'
+
+// Runtime access still works
+states.forEach((s) => console.log(s));
+```
+
+#### With Zod
+
+```typescript
+import { z } from 'zod';
+
+const states = ['loading', 'success', 'error'] as const;
+const StateSchema = z.enum(states);
+type State = z.infer<typeof StateSchema>;  // 'loading' | 'success' | 'error'
+
+// Runtime validation
+const state = StateSchema.parse('loading');  // ✓ OK
+StateSchema.parse('invalid');                // ✗ Throws ZodError
+
+// ✓ DO: Use safeParse to replace includes (avoids type errors)
+function isValidState(value: string): value is State {
+  return StateSchema.safeParse(value).success;
+}
+
+// ✗ DON'T: Array.includes has type issues
+// states.includes(unknownString);  // Error: Argument of type 'string' is not assignable
+```
+
+**Why avoid enum:**
+- `enum` is TypeScript-only syntax that emits runtime JavaScript
+- Type-stripping tools (esbuild, swc) can't handle it without full TypeScript compilation
+- Const arrays are pure JavaScript + types, fully strippable
+- Union types provide the same type safety with better tree-shaking
+
+## Advanced Type Patterns
+
+### Discriminated Unions
+
+Use a common literal property to enable type narrowing:
+
+```typescript
+// ✓ DO: Discriminated union with literal discriminator
+type Result<TData, TError> =
+  | { success: true; data: TData }
+  | { success: false; error: TError };
+
+function handleResult(result: Result<User, string>) {
+  if (result.success) {
+    // TypeScript knows: result.data is User
+    console.log(result.data.name);
+  } else {
+    // TypeScript knows: result.error is string
+    console.error(result.error);
+  }
+}
+
+// ✓ DO: Use 'type' or 'kind' as discriminator for events/actions
+type Action =
+  | { type: 'INCREMENT'; amount: number }
+  | { type: 'DECREMENT'; amount: number }
+  | { type: 'RESET' };
+
+function reducer(state: number, action: Action): number {
+  switch (action.type) {
+    case 'INCREMENT':
+      return state + action.amount;
+    case 'DECREMENT':
+      return state - action.amount;
+    case 'RESET':
+      return 0;
+  }
+}
+```
+
+**Best practices:**
+- Use `type`, `kind`, or `status` as discriminator names
+- Discriminator values should be string literals for readability
+- Exhaustive switch with `never` check catches missing cases
+
+### Branded Types
+
+Use branded types to create nominal types that prevent accidental mixing:
+
+```typescript
+// ✓ DO: Brand primitive types for type safety
+type UserId = string & { readonly __brand: 'UserId' };
+type OrderId = string & { readonly __brand: 'OrderId' };
+
+function getUser(id: UserId): User { /* ... */ }
+function getOrder(id: OrderId): Order { /* ... */ }
+
+// Type-safe: can't pass OrderId where UserId is expected
+const userId = 'user-123' as UserId;
+const orderId = 'order-456' as OrderId;
+
+getUser(userId);  // ✓ OK
+getUser(orderId); // ✗ Error: OrderId is not assignable to UserId
+```
+
+#### Branded Types with Zod 4
+
+Zod 4 has built-in support for branded types:
+
+```typescript
+import { z } from 'zod';
+
+// Define branded schema
+const UserId = z.string().uuid().brand('UserId');
+const OrderId = z.string().uuid().brand('OrderId');
+
+// Infer branded types
+type UserId = z.infer<typeof UserId>;  // string & { __brand: 'UserId' }
+type OrderId = z.infer<typeof OrderId>;
+
+// Parse and validate with branding
+const userId = UserId.parse('550e8400-e29b-41d4-a716-446655440000');
+// userId is now typed as UserId, not just string
+
+// Use in functions
+function getUser(id: UserId): User { /* ... */ }
+
+getUser(userId);                    // ✓ OK - properly branded
+getUser('raw-string');              // ✗ Error - not branded
+getUser(OrderId.parse('...'));      // ✗ Error - wrong brand
+```
+
+**When to use branded types:**
+- IDs that shouldn't be mixed (UserId, OrderId, ProductId)
+- Units that shouldn't be mixed (Meters, Feet, Celsius, Fahrenheit)
+- Validated strings (Email, URL, UUID)
+- Money with different currencies
+
+### Template Literal Types
+
+Use template literals for string pattern types:
+
+```typescript
+// ✓ DO: Type-safe event names
+type EventName = `on${Capitalize<'click' | 'focus' | 'blur'>}`;
+// Result: 'onClick' | 'onFocus' | 'onBlur'
+
+// ✓ DO: Type-safe CSS properties
+type CSSUnit = 'px' | 'rem' | 'em' | '%';
+type CSSValue = `${number}${CSSUnit}`;
+// '10px', '1.5rem', '100%' are valid
+
+const width: CSSValue = '100px';  // ✓ OK
+const bad: CSSValue = '100';      // ✗ Error: missing unit
+
+// ✓ DO: Type-safe route parameters
+type Route = '/users/:userId' | '/posts/:postId';
+type ExtractParam<TRoute extends string> =
+  TRoute extends `${string}:${infer TParam}`
+    ? TParam
+    : never;
+
+type UserParam = ExtractParam<'/users/:userId'>;  // 'userId'
+
+// ✓ DO: Type-safe i18n keys
+type Locale = 'en' | 'ja' | 'zh';
+type I18nKey = 'greeting' | 'farewell';
+type LocalizedKey = `${Locale}.${I18nKey}`;
+// 'en.greeting' | 'en.farewell' | 'ja.greeting' | ...
+```
+
+**Common patterns:**
+- `Capitalize<T>`, `Uppercase<T>`, `Lowercase<T>` for case manipulation
+- `${infer X}` for extracting parts of strings
+- Combine with mapped types for powerful transformations
 
 ## Type Testing
 
