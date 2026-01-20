@@ -459,6 +459,65 @@ items.forEach((item) => {
 
 **Prefer iteration methods over index access** — `for-of`, `forEach`, `map`, `filter` all provide properly typed values without the `undefined` concern.
 
+### Early Return Pattern
+
+Use guard clauses to handle edge cases first, keeping the main logic un-nested:
+
+```typescript
+// ✓ DO: Guard clauses with early return
+function processUser(user: User | null) {
+  if (user === null) {
+    return;
+  }
+  if (!user.isActive) {
+    return;
+  }
+  if (user.role !== 'admin') {
+    return;
+  }
+  // Main logic here, un-nested
+  performAdminAction(user);
+}
+
+// ✗ DON'T: Deeply nested conditions
+function processUser(user: User | null) {
+  if (user !== null) {
+    if (user.isActive) {
+      if (user.role === 'admin') {
+        performAdminAction(user);
+      }
+    }
+  }
+}
+```
+
+**Ternary for simple branching** — useful but avoid deep nesting:
+
+```typescript
+// ✓ DO: Ternary with simple conditions first
+function getMessage(status: Status) {
+  return status === 'loading' ? 'Please wait...' :
+         status === 'error' ? 'Something went wrong' :
+         status === 'success' ? 'Done!' :
+         'Unknown status';
+}
+
+// ✓ DO: Early return ternary — simple cases first, complex last
+function processRequest(request: Request) {
+  return !request.isValid ? { error: 'Invalid request' } :
+         request.isCached ? getCachedResponse(request) :
+         executeFullRequest(request); // Most complex case last
+}
+
+// ✗ DON'T: Overly complex nested ternary
+const result = a ? (b ? (c ? x : y) : z) : (d ? w : v);
+```
+
+**Guidelines:**
+- Simple/quick-exit conditions first
+- Complex logic last (or extract to separate function)
+- If ternary becomes hard to read, use `if` statements instead
+
 ### Avoid enum
 
 TypeScript `enum` generates runtime code that can't be stripped by type-only transpilers (esbuild, swc in strip-only mode). Use const arrays instead:
