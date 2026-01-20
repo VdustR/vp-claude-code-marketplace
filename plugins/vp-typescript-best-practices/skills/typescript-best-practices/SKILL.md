@@ -32,10 +32,40 @@ Guidelines for writing clean, type-safe, and maintainable TypeScript code.
 | Element | Convention | Example |
 |---------|------------|---------|
 | Interface/Type | PascalCase | `UserProfile`, `ResponseData` |
-| Inferred generic | `T` prefix | `TUser`, `TConfig` (never bare `T`) |
+| Generic parameters | `T` prefix | `TUser`, `TConfig` (never bare `T`, `K`, `V`) |
 | Acronyms | First cap only | `userId`, `ApiResponse` (NOT `userID`, `APIResponse`) |
 | Constants | UPPER_SNAKE | `MAX_RETRY_COUNT` |
 | Variables/Functions | camelCase | `getUserById`, `isActive` |
+
+#### Generic Parameter Naming
+
+The `T` prefix applies to **all** generic type parameters, not just top-level ones:
+
+```typescript
+// ✓ DO: Use T prefix everywhere
+type Nullable<TValue> = TValue | null;
+
+type Pick<TObj, TKey extends keyof TObj> = {
+  [TProp in TKey]: TObj[TProp];
+};
+
+function merge<TTarget, TSource>(target: TTarget, source: TSource): TTarget & TSource;
+
+// ✗ DON'T: Use single letters
+type Nullable<T> = T | null;
+
+type Pick<T, K extends keyof T> = {
+  [P in K]: T[P];
+};
+
+function merge<A, B>(target: A, source: B): A & B;
+```
+
+Common patterns:
+- `TValue`, `TItem`, `TElement` — for generic values
+- `TKey`, `TProp` — for object keys in mapped types
+- `TInput`, `TOutput`, `TResult` — for function parameters/returns
+- `TConfig`, `TOptions` — for configuration objects
 
 ## Type Design Patterns
 
