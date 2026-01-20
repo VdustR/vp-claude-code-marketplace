@@ -227,7 +227,7 @@ import * as SelectLib from 'my-lib';       // Namespace access: SelectLib.AutoCo
 |----|-------|
 | `interface User { id: string }` for objects | `type User = { id: string }` for simple objects |
 | `type Status = 'active' \| 'inactive'` for unions | `interface` for union types (impossible) |
-| `type Nullable<TObj> = { [TProp in keyof TObj]: TObj[TProp] \| null }` | `interface` for mapped types (impossible) |
+| `type NullableProps<TObj> = { [TProp in keyof TObj]: TObj[TProp] \| null }` | `interface` for mapped types (impossible) |
 
 ### any Usage
 
@@ -304,21 +304,21 @@ if (element === null) {
 element.textContent = 'Hello'; // element is HTMLElement
 
 // ✗ DON'T: Type assertion without validation
-const user = response as User; // No runtime check, could be wrong
+const unsafeUser = response as User; // No runtime check, could be wrong
 
 // ✗ DON'T: Double assertion to bypass type system
-const value = someData as unknown as TargetType;
+const unsafeValue = someData as unknown as TargetType;
 
 // ✗ DON'T: Non-null assertion
-const element = document.getElementById('app')!; // Dangerous if null
-element.textContent = 'Hello'; // Runtime error if element is null
+const unsafeElement = document.getElementById('app')!; // Dangerous if null
+unsafeElement.textContent = 'Hello'; // Runtime error if element is null
 ```
 
 **When `as` is acceptable:**
 
 | Context | Example | Why OK |
 |---------|---------|--------|
-| `as const` | `{} as const satisfies BaseType` | Strictens inference to literal/readonly, not a type lie |
+| `as const` | `{} as const satisfies BaseType` | Narrows inference to literal/readonly, not a type lie |
 | Generic constraints | `(...args: any[]) => any` | Required for flexible function types |
 | Type test files | `anyObj as Result satisfies Expected` | Testing type behavior, not runtime |
 | DOM APIs with known context | `document.getElementById('app') as HTMLDivElement` | When you control the HTML |
@@ -344,12 +344,12 @@ const onClick = ((event) => {
 }) satisfies React.ComponentProps<'button'>['onClick'];
 
 // ✗ DON'T: Redundant inline type annotations
-const myFunction = (options: myFunction.Options): myFunction.Ret => {
+const badInlineTypes = (options: myFunction.Options): myFunction.Ret => {
   // implementation
 };
 
 // ✗ DON'T: Named function expression
-const myFunction: myFunction.Type = function myFunction(options) {
+const badNamedExpr: myFunction.Type = function badNamedExpr(options) {
   // implementation
 };
 ```
@@ -368,8 +368,12 @@ const onClick: React.ComponentProps<'button'>['onClick'] = (event) => {
   // event is correctly typed
 };
 
-// ✓ DO: NonNullable when you know it's defined
-const timeout: NonNullable<typeof config['timeout']> = config.timeout!;
+// ✓ DO: NonNullable with explicit check
+type TimeoutType = NonNullable<typeof config['timeout']>;
+if (config.timeout === undefined) {
+  throw new Error('timeout is required');
+}
+const timeout: TimeoutType = config.timeout; // narrowed, no ! needed
 
 // ✗ DON'T: Redefine what already exists
 const onClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -480,7 +484,7 @@ function processUser(user: User | null) {
 }
 
 // ✗ DON'T: Deeply nested conditions
-function processUser(user: User | null) {
+function processUserBad(user: User | null) {
   if (user !== null) {
     if (user.isActive) {
       if (user.role === 'admin') {
