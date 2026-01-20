@@ -1,6 +1,6 @@
 {
   "name": "vp-typescript-best-practices",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "TypeScript coding guidelines with dos and don'ts for type design, naming, and patterns",
   "author": {
     "name": "VdustR",

@@ -527,6 +527,12 @@ if (config.timeout === undefined) {
 }
 const timeout: TimeoutType = config.timeout; // narrowed, no ! needed
 
+// ✓ DO: Extract property types from existing interfaces
+type ItemIds = Array<Item['id']>;
+
+// ✗ DON'T: Redefine types that already exist elsewhere
+type BadItemIds = Array<number>; // If Item.id changes, this won't update
+
 // ✗ DON'T: Redefine what already exists
 const onClick = (event: React.MouseEvent<HTMLButtonElement>) => {
   // Duplicates the type definition
