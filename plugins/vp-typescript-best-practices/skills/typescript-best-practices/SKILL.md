@@ -294,7 +294,7 @@ const bad: BadEmpty = { unexpected: 'property' };  // No error!
 | Type | Accepts | Use When |
 |------|---------|----------|
 | `Record<string, never>` | Only `{}` | Truly empty object, no properties allowed |
-| `Record<string, unknown>` | Any object with string keys | Generic constraint, unknown value types |
+| `Record<string, unknown>` | Any object with string keys | Type annotations, return types, parameters |
 | `Record<string, any>` | Any object with string keys | **Only for `extends` constraints** |
 | `object` | Any non-primitive | Excluding `string`, `number`, `boolean`, etc. |
 | `{}` | Almost anything except `null`/`undefined` | **Avoid** - too permissive |
@@ -303,9 +303,16 @@ const bad: BadEmpty = { unexpected: 'property' };  // No error!
 // ✓ DO: Record<K, any> only in extends constraints
 function process<TObj extends Record<string, any>>(obj: TObj): TObj;
 
+// ✓ DO: Record<K, unknown> for type annotations
+const config: Record<string, unknown> = {};
+function getConfig(): Record<string, unknown> { }
+
 // ✗ DON'T: Record<K, any> as direct type annotation
-const config: Record<string, any> = {};  // Use Record<string, unknown> instead
-function getConfig(): Record<string, any> { }  // Use unknown
+const badConfig: Record<string, any> = {};
+
+// ✗ DON'T: Record<K, unknown> in extends (too restrictive)
+function badProcess<TObj extends Record<string, unknown>>(obj: TObj): TObj;
+// ^ This won't accept objects with specific value types
 ```
 
 **Custom key types:**
