@@ -295,9 +295,18 @@ const bad: BadEmpty = { unexpected: 'property' };  // No error!
 |------|---------|----------|
 | `Record<string, never>` | Only `{}` | Truly empty object, no properties allowed |
 | `Record<string, unknown>` | Any object with string keys | Generic constraint, unknown value types |
-| `Record<string, any>` | Any object with string keys | Generic constraint, flexible value types |
+| `Record<string, any>` | Any object with string keys | **Only for `extends` constraints** |
 | `object` | Any non-primitive | Excluding `string`, `number`, `boolean`, etc. |
 | `{}` | Almost anything except `null`/`undefined` | **Avoid** - too permissive |
+
+```typescript
+// ✓ DO: Record<K, any> only in extends constraints
+function process<TObj extends Record<string, any>>(obj: TObj): TObj;
+
+// ✗ DON'T: Record<K, any> as direct type annotation
+const config: Record<string, any> = {};  // Use Record<string, unknown> instead
+function getConfig(): Record<string, any> { }  // Use unknown
+```
 
 **Custom key types:**
 
