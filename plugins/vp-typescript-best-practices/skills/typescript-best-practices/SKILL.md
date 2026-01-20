@@ -518,6 +518,54 @@ const result = a ? (b ? (c ? x : y) : z) : (d ? w : v);
 - Complex logic last (or extract to separate function)
 - If ternary becomes hard to read, use `if` statements instead
 
+### Avoid Destructuring
+
+Prefer direct property access over destructuring. Benefits:
+- **Readability** — Clear which object a property belongs to
+- **No name conflicts** — No need for renaming (`{ data: userData }`)
+- **Type narrowing works** — Discriminated unions narrow correctly
+
+```typescript
+// ✓ DO: Direct property access
+const query = useQuery();
+
+if (query.isLoading) {
+  return <Spinner />;
+}
+if (query.isSuccess) {
+  // Type narrowing works!
+  return <div>{query.data.name}</div>; // data is TData
+}
+if (query.isError) {
+  return <Error message={query.error.message} />;
+}
+
+// ✗ DON'T: Destructuring breaks type narrowing
+const { isLoading, isSuccess, isError, data, error } = useQuery();
+
+if (isLoading) {
+  return <Spinner />;
+}
+if (isSuccess) {
+  // Type narrowing doesn't work!
+  return <div>{data?.name}</div>; // data is still TData | undefined
+}
+if (isError) {
+  return <Error message={error?.message} />; // error is still Error | null
+}
+```
+
+**Why destructuring breaks narrowing:**
+
+When you destructure, each variable becomes independent. Checking `isSuccess` doesn't narrow `data` because TypeScript doesn't track the relationship between separate variables.
+
+```typescript
+// The discriminated union relationship is lost:
+const { isSuccess, data } = query;
+// isSuccess and data are now unrelated variables
+// Checking isSuccess doesn't affect data's type
+```
+
 ### Avoid enum
 
 TypeScript `enum` generates runtime code that can't be stripped by type-only transpilers (esbuild, swc in strip-only mode). Use const arrays instead:
