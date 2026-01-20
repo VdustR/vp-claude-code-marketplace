@@ -306,7 +306,7 @@ const value = someData as unknown as TargetType;
 
 | Context | Example | Why OK |
 |---------|---------|--------|
-| `as const` | `['a', 'b'] as const` | Strictens inference to literal/readonly, not a type lie |
+| `as const` | `{} as const satisfies BaseType` | Strictens inference to literal/readonly, not a type lie |
 | Generic constraints | `(...args: any[]) => any` | Required for flexible function types |
 | Type test files | `anyObj as Result satisfies Expected` | Testing type behavior, not runtime |
 | DOM APIs with known context | `document.getElementById('app') as HTMLDivElement` | When you control the HTML |
