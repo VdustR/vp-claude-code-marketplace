@@ -318,7 +318,8 @@ Avoid `{}` as it accepts almost anything (including primitives in some contexts)
 | Use Case | DO | DON'T |
 |----------|-----|-------|
 | Empty object | `Record<string, never>` | `{}` |
-| Any object (generic constraint) | `Record<string, unknown>` | `{}` or `object` |
+| Any object (`extends` constraint) | `Record<string, any>` | `Record<string, unknown>` |
+| Any object (type annotation) | `Record<string, unknown>` | `Record<string, any>` |
 | Non-primitive | `object` | `{}` |
 
 ```typescript
@@ -326,8 +327,8 @@ Avoid `{}` as it accepts almost anything (including primitives in some contexts)
 type EmptyObject = Record<string, never>;
 const empty: EmptyObject = {};  // Only {} is assignable
 
-// ✓ DO: Generic constraint for any object
-function merge<TObj extends Record<string, unknown>>(target: TObj, source: TObj): TObj;
+// ✓ DO: Generic constraint for any object (use any for extends)
+function merge<TObj extends Record<string, any>>(target: TObj, source: TObj): TObj;
 
 // ✓ DO: Use object when excluding primitives
 function keys(obj: object): Array<string> {
