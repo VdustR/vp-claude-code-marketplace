@@ -49,6 +49,8 @@ type Pick<TObj, TKey extends keyof TObj> = {
   [TProp in TKey]: TObj[TProp];
 };
 
+type IsArray<TValue> = TValue extends Array<infer TItem> ? TItem : never;
+
 function merge<TTarget, TSource>(target: TTarget, source: TSource): TTarget & TSource;
 
 // ✗ DON'T: Use single letters
@@ -57,6 +59,8 @@ type Nullable<T> = T | null;
 type Pick<T, K extends keyof T> = {
   [P in K]: T[P];
 };
+
+type IsArray<T> = T extends Array<infer U> ? U : never;
 
 function merge<A, B>(target: A, source: B): A & B;
 ```
