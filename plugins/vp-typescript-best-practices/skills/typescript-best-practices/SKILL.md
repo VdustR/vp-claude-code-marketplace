@@ -256,6 +256,61 @@ const user = UserSchema.parse(response); // typed as User
 const data: any = await fetch('/api/user').then(r => r.json());
 ```
 
+### Avoid `as` Type Assertions
+
+`as` bypasses type checking and creates "type lies" — telling TypeScript something is a type without proving it.
+
+| DO | DON'T |
+|----|-------|
+| Zod/arktype for runtime validation | `response as User` |
+| `satisfies` for compile-time checks | `value as unknown as TargetType` |
+| Type guards (`if ('prop' in obj)`) | `as any` to silence errors |
+| Explicit narrowing logic | `as const` on mutable values (use `satisfies`) |
+
+```typescript
+// ✓ DO: Runtime validation with Zod
+import { z } from 'zod';
+const UserSchema = z.object({ id: z.string(), name: z.string() });
+type User = z.infer<typeof UserSchema>;
+
+const response = await fetch('/api/user').then(r => r.json());
+const user = UserSchema.parse(response); // Validated and typed
+
+// ✓ DO: satisfies for compile-time type checking
+const config = {
+  port: 3000,
+  host: 'localhost',
+} satisfies ServerConfig;
+
+// ✓ DO: Type guard for narrowing
+function isUser(value: unknown): value is User {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'id' in value &&
+    'name' in value
+  );
+}
+if (isUser(response)) {
+  console.log(response.name); // Narrowed to User
+}
+
+// ✗ DON'T: Type assertion without validation
+const user = response as User; // No runtime check, could be wrong
+
+// ✗ DON'T: Double assertion to bypass type system
+const value = someData as unknown as TargetType;
+```
+
+**When `as` is acceptable:**
+
+| Context | Example | Why OK |
+|---------|---------|--------|
+| Generic constraints | `(...args: any[]) => any` | Required for flexible function types |
+| Type test files | `anyObj as Result satisfies Expected` | Testing type behavior, not runtime |
+| DOM APIs with known context | `document.getElementById('app') as HTMLDivElement` | When you control the HTML |
+| After exhaustive narrowing | `as never` in default case | Proves unreachable |
+
 ### Function Declarations
 
 | DO | DON'T |
@@ -776,8 +831,8 @@ Benefits:
 Before committing TypeScript code, verify:
 
 - [ ] Used `interface` for object types, `type` for unions/mapped/conditional
-- [ ] No `as any` or `as Type` except in generic constraints
-- [ ] Branded types use Zod `.brand()` or type-fest `Tagged` (not manual `as` casting)
+- [ ] No `as` assertions — use Zod, `satisfies`, or type guards instead
+- [ ] Branded types use Zod `.brand()` or type-fest `Tagged` (not manual casting)
 - [ ] Naming follows conventions (PascalCase types, `T` prefix for generics, `Id` not `ID`)
 - [ ] Types extracted from existing definitions where possible
 - [ ] Functions use namespace pattern for complex type organization
