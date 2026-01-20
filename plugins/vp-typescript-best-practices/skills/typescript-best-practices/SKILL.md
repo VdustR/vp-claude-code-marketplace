@@ -258,6 +258,59 @@ function getItems(): Item[] { /* ... */ }
 - `ReadonlyArray<T>` is cleaner than `readonly T[]`
 - Nested arrays are more readable: `Array<Array<T>>` vs `T[][]`
 
+### Object Type Syntax
+
+Avoid `{}` as it accepts almost anything (including primitives in some contexts). Use explicit types instead:
+
+| Use Case | DO | DON'T |
+|----------|-----|-------|
+| Empty object | `Record<string, never>` | `{}` |
+| Any object (generic constraint) | `Record<string, unknown>` | `{}` or `object` |
+| Non-primitive | `object` | `{}` |
+
+```typescript
+// ✓ DO: Empty object type
+type EmptyObject = Record<string, never>;
+const empty: EmptyObject = {};  // Only {} is assignable
+
+// ✓ DO: Generic constraint for any object
+function merge<TObj extends Record<string, unknown>>(target: TObj, source: TObj): TObj;
+
+// ✓ DO: Use object when excluding primitives
+function keys(obj: object): Array<string> {
+  return Object.keys(obj);
+}
+keys({ a: 1 });     // ✓ OK
+keys([1, 2, 3]);    // ✓ OK (arrays are objects)
+keys('string');     // ✗ Error: string is not object
+
+// ✗ DON'T: {} accepts almost anything
+type BadEmpty = {};
+const bad: BadEmpty = { unexpected: 'property' };  // No error!
+```
+
+**Key differences:**
+
+| Type | Accepts | Use When |
+|------|---------|----------|
+| `Record<string, never>` | Only `{}` | Truly empty object, no properties allowed |
+| `Record<string, unknown>` | Any object with string keys | Generic constraint, unknown value types |
+| `Record<string, any>` | Any object with string keys | Generic constraint, flexible value types |
+| `object` | Any non-primitive | Excluding `string`, `number`, `boolean`, etc. |
+| `{}` | Almost anything except `null`/`undefined` | **Avoid** - too permissive |
+
+**Custom key types:**
+
+```typescript
+// Use PropertyKey for all possible keys (string | number | symbol)
+type AnyRecord = Record<PropertyKey, unknown>;
+
+// Use specific key type when known
+type StringKeyed = Record<string, unknown>;
+type NumericKeyed = Record<number, unknown>;
+type SymbolKeyed = Record<symbol, unknown>;
+```
+
 ### any Usage
 
 | DO | DON'T |
@@ -347,7 +400,7 @@ unsafeElement.textContent = 'Hello'; // Runtime error if element is null
 
 | Context | Example | Why OK |
 |---------|---------|--------|
-| `as const` | `{} as const satisfies BaseType` | Narrows inference to literal/readonly, not a type lie |
+| `as const` | `{ key: 'value' } as const satisfies BaseType` | Narrows inference to literal/readonly, not a type lie |
 | Generic constraints | `(...args: Array<any>) => any` | Required for flexible function types |
 | Type test files | `anyObj as Result satisfies Expected` | Testing type behavior, not runtime |
 | DOM APIs with known context | `document.getElementById('app') as HTMLDivElement` | When you control the HTML |
@@ -931,7 +984,7 @@ const anyObj: any = {};
 
 // Test 5: Empty keys returns empty object
 (() => {
-  type Expected = {};
+  type Expected = Record<string, never>;
   type Result = MyGenericType<typeof anyObj, never>;
 
   (anyObj as Result satisfies Expected);
