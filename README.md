@@ -12,6 +12,8 @@ Claude Code plugins by [VdustR](https://github.com/VdustR).
 
 ## Available Plugins
 
+> Plugins are listed in alphabetical order.
+
 ### vp-add-skill
 
 Manage agent skills installation with registry tracking.
@@ -25,19 +27,6 @@ Features:
 - Track installed skills with a JSON registry
 - Support for global, project (shared), and project (local) scopes
 - JSON Schema validation for registry format
-
-### vp-nyan-mode
-
-Cat persona with 'nyan~' verbal tic, emoji support, and language matching.
-
-```bash
-/plugin install vp-nyan-mode@vdustr
-```
-
-Features:
-- Adds 'nyan~' verbal tic to responses
-- Enables emoji usage
-- Matches user's language preference
 
 ### vp-gitignore-builder
 
@@ -55,6 +44,19 @@ Features:
 - Auto-suggest `*.local` and `*.local.*` patterns
 - Support for both project-level and global gitignore
 
+### vp-nyan-mode
+
+Cat persona with 'nyan~' verbal tic, emoji support, and language matching.
+
+```bash
+/plugin install vp-nyan-mode@vdustr
+```
+
+Features:
+- Adds 'nyan~' verbal tic to responses
+- Enables emoji usage
+- Matches user's language preference
+
 ### vp-pr-comment-resolver
 
 Automate PR comment review, fix, and resolution workflow.
@@ -69,6 +71,23 @@ Features:
 - Detailed reply format with commit links: `- [hash message](url)`
 - Summary report generation after processing all comments
 - Human collaboration - asks when uncertain about fixes
+
+### vp-typescript-best-practices
+
+TypeScript coding guidelines with dos and don'ts for type design and patterns.
+
+```bash
+/plugin install vp-typescript-best-practices@vdustr
+```
+
+Features:
+- Type-first design with namespace pattern for organizing types
+- Clear DO/DON'T tables for interface vs type, any usage, function declarations
+- Naming conventions (PascalCase, `T` prefix for generics, `Id` not `ID`)
+- Type extraction patterns (prefer extracting over redefining)
+- Generic const pattern for strict literal inference
+- Type testing guidelines with `*.test-d.ts`
+- Environment setup with strictest tsconfig and ts-reset
 
 ### vp-wenyan-mode
 

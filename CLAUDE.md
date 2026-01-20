@@ -8,7 +8,7 @@ This repository uses the `plugin-dev` plugin for development and maintenance. Th
 
 All plugins in this marketplace use the `vp-` prefix (VdustR Plugin).
 
-Example: `vp-add-skill`, `vp-nyan-mode`, `vp-gitignore-builder`, `vp-pr-comment-resolver`
+Example: `vp-add-skill`, `vp-gitignore-builder`, `vp-nyan-mode`, `vp-pr-comment-resolver`, `vp-typescript-best-practices`, `vp-wenyan-mode`
 
 ## Project Structure
 
@@ -82,6 +82,14 @@ Add entry to `.claude-plugin/marketplace.json`:
 - Be descriptive but concise
 - Avoid generic names like `utils` or `helpers`
 
+### Plugin Ordering
+
+- **All plugin lists MUST be sorted alphabetically by name**
+- This applies to:
+  - `marketplace.json` plugins array
+  - `README.md` Available Plugins section
+  - Any other documentation listing plugins
+
 ### SKILL.md Requirements
 
 1. **Frontmatter** (required):
@@ -149,6 +157,7 @@ This applies to ALL plugin changes including:
 - [ ] `plugin.json` has all required fields
 - [ ] SKILL.md has valid frontmatter
 - [ ] Plugin registered in `marketplace.json`
+- [ ] **Plugins sorted alphabetically** in `marketplace.json` and `README.md`
 - [ ] Version updated if modifying existing plugin
 - [ ] No sensitive data or credentials
 - [ ] All paths are relative and correct
