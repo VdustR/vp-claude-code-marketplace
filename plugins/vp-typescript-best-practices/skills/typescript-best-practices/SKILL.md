@@ -440,7 +440,7 @@ const literalConfig = {
 ```typescript
 // ✗ DON'T: Lose literal types
 const looseConfig: BaseConfig = {
-  routes: ['/home', '/about'], // widened to string[]
+  routes: ['/home', '/about'], // widened to Array<string>
   debug: true,
 };
 ```
@@ -458,7 +458,7 @@ const looseConfig: BaseConfig = {
 With `noUncheckedIndexedAccess` enabled, array index access returns `T | undefined`. Handle this properly:
 
 ```typescript
-const items: string[] = ['a', 'b', 'c'];
+const items: Array<string> = ['a', 'b', 'c'];
 
 // ✗ DON'T: Index access without null check
 for (let i = 0; i < items.length + 10; i++) {
@@ -743,7 +743,7 @@ type ActionType = 'create' | 'update' | 'delete' | 'login' | 'signUp';
 
 // Define which actions bypass normal handling
 type PassthroughActions = readonly ['login', 'signUp'];
-const passthroughActions: PassthroughActions = ['login', 'signUp'] satisfies readonly ActionType[];
+const passthroughActions: PassthroughActions = ['login', 'signUp'] satisfies ReadonlyArray<ActionType>;
 type PassthroughAction = PassthroughActions[number];
 
 function handleAction(actionType: ActionType) {
