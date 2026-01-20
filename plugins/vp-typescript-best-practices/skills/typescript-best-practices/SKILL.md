@@ -262,13 +262,13 @@ function getItems(): Item[] { /* ... */ }
 
 | DO | DON'T |
 |----|-------|
-| `function debounce<TFunc extends (...args: any[]) => any>` | `const data: any = response` |
+| `function debounce<TFunc extends (...args: Array<any>) => any>` | `const data: any = response` |
 | Use `unknown` for truly unknown types | Use `any` to silence errors |
 | Parse with zod/arktype, then use inferred type | Cast with `as any` |
 
 ```typescript
 // ✓ DO: Use any only in generic constraints
-function debounce<TFunc extends (...args: any[]) => any>(
+function debounce<TFunc extends (...args: Array<any>) => any>(
   func: TFunc,
   wait: number
 ): TFunc {
@@ -348,7 +348,7 @@ unsafeElement.textContent = 'Hello'; // Runtime error if element is null
 | Context | Example | Why OK |
 |---------|---------|--------|
 | `as const` | `{} as const satisfies BaseType` | Narrows inference to literal/readonly, not a type lie |
-| Generic constraints | `(...args: any[]) => any` | Required for flexible function types |
+| Generic constraints | `(...args: Array<any>) => any` | Required for flexible function types |
 | Type test files | `anyObj as Result satisfies Expected` | Testing type behavior, not runtime |
 | DOM APIs with known context | `document.getElementById('app') as HTMLDivElement` | When you control the HTML |
 | After exhaustive narrowing | `as never` in default case | Proves unreachable |
