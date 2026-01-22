@@ -107,9 +107,9 @@ For detailed patterns and examples, see:
 
 - **[type-patterns.md](references/type-patterns.md)** - Type syntax, assertions, namespace pattern, generics
 - **[code-style.md](references/code-style.md)** - Safe array access, early return, avoid destructuring, avoid enum
-- **[union-exhaustive.md](references/union-exhaustive.md)** - Discriminated unions + exhaustive handling（狀態、事件、API 回應）
-- **[branded-types.md](references/branded-types.md)** - Nominal types for ID/unit safety（UserId vs OrderId）
-- **[template-literals.md](references/template-literals.md)** - String pattern types（事件名、CSS 值、路由參數）
+- **[union-exhaustive.md](references/union-exhaustive.md)** - Discriminated unions + exhaustive handling (e.g., for state, events, API responses)
+- **[branded-types.md](references/branded-types.md)** - Nominal types for ID/unit safety (e.g., UserId vs OrderId)
+- **[template-literals.md](references/template-literals.md)** - String pattern types (e.g., event names, CSS values, route parameters)
 - **[type-testing.md](references/type-testing.md)** - Type-level testing with `*.test-d.ts` files
 - **[setup.md](references/setup.md)** - tsconfig, strict options, ts-reset configuration
 
