@@ -1,6 +1,6 @@
 # Template Literal Types
 
-> **使用時機：** 類型安全的字串模式（事件名、CSS 值、路由參數、i18n keys）。
+> **When to use:** For creating type-safe string patterns, such as for event names, CSS values, route parameters, or i18n keys.
 
 Use template literals for string pattern types:
 
