@@ -1,6 +1,6 @@
 # Branded Types
 
-> **使用時機：** 防止 ID 混用（UserId vs OrderId）、單位混用（Meters vs Feet）、需要驗證的字串（Email, UUID）。
+> **When to use:** To prevent mixing up incompatible types, such as different kinds of IDs (e.g., `UserId` vs `OrderId`), units of measurement (e.g., `Meters` vs `Feet`), or validated strings (e.g., `Email`, `UUID`).
 
 Use branded types to create nominal types that prevent accidental mixing. **Avoid using `as` for branding** — use Zod or type-fest instead for proper runtime validation.
 
