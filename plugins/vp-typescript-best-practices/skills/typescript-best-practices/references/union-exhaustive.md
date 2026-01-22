@@ -1,6 +1,6 @@
 # Union Types & Exhaustive Handling
 
-> **使用時機：** 定義「多種情況之一」的類型（狀態、事件、API 回應），並確保所有 case 都被處理。
+> **When to use:** For defining types that can be one of several distinct shapes (e.g., for states, events, or API responses) and ensuring all cases are handled at compile time.
 
 ## Discriminated Unions
 
