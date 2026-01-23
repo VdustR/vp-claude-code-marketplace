@@ -82,25 +82,66 @@ fetch_template() {
     return 0
 }
 
-# Print source header
+# Print templates start marker
+print_templates_start() {
+    cat <<'EOF'
+# ╔═══════════════════════════════════════════════════════════════════════╗
+# ║                    github/gitignore templates                         ║
+# ║           https://github.com/github/gitignore                         ║
+# ╠═══════════════════════════════════════════════════════════════════════╣
+# ║ START - Do not edit this section manually                             ║
+# ╚═══════════════════════════════════════════════════════════════════════╝
+
+EOF
+}
+
+# Print templates end marker
+print_templates_end() {
+    cat <<'EOF'
+# ╔═══════════════════════════════════════════════════════════════════════╗
+# ║ END - github/gitignore templates                                      ║
+# ╚═══════════════════════════════════════════════════════════════════════╝
+EOF
+}
+
+# Print source header for individual template
 print_source_header() {
     local template="$1"
-    echo "# ============================================"
-    echo "# Source: https://github.com/github/gitignore/blob/main/${template}.gitignore"
-    echo "# ============================================"
+    echo "# --------------------------------------------"
+    echo "# Source: ${template}.gitignore"
+    echo "# --------------------------------------------"
     echo ""
 }
 
-# Print recommended section
-print_recommended_section() {
-    echo ""
-    echo "# ============================================"
-    echo "# Recommended by gitignore-builder"
-    echo "# ============================================"
-    echo ""
-    echo "# Local configuration files (should never be committed)"
-    echo "*.local"
-    echo "*.local.*"
+# Print local files section
+print_local_files_section() {
+    cat <<'EOF'
+
+# ============================================
+# Local files (project-specific ignores)
+# ============================================
+
+# Add project-specific files to ignore here
+# Example: .env.local, local-config.json
+EOF
+}
+
+# Print overrides section
+print_overrides_section() {
+    cat <<'EOF'
+
+# ============================================
+# Overrides (highest priority - last wins)
+# ============================================
+
+# Local configuration files (should never be committed)
+*.local
+*.local.*
+
+# Add custom overrides here
+# Use negation (!) to re-include files excluded above
+# Example: !important.log
+EOF
 }
 
 # Check for EOL conflicts and report
@@ -175,6 +216,8 @@ main() {
     done
 
     # Output merged content to stdout
+    # 1. Templates section (with start/end markers)
+    print_templates_start
     for template in "${templates[@]}"; do
         local safe_name="${template//\//_}"
         local file="${TEMP_DIR}/${safe_name}.gitignore"
@@ -183,9 +226,13 @@ main() {
         cat "$file"
         echo ""
     done
+    print_templates_end
 
-    # Add recommended section
-    print_recommended_section
+    # 2. Local files section
+    print_local_files_section
+
+    # 3. Overrides section (highest priority - last wins in gitignore)
+    print_overrides_section
 
     # Return appropriate exit code
     exit $eol_exit_code
