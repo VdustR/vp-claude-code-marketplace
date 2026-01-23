@@ -90,12 +90,11 @@ Use the `merge-gitignore.sh` script located at `${CLAUDE_PLUGIN_ROOT}/scripts/me
 "${CLAUDE_PLUGIN_ROOT}/scripts/merge-gitignore.sh" Node Python macOS
 ```
 
-**Merge Order (later entries can override earlier ones):**
+**Merge Order (later entries have higher priority in gitignore):**
 
-1. Existing `.gitignore` content (if any) - preserved at top with marker
-2. Language/framework templates
-3. Global templates (OS, IDE) - only for global gitignore
-4. Recommended additions (`*.local`, `*.local.*`)
+1. **Templates section** - github/gitignore templates with START/END markers (easiest to replace/update)
+2. **Local files section** - Project-specific ignores
+3. **Overrides section** - Custom overrides with highest priority (last wins in gitignore)
 
 ### Step 5: Handle EOL Conflicts
 
@@ -125,15 +124,31 @@ If target `.gitignore` already exists, show a diff:
 --- Existing content
 +++ Merged content
 
-@@ -1,5 +1,50 @@
- # User custom rules
- my-custom-file.txt
-
-+# ============================================
-+# Source: https://github.com/github/gitignore/blob/main/Node.gitignore
-+# ============================================
+@@ -1,5 +1,60 @@
++# ╔═══════════════════════════════════════════════════════════════════════╗
++# ║ START - github/gitignore templates                                    ║
++# ╚═══════════════════════════════════════════════════════════════════════╝
++
++# --------------------------------------------
++# Source: Node.gitignore
++# --------------------------------------------
 +node_modules/
 +...
++
++# ╔═══════════════════════════════════════════════════════════════════════╗
++# ║ END - github/gitignore templates                                      ║
++# ╚═══════════════════════════════════════════════════════════════════════╝
++
++# ============================================
++# Local files (project-specific ignores)
++# ============================================
++
++# ============================================
++# Overrides (highest priority - last wins)
++# ============================================
++
+ # User custom rules
+ my-custom-file.txt
 
 Confirm write? [Y/n]
 ```
@@ -170,33 +185,67 @@ When discussing or modifying gitignore:
 - **Directory**: Trailing `/` matches only directories (e.g., `build/`).
 - **Wildcards**: `*` matches anything except `/`, `**` matches everything including `/`.
 
-### Source Attribution
+### Source Attribution & Structure
 
-Every section from github/gitignore must include a source comment:
+Templates section must be wrapped with START/END markers:
 
 ```gitignore
-# ============================================
-# Source: https://github.com/github/gitignore/blob/main/Node.gitignore
-# ============================================
+# ╔═══════════════════════════════════════════════════════════════════════╗
+# ║                    github/gitignore templates                         ║
+# ║           https://github.com/github/gitignore                         ║
+# ╠═══════════════════════════════════════════════════════════════════════╣
+# ║ START - Do not edit this section manually                             ║
+# ╚═══════════════════════════════════════════════════════════════════════╝
+
+# --------------------------------------------
+# Source: Node.gitignore
+# --------------------------------------------
+node_modules/
+...
+
+# ╔═══════════════════════════════════════════════════════════════════════╗
+# ║ END - github/gitignore templates                                      ║
+# ╚═══════════════════════════════════════════════════════════════════════╝
 ```
 
-This helps users understand where each rule comes from and makes future maintenance easier.
+This makes it easy to:
+- Identify template content for updates (replace between START/END)
+- Understand where each rule comes from
+- Avoid accidental edits to generated content
 
 ### Preserve User Content
 
-If merging with an existing `.gitignore`, preserve user-added content:
+If merging with an existing `.gitignore`, preserve user-added content in the appropriate section:
 
 ```gitignore
-# ============================================
-# User custom rules (preserved from original)
-# ============================================
-my-custom-rule.txt
-secret-folder/
+# ╔═══════════════════════════════════════════════════════════════════════╗
+# ║ START - github/gitignore templates                                    ║
+# ╚═══════════════════════════════════════════════════════════════════════╝
+
+# --------------------------------------------
+# Source: Node.gitignore
+# --------------------------------------------
+node_modules/
+...
+
+# ╔═══════════════════════════════════════════════════════════════════════╗
+# ║ END - github/gitignore templates                                      ║
+# ╚═══════════════════════════════════════════════════════════════════════╝
 
 # ============================================
-# Source: https://github.com/github/gitignore/blob/main/Node.gitignore
+# Local files (project-specific ignores)
 # ============================================
-...
+
+secret-folder/
+local-config.json
+
+# ============================================
+# Overrides (highest priority - last wins)
+# ============================================
+
+# User custom rules (preserved from original)
+my-custom-rule.txt
+!important.log
 ```
 
 ## Reference Files
