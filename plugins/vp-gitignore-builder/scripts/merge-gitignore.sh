@@ -84,21 +84,24 @@ fetch_template() {
 
 # Print templates start marker
 print_templates_start() {
-    echo "# ╔═══════════════════════════════════════════════════════════════════════╗"
-    echo "# ║                    github/gitignore templates                         ║"
-    echo "# ║           https://github.com/github/gitignore                         ║"
-    echo "# ╠═══════════════════════════════════════════════════════════════════════╣"
-    echo "# ║ START - Do not edit this section manually                             ║"
-    echo "# ╚═══════════════════════════════════════════════════════════════════════╝"
-    echo ""
+    cat <<'EOF'
+# ╔═══════════════════════════════════════════════════════════════════════╗
+# ║                    github/gitignore templates                         ║
+# ║           https://github.com/github/gitignore                         ║
+# ╠═══════════════════════════════════════════════════════════════════════╣
+# ║ START - Do not edit this section manually                             ║
+# ╚═══════════════════════════════════════════════════════════════════════╝
+
+EOF
 }
 
 # Print templates end marker
 print_templates_end() {
-    echo ""
-    echo "# ╔═══════════════════════════════════════════════════════════════════════╗"
-    echo "# ║ END - github/gitignore templates                                      ║"
-    echo "# ╚═══════════════════════════════════════════════════════════════════════╝"
+    cat <<'EOF'
+# ╔═══════════════════════════════════════════════════════════════════════╗
+# ║ END - github/gitignore templates                                      ║
+# ╚═══════════════════════════════════════════════════════════════════════╝
+EOF
 }
 
 # Print source header for individual template
@@ -112,30 +115,33 @@ print_source_header() {
 
 # Print local files section
 print_local_files_section() {
-    echo ""
-    echo "# ============================================"
-    echo "# Local files (project-specific ignores)"
-    echo "# ============================================"
-    echo ""
-    echo "# Add project-specific files to ignore here"
-    echo "# Example: .env.local, local-config.json"
-    echo ""
+    cat <<'EOF'
+
+# ============================================
+# Local files (project-specific ignores)
+# ============================================
+
+# Add project-specific files to ignore here
+# Example: .env.local, local-config.json
+EOF
 }
 
 # Print overrides section
 print_overrides_section() {
-    echo ""
-    echo "# ============================================"
-    echo "# Overrides (highest priority - last wins)"
-    echo "# ============================================"
-    echo ""
-    echo "# Local configuration files (should never be committed)"
-    echo "*.local"
-    echo "*.local.*"
-    echo ""
-    echo "# Add custom overrides here"
-    echo "# Use negation (!) to re-include files excluded above"
-    echo "# Example: !important.log"
+    cat <<'EOF'
+
+# ============================================
+# Overrides (highest priority - last wins)
+# ============================================
+
+# Local configuration files (should never be committed)
+*.local
+*.local.*
+
+# Add custom overrides here
+# Use negation (!) to re-include files excluded above
+# Example: !important.log
+EOF
 }
 
 # Check for EOL conflicts and report
