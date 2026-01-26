@@ -128,6 +128,22 @@ Features:
 - Seamless volume control via mpv IPC socket
 - Auto-detect missing dependencies with install guidance
 
+### vp-stacked-pr-rebase
+
+Rebase stacked PRs after parent PR is merged, preserving only your commits.
+
+```bash
+/plugin install vp-stacked-pr-rebase@vdustr
+```
+
+Features:
+- Smart parent PR detection via commit analysis
+- Handles all merge types (regular, squash, rebase)
+- Automatic commit classification (parent vs your own)
+- Simple conflict auto-resolution, asks for complex conflicts
+- Safe operations with backup branches and `--force-with-lease`
+- Detailed summary report with before/after visualization
+
 ### vp-typescript-best-practices
 
 TypeScript coding guidelines with dos and don'ts for type design and patterns.
