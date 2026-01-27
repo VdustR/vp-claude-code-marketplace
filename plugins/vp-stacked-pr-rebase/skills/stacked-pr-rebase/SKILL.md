@@ -361,6 +361,7 @@ main ── A ── B ── [PR #123 squash] ── C' ── D'  (rebased)
 | Parent PR not yet merged | Abort with message; suggest waiting |
 | No own commits found | Warn user; may already be rebased |
 | Cherry-pick conflict | Classify and handle (auto/ask) |
+| Own commit is a merge commit | Skip or use `cherry-pick -m 1`; ask user |
 | Force push rejected | Check if branch protection; suggest user intervention |
 | Backup branch exists | Use timestamp suffix for uniqueness |
 
