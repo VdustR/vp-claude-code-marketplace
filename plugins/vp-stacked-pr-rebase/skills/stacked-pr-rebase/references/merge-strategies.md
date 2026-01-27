@@ -174,7 +174,7 @@ git cherry-pick $OWN_COMMITS
 # 4. Replace original branch
 git checkout <your-branch>
 git reset --hard temp-rebase
-git branch -d temp-rebase
+git branch -D temp-rebase
 ```
 
 ## Rebase Merge
@@ -217,7 +217,7 @@ git checkout -b temp-rebase origin/main
 git cherry-pick ccc3333 ddd4444  # Only your commits
 git checkout <your-branch>
 git reset --hard temp-rebase
-git branch -d temp-rebase
+git branch -D temp-rebase
 ```
 
 ## Summary: Always Use Cherry-pick
