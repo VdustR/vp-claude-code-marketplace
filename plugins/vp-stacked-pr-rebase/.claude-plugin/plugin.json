@@ -1,0 +1,14 @@
+{
+  "name": "vp-stacked-pr-rebase",
+  "version": "1.0.0",
+  "description": "Rebase stacked PRs after parent PR is merged, preserving only your commits",
+  "author": {
+    "name": "VdustR",
+    "url": "https://github.com/VdustR"
+  },
+  "homepage": "https://github.com/VdustR/vp-claude-code-marketplace",
+  "repository": "https://github.com/VdustR/vp-claude-code-marketplace",
+  "license": "MIT",
+  "keywords": ["pr", "pull-request", "rebase", "stacked", "cherry-pick", "github", "dependency"],
+  "skills": "./skills/"
+}

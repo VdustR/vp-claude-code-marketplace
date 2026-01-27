@@ -36,6 +36,13 @@
       "keywords": ["pr", "pull-request", "review", "comments", "github", "automation"]
     },
     {
+      "name": "vp-stacked-pr-rebase",
+      "source": "./plugins/vp-stacked-pr-rebase",
+      "description": "Rebase stacked PRs after parent PR is merged, preserving only your commits",
+      "license": "MIT",
+      "keywords": ["pr", "pull-request", "rebase", "stacked", "cherry-pick", "github", "dependency"]
+    },
+    {
       "name": "vp-typescript-best-practices",
       "source": "./plugins/vp-typescript-best-practices",
       "description": "TypeScript coding guidelines with dos and don'ts for type design and patterns",
