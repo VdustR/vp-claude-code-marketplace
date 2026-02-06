@@ -125,7 +125,9 @@ npx -y skills update
 |--------|-------------|
 | `-g, --global` | Remove from global scope |
 | `-s, --skill <names>` | Specify skills to remove |
+| `-a, --agent <agents>` | Remove from specific agents |
 | `-y, --yes` | Skip confirmation prompts |
+| `--all` | Remove all skills from all agents |
 
 ### List Options
 
