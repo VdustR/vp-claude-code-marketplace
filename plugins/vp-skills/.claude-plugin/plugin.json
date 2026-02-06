@@ -1,7 +1,7 @@
 {
-  "name": "vp-add-skill",
+  "name": "vp-skills",
   "version": "1.0.0",
-  "description": "Manage agent skills installation with registry tracking",
+  "description": "Manage agent skills using npx skills CLI",
   "author": {
     "name": "VdustR",
     "url": "https://github.com/VdustR"
@@ -9,6 +9,6 @@
   "homepage": "https://github.com/VdustR/vp-claude-code-marketplace",
   "repository": "https://github.com/VdustR/vp-claude-code-marketplace",
   "license": "MIT",
-  "keywords": ["skills", "registry", "management"],
+  "keywords": ["skills", "management", "npx"],
   "skills": "./skills/"
 }

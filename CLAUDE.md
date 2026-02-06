@@ -8,7 +8,7 @@ This repository uses the `plugin-dev` plugin for development and maintenance. Th
 
 All plugins in this marketplace use the `vp-` prefix (VdustR Plugin).
 
-Example: `vp-add-skill`, `vp-gitignore-builder`, `vp-nyan-mode`, `vp-pr-comment-resolver`, `vp-typescript-best-practices`, `vp-wenyan-mode`
+Example: `vp-gitignore-builder`, `vp-nyan-mode`, `vp-pr-comment-resolver`, `vp-skills`, `vp-typescript-best-practices`, `vp-wenyan-mode`
 
 ## Project Structure
 
