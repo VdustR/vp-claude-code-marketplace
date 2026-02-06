@@ -19,6 +19,8 @@ Manage agent skills using the `npx skills` CLI from vercel-labs/agent-skills.
 | `npx -y skills check` | Check for available updates |
 | `npx -y skills init [name]` | Initialize a new skill |
 
+> **Note:** The `npx -y` flag is for npx itself (auto-install the `skills` package). The `-y` flag on `skills add`/`remove` commands skips confirmation prompts — omit it in interactive contexts to let the user confirm before changes.
+
 ## Installation
 
 ### Install Globally (Recommended for Personal Use)
@@ -26,7 +28,7 @@ Manage agent skills using the `npx skills` CLI from vercel-labs/agent-skills.
 Install skills to `~/.claude/skills/` for use across all projects:
 
 ```bash
-npx -y skills add vercel-labs/agent-skills -g -y
+npx -y skills add vercel-labs/agent-skills -g
 ```
 
 ### Install to Project
@@ -34,7 +36,7 @@ npx -y skills add vercel-labs/agent-skills -g -y
 Install skills to `.claude/skills/` for project-specific use:
 
 ```bash
-npx -y skills add vercel-labs/agent-skills -y
+npx -y skills add vercel-labs/agent-skills
 ```
 
 ### Install Specific Skills Only
@@ -42,7 +44,7 @@ npx -y skills add vercel-labs/agent-skills -y
 Select specific skills from a repository:
 
 ```bash
-npx -y skills add vercel-labs/agent-skills --skill web-design-guidelines -g -y
+npx -y skills add vercel-labs/agent-skills --skill web-design-guidelines -g
 ```
 
 ### List Available Skills Before Installing
@@ -58,7 +60,7 @@ npx -y skills add vercel-labs/agent-skills --list
 ### Remove by Name
 
 ```bash
-npx -y skills remove web-design-guidelines -g -y
+npx -y skills remove web-design-guidelines -g
 ```
 
 ### Interactive Removal
