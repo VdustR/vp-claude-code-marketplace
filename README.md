@@ -14,20 +14,6 @@ Claude Code plugins by [VdustR](https://github.com/VdustR).
 
 > Plugins are listed in alphabetical order.
 
-### vp-add-skill
-
-Manage agent skills installation with registry tracking.
-
-```bash
-/plugin install vp-add-skill@vdustr
-```
-
-Features:
-- Install skills from any git repository using `npx add-skill`
-- Track installed skills with a JSON registry
-- Support for global, project (shared), and project (local) scopes
-- JSON Schema validation for registry format
-
 ### vp-gitignore-builder
 
 Build and merge .gitignore files using github/gitignore templates.
@@ -71,6 +57,20 @@ Features:
 - Detailed reply format with commit links: `- [hash message](url)`
 - Summary report generation after processing all comments
 - Human collaboration - asks when uncertain about fixes
+
+### vp-skills
+
+Manage agent skills using the npx skills CLI.
+
+```bash
+/plugin install vp-skills@vdustr
+```
+
+Features:
+- Install skills from any git repository using `npx skills`
+- List, search, and discover available skills
+- Update all installed skills with one command
+- Support for global and project-level skill scopes
 
 ### vp-typescript-best-practices
 
