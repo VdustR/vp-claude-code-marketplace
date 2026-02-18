@@ -163,7 +163,7 @@ cmd_stop() {
     local i=0
     while kill -0 "$pid" 2>/dev/null && [ $i -lt 10 ]; do
         sleep 0.1
-        ((i++))
+        i=$((i + 1))
     done
     # Force kill if still running
     if kill -0 "$pid" 2>/dev/null; then
@@ -235,7 +235,7 @@ cmd_volume() {
     local j=0
     while [ ! -S "$SOCK_FILE" ] && [ $j -lt 25 ]; do
         sleep 0.2
-        ((j++))
+        j=$((j + 1))
     done
     if [ ! -S "$SOCK_FILE" ]; then
         echo "Error: IPC socket not found (mpv may still be starting)" >&2
