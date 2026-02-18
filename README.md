@@ -72,6 +72,21 @@ Features:
 - Update all installed skills with one command
 - Support for global and project-level skill scopes
 
+### vp-somafm
+
+Play SomaFM internet radio as background music during coding sessions.
+
+```bash
+/plugin install vp-somafm@vdustr
+```
+
+Features:
+- Stream any SomaFM channel with one command (default: groovesalad)
+- Browse channels with live listener counts from SomaFM API
+- Now-playing track info and playback status
+- Seamless volume control via mpv IPC socket
+- Auto-detect missing dependencies with install guidance
+
 ### vp-typescript-best-practices
 
 TypeScript coding guidelines with dos and don'ts for type design and patterns.
