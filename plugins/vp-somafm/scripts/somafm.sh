@@ -85,6 +85,7 @@ cleanup_state() {
 
 cmd_play() {
     local channel="groovesalad"
+    local channel_set=false
     local volume=50
 
     for arg in "$@"; do
@@ -101,11 +102,16 @@ cmd_play() {
                 exit 2
                 ;;
             *)
+                if $channel_set; then
+                    echo "Error: Only one channel name can be specified" >&2
+                    exit 2
+                fi
                 if ! [[ "$arg" =~ ^[a-zA-Z0-9_-]+$ ]]; then
                     echo "Error: Invalid channel name (use letters, numbers, hyphens, underscores)" >&2
                     exit 2
                 fi
                 channel="$arg"
+                channel_set=true
                 ;;
         esac
     done
