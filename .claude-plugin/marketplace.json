@@ -36,6 +36,13 @@
       "keywords": ["skills", "management", "npx"]
     },
     {
+      "name": "vp-somafm",
+      "source": "./plugins/vp-somafm",
+      "description": "Play SomaFM internet radio as background music during coding sessions",
+      "license": "MIT",
+      "keywords": ["somafm", "radio", "music", "streaming", "ambient", "mpv"]
+    },
+    {
       "name": "vp-typescript-best-practices",
       "source": "./plugins/vp-typescript-best-practices",
       "description": "TypeScript coding guidelines with dos and don'ts for type design and patterns",
