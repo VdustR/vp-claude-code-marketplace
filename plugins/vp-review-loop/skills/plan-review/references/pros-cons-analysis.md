@@ -25,12 +25,12 @@ Do NOT generate for:
 
 **Context**: [Brief description of why this decision matters]
 
-**Reasons FOR (做的理由)**:
+**Reasons FOR**:
 - [Pro 1] — [impact: high/medium/low]
 - [Pro 2] — [impact: high/medium/low]
 - [Pro 3] — [impact: high/medium/low]
 
-**Reasons AGAINST (不做的理由)**:
+**Reasons AGAINST**:
 - [Con 1] — [impact: high/medium/low]
 - [Con 2] — [impact: high/medium/low]
 - [Con 3] — [impact: high/medium/low]

@@ -125,11 +125,11 @@ Format:
 ```markdown
 ### Decision: [What's being decided]
 
-**Reasons FOR (做的理由)**:
+**Reasons FOR**:
 - [Pro 1] — [impact level: high/medium/low]
 - [Pro 2] — [impact level]
 
-**Reasons AGAINST (不做的理由)**:
+**Reasons AGAINST**:
 - [Con 1] — [impact level: high/medium/low]
 - [Con 2] — [impact level]
 
