@@ -55,9 +55,11 @@ gh pr view <PR_NUMBER> --json number,title,headRefName,baseRefName,commits
 git merge-base HEAD origin/<baseRefName>
 
 # List commits from merge-base to HEAD
-git log --oneline $(git merge-base HEAD origin/main)..HEAD
+git log --oneline $(git merge-base HEAD origin/<baseRefName>)..HEAD
 
 # Get recently merged PRs to find potential parent
+# Note: If current PR's baseRefName is NOT main/master (stacked PR scenario),
+# also search for PRs whose headRefName matches the current PR's baseRefName.
 gh pr list --state merged --base <baseRefName> --limit 20 \
   --json number,title,headRefName,mergeCommit,commits
 ```
@@ -83,13 +85,66 @@ gh pr list --state merged --base <baseRefName> --limit 20 \
 
 > **Note:** This strategy works regardless of how the parent PR was merged (regular, squash, or rebase), because we compare against the **original commits stored in GitHub API**, not against what's currently in main.
 
-**Output:**
+**Confidence Criteria:**
+
+**Overlap formula:** `overlap = |parent_commits ∩ current_commits| / |parent_commits|` (ratio of parent PR's commits found in current branch). When parent PR has ≤3 commits, cap confidence at MEDIUM to require user confirmation.
+
+| Confidence | Criteria | Action |
+|------------|----------|--------|
+| **HIGH** | Single candidate with overlap ≥80%; parent PR has >3 commits; SHAs match exactly | Proceed automatically, show classification for confirmation |
+| **MEDIUM** | Multiple candidates; or overlap 50-79%; or parent PR has ≤3 commits; or branch naming suggests relationship | Present candidates with recommendation |
+| **LOW** | No commit overlap; only branch naming or commit message hints; or user's branch was rebased/amended | Must ask user before proceeding |
+
+**Output (HIGH confidence):**
 ```
 Situation Analysis:
 - Current PR: #456 (feature-y)
 - Base branch: main
-- Potential parent PR: #123 (feature-x) - merged 2 hours ago
-- Confidence: HIGH / MEDIUM / LOW
+- Parent PR: #123 (feature-x) - merged 2 hours ago
+- Confidence: HIGH (2/2 parent commits found in current branch)
+- Proceeding with PR #123 as parent. Review classification below before execution.
+```
+
+**Output (MEDIUM/LOW confidence) — Present Options:**
+
+When confidence is not HIGH, present structured options to the user:
+
+```
+I found the following recently merged PRs that could be the parent of your PR #456:
+
+1. PR #123 (feature-x) — merged 2h ago via squash
+   - 2 of 5 commits match by SHA
+   - Branch name suggests relationship
+   → Recommended: most likely parent
+
+2. PR #100 (refactor-auth) — merged 1d ago via rebase
+   - 1 of 5 commits has matching message
+   - No branch name relationship
+   → Possible but less likely
+
+3. None of the above — I'll specify the parent PR number manually
+
+4. No parent PR — my branch was created directly from main
+   (use regular rebase instead)
+
+Which option? [1/2/3/4]
+```
+
+**When no candidates found:**
+```
+I couldn't automatically identify a parent PR for your PR #456.
+
+Possible reasons:
+- The parent PR was merged long ago (>20 recent merges)
+- Your branch was force-pushed or rebased, changing commit SHAs
+- The parent branch was deleted before merging
+
+Options:
+1. Enter the parent PR number manually
+2. Show me ALL recently merged PRs so I can pick one
+3. Skip parent detection — I'll manually specify which commits to keep
+
+Which option? [1/2/3]
 ```
 
 ### Phase 2: Merge Type Detection
@@ -158,11 +213,13 @@ Identify which commits are "parent's" (to exclude) vs "your own" (to keep).
 
 ```bash
 # Get parent PR's original commits from GitHub API
-gh api repos/<OWNER>/<REPO>/pulls/<PARENT_PR>/commits --jq '.[].sha'
+# Note: GitHub REST API returns max 250 commits per page.
+# For PRs with 250+ commits, paginate or fall back to manual selection.
+gh api repos/<OWNER>/<REPO>/pulls/<PARENT_PR>/commits --paginate --jq '.[].sha'
 # Output: aaa1111, bbb2222
 
 # List all commits in current branch
-git log --format="%H %s" $(git merge-base HEAD origin/main)..HEAD
+git log --format="%H %s" $(git merge-base HEAD origin/<baseRefName>)..HEAD
 # Output: aaa1111, bbb2222, ccc3333, ddd4444
 ```
 
@@ -179,27 +236,97 @@ For each commit in current PR:
     → Your commit → KEEP
 ```
 
-**Classification Rules:**
+**Classification Rules (applied in order):**
 
-| Condition | Classification |
-|-----------|---------------|
-| SHA in parent PR's original commits list | Parent commit → Exclude |
-| Commit message matches parent PR commit exactly | Parent commit (rebased) → Exclude |
-| Everything else | **Your commit → Keep** |
+| Priority | Condition | Classification | Confidence |
+|----------|-----------|---------------|------------|
+| 1 | SHA in parent PR's original commits list | Parent → Exclude | HIGH |
+| 2 | Commit message matches parent PR commit AND author matches | Parent (rebased) → Exclude | HIGH |
+| 3 | Commit message matches exactly AND same author but different SHA AND commit time is close (within 1 day) | **UNCERTAIN** → Ask user | — |
+| 4 | Everything else | **Your commit → Keep** | HIGH |
 
-**Output:**
+**Output — Always show for user confirmation:**
 ```
 Commit Classification:
-┌──────────┬─────────────────────────────────────┬────────────┐
-│ SHA      │ Message                             │ Type       │
-├──────────┼─────────────────────────────────────┼────────────┤
-│ aaa1111  │ feat(x): implement feature A        │ Parent (A) │
-│ bbb2222  │ feat(x): implement feature B        │ Parent (B) │
-│ ccc3333  │ feat(y): implement feature C        │ OWN ✓      │
-│ ddd4444  │ feat(y): implement feature D        │ OWN ✓      │
-└──────────┴─────────────────────────────────────┴────────────┘
+┌──────────┬─────────────────────────────────────┬────────────┬────────────┐
+│ SHA      │ Message                             │ Type       │ Confidence │
+├──────────┼─────────────────────────────────────┼────────────┼────────────┤
+│ aaa1111  │ feat(x): implement feature A        │ Parent (A) │ HIGH       │
+│ bbb2222  │ feat(x): implement feature B        │ Parent (B) │ HIGH       │
+│ ccc3333  │ feat(y): implement feature C        │ OWN ✓      │ HIGH       │
+│ ddd4444  │ feat(y): implement feature D        │ OWN ✓      │ HIGH       │
+└──────────┴─────────────────────────────────────┴────────────┴────────────┘
 
-Commits to cherry-pick: ccc3333, ddd4444
+Commits to cherry-pick (2): ccc3333, ddd4444
+Commits to exclude (2): aaa1111, bbb2222
+
+Does this look correct? [y/N]
+```
+
+**When classification has UNCERTAIN commits:**
+```
+Commit Classification:
+┌──────────┬─────────────────────────────────────┬────────────┬────────────┐
+│ SHA      │ Message                             │ Type       │ Confidence │
+├──────────┼─────────────────────────────────────┼────────────┼────────────┤
+│ aaa1111  │ feat(x): implement feature A        │ Parent (A) │ HIGH       │
+│ bbb2222  │ fix: address review feedback         │ ??? ⚠️     │ UNCERTAIN  │
+│ ccc3333  │ feat(y): implement feature C        │ OWN ✓      │ HIGH       │
+│ ddd4444  │ feat(y): implement feature D        │ OWN ✓      │ HIGH       │
+└──────────┴─────────────────────────────────────┴────────────┴────────────┘
+
+⚠️ Commit bbb2222 is UNCERTAIN:
+  Message "fix: address review feedback" matches a parent PR commit,
+  but the author differs (you vs parent PR author).
+  This may be a commit you amended from the parent PR.
+
+Options for bbb2222:
+1. Exclude — it's from the parent PR (I didn't change it)
+2. Keep — it's my own work (I rewrote/amended it)
+3. Show diff — let me review the changes before deciding
+
+Which option? [1/2/3]
+```
+
+**Manual commit selection (fallback):**
+
+When user chose "specify which commits to keep" or when auto-classification fails:
+```
+Here are all commits in your branch (oldest first):
+
+1. [aaa1111] feat(x): implement feature A — by @alice, 3 days ago
+2. [bbb2222] feat(x): implement feature B — by @alice, 3 days ago
+3. [ccc3333] fix: address review feedback — by @you, 2 days ago
+4. [ddd4444] feat(y): implement feature C — by @you, 1 day ago
+5. [eee5555] feat(y): implement feature D — by @you, 1 day ago
+
+Which commits are YOUR OWN work to keep?
+Enter commit numbers (e.g., "3,4,5" or "3-5"):
+```
+
+### Phase 3.5: Pre-Execution Confirmation
+
+**ALWAYS confirm with user before proceeding to execution.** Show a summary:
+
+```
+Ready to rebase PR #456 onto updated main.
+
+Plan:
+- Parent PR: #123 (merged via squash)
+- Commits to EXCLUDE (parent's): aaa1111, bbb2222
+- Commits to KEEP (yours):       ccc3333, ddd4444
+- Backup branch will be created: backup-pr456-<timestamp>
+
+⚠️ This will rewrite your branch history.
+Proceed? [y/N]
+```
+
+If user says no, offer alternatives:
+```
+Options:
+1. Re-classify commits — let me adjust which commits to keep/exclude
+2. Abort entirely — keep my branch as-is
+3. Use manual mode — let me pick commits interactively
 ```
 
 ### Phase 4: Rebase Execution
@@ -218,6 +345,9 @@ git branch backup-pr<NUMBER>-$(date +%Y%m%d%H%M%S) HEAD
 **2. Execute Strategy (same for ALL merge types):**
 
 ```bash
+# Clean up any leftover temp branch from previous failed attempt
+git branch -D temp-rebase 2>/dev/null || true
+
 # Create temp branch from updated base
 git checkout -b temp-rebase origin/<baseRefName>
 
@@ -238,9 +368,9 @@ See `references/conflict-resolution.md` for detailed conflict handling.
 
 | Conflict Type | Example | Action |
 |---------------|---------|--------|
-| **Simple** | Import additions, whitespace | Auto-resolve |
-| **Medium** | Adjacent line changes | Attempt auto, ask if fails |
-| **Complex** | Same line modified, semantic changes | Ask user |
+| **Whitespace-only** | Trailing spaces, line endings, indentation | Auto-resolve; list resolved files for user review |
+| **Additive** | Both sides added different imports/lines | Attempt keep-both; ask if result is unclear |
+| **Semantic** | Same line modified, function signature changed | Always ask user |
 
 ```bash
 # During conflict, check status
@@ -266,7 +396,7 @@ git log --oneline -10
 # Confirm file status
 git status
 
-# Compare with remote
+# Compare with remote (run BEFORE force push — shows what will change on remote)
 git diff origin/<branch>..HEAD --stat
 ```
 
@@ -277,8 +407,8 @@ git diff origin/<branch>..HEAD --stat
 
 Changes:
 - Removed parent commits: aaa1111, bbb2222
-- Kept your commits: ccc3333 → ccc4444' (rebased)
-                     ddd4444 → ddd5555' (rebased)
+- Kept your commits: ccc3333 → ccc3333' (rebased)
+                     ddd4444 → ddd4444' (rebased)
 
 This will REPLACE the remote branch. Proceed? [y/N]
 ```
@@ -290,7 +420,7 @@ git push --force-with-lease origin <branch>
 
 **4. Summary Report:**
 
-```markdown
+~~~~~~markdown
 ## Stacked PR Rebase Summary
 
 **PR:** #456 - Feature Y
@@ -298,28 +428,28 @@ git push --force-with-lease origin <branch>
 
 ### Before
 ```
-main ── A ── B ── [PR #123 squash] ──────────────────
-                  ↑
-                  └── A ── B ── C ── D  (your PR)
+main ── M1 ── M2 ── [PR #123 squash] ──────────────
+                │
+PR Y:          └── A ── B ── C ── D  (your PR, forked before squash)
 ```
 
 ### After
 ```
-main ── A ── B ── [PR #123 squash] ── C' ── D'  (rebased)
+main ── M1 ── M2 ── [PR #123 squash] ── C' ── D'  (rebased)
 ```
 
 ### Commits Preserved
 | Original | Rebased | Message |
 |----------|---------|---------|
-| ccc3333  | ccc4444 | feat(y): implement feature C |
-| ddd4444  | ddd5555 | feat(y): implement feature D |
+| ccc3333  | ccc3333' | feat(y): implement feature C |
+| ddd4444  | ddd4444' | feat(y): implement feature D |
 
 ### Actions Taken
-1. ✅ Created backup branch: backup-pr456-20240115120000
-2. ✅ Identified parent PR #123 (squash merged)
-3. ✅ Classified 4 commits (2 parent, 2 own)
-4. ✅ Cherry-picked 2 commits onto new base
-5. ✅ Force pushed to origin/feature-y
+1. Created backup branch: backup-pr456-<YYYYMMDDHHMMSS>
+2. Identified parent PR #123 (squash merged)
+3. Classified 4 commits (2 parent, 2 own)
+4. Cherry-picked 2 commits onto new base
+5. Force pushed to origin/feature-y
 
 ### Conflicts Resolved
 | File | Type | Resolution |
@@ -329,8 +459,8 @@ main ── A ── B ── [PR #123 squash] ── C' ── D'  (rebased)
 ### Next Steps
 - [ ] Review the rebased PR
 - [ ] Run CI checks
-- [ ] Delete backup when satisfied: `git branch -D backup-pr456-20240115120000`
-```
+- [ ] Delete backup when satisfied: `git branch -D backup-pr456-<YYYYMMDDHHMMSS>`
+~~~~~~
 
 ## Important Guidelines
 
@@ -361,9 +491,83 @@ main ── A ── B ── [PR #123 squash] ── C' ── D'  (rebased)
 | Parent PR not yet merged | Abort with message; suggest waiting |
 | No own commits found | Warn user; may already be rebased |
 | Cherry-pick conflict | Classify and handle (auto/ask) |
-| Own commit is a merge commit | Skip or use `cherry-pick -m 1`; ask user |
+| Own commit is a merge commit | Warn user: `cherry-pick -m 1` only keeps changes from one parent's perspective. Recommend squashing merge commits first via `git rebase -i` before running this skill. Ask user to confirm. |
 | Force push rejected | Check if branch protection; suggest user intervention |
 | Backup branch exists | Use timestamp suffix for uniqueness |
+| Current branch has no PR | Ask user which PR to operate on, or create one |
+| Multiple parent PRs in chain | Identify all parent PRs, collect all their commits, keep only commits not belonging to any parent PR. Cherry-pick in topological order (oldest first) to preserve dependencies. |
+| temp-rebase branch already exists | Delete it before proceeding: `git branch -D temp-rebase` |
+| Parent PR has 250+ commits | Use `--paginate` flag or fall back to manual commit selection |
+
+## Interactive Decision Points Summary
+
+Every point where the skill must pause and ask the user, consolidated for reference:
+
+### 1. Which PR to rebase?
+
+**Trigger:** User doesn't specify a PR, or current branch has no PR.
+
+```
+I need to know which PR to rebase. Options:
+1. PR #456 (feature-y) — current branch matches this PR
+2. Let me specify a different PR number
+3. Show all my open PRs so I can pick one
+```
+
+### 2. Which is the parent PR?
+
+**Trigger:** Confidence is MEDIUM or LOW, or multiple candidates exist.
+
+See Phase 1 output examples above. Always present numbered options with a recommendation.
+
+### 3. Are the commit classifications correct?
+
+**Trigger:** ALWAYS shown before execution. For auto-classification: show the full classification table. For manual selection: show the user's chosen commits for confirmation.
+
+### 4. How to handle uncertain commits?
+
+**Trigger:** Commit cannot be clearly classified (amended, message-only match, different author).
+
+Options: Exclude / Keep / Show diff. See Phase 3 "UNCERTAIN commits" example.
+
+### 5. Ready to execute?
+
+**Trigger:** ALWAYS, before any destructive operation.
+
+See Phase 3.5 Pre-Execution Confirmation.
+
+### 6. How to handle conflicts?
+
+**Trigger:** Cherry-pick produces merge conflicts that cannot be auto-resolved.
+
+See Phase 4 Conflict Handling and `references/conflict-resolution.md`.
+
+```
+Conflict in file: src/auth/handler.ts
+
+The conflict appears to be a semantic change (both parent and your PR
+modified the same function).
+
+Options:
+1. Show me the conflict — I'll resolve it manually
+2. Keep my version (yours) for all conflicts in this file
+3. Keep the base version (main) for all conflicts in this file
+4. Abort the rebase — restore from backup
+```
+
+**If user chooses Abort (option 4):**
+```bash
+git cherry-pick --abort
+git checkout <original_branch>
+git reset --hard backup-pr<NUMBER>-<timestamp>
+git branch -D temp-rebase 2>/dev/null || true
+```
+
+### 7. Ready to force push?
+
+**Trigger:** ALWAYS, before pushing.
+
+See Phase 5 "Confirm Force Push" example.
 
 ## Additional Resources
 

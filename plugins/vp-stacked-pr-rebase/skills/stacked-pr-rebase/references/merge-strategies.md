@@ -59,11 +59,16 @@ gh api graphql -f query='
 PARENT_COMMITS=$(gh api repos/<OWNER>/<REPO>/pulls/<PARENT_PR>/commits --jq '.[].sha')
 
 # Check if any original commit exists in main (with same message but different SHA)
+# Note: This is a best-effort heuristic. Common messages like "fix: typo" may
+# produce false positives. When ambiguous, ask the user for the merge type.
+# Warning: If parent commits are not in local history (e.g., branch deleted after merge),
+# MSG will be empty for all commits. If zero matches found, warn user:
+# "Could not verify merge type locally. Please confirm: squash or rebase merge?"
 for commit in $PARENT_COMMITS; do
   MSG=$(git log -1 --format="%s" $commit 2>/dev/null || echo "")
   if [ -n "$MSG" ]; then
-    # Search in main for commit with same message
-    MAIN_MATCH=$(git log origin/main --format="%H" --grep="^${MSG}$" -1)
+    # Search in main for commit with same message (use --fixed-strings for safety)
+    MAIN_MATCH=$(git log origin/<baseRefName> --format="%H" --fixed-strings --grep="$MSG" -1)
     if [ -n "$MAIN_MATCH" ] && [ "$MAIN_MATCH" != "$commit" ]; then
       echo "REBASE MERGE detected: $commit rewritten as $MAIN_MATCH"
       break
@@ -238,16 +243,16 @@ git branch -D temp-rebase
 Regardless of merge type, the commit identification is the same:
 
 ```bash
-# 1. Get parent PR's original commits from GitHub API
-PARENT_COMMITS=$(gh api repos/<OWNER>/<REPO>/pulls/<PARENT_PR>/commits --jq '.[].sha' | tr '\n' ' ')
+# 1. Get parent PR's original commits from GitHub API (one per line)
+PARENT_COMMITS=$(gh api repos/<OWNER>/<REPO>/pulls/<PARENT_PR>/commits --paginate --jq '.[].sha')
 
 # 2. Get all commits in your branch
-ALL_COMMITS=$(git log --format="%H" $(git merge-base HEAD origin/main)..HEAD)
+ALL_COMMITS=$(git log --format="%H" $(git merge-base HEAD origin/<baseRefName>)..HEAD)
 
-# 3. Filter to keep only YOUR commits
+# 3. Filter to keep only YOUR commits (use exact line match to avoid substring false positives)
 OWN_COMMITS=""
 for commit in $ALL_COMMITS; do
-  if ! echo "$PARENT_COMMITS" | grep -q "$commit"; then
+  if ! echo "$PARENT_COMMITS" | grep -Fxq "$commit"; then
     OWN_COMMITS="$OWN_COMMITS $commit"
   fi
 done
@@ -270,8 +275,21 @@ Y: commits W1, W2, X1, X2, Y1, Y2  (depends on X)
 When both W and X are merged, Y contains commits from both. Solution:
 
 1. Identify all merged parent PRs in the chain
-2. Collect all their original commits
-3. Cherry-pick only commits NOT in any parent PR
+2. Collect all their original commits from each PR via GitHub API
+3. Union all parent commits: `{W1, W2, X1, X2}`
+4. Cherry-pick only commits NOT in the union: `{Y1, Y2}`
+
+**When uncertain about the chain:**
+```
+Your PR #789 appears to have multiple parent PRs:
+- PR #100 (W) — merged 1d ago, contributes commits W1, W2
+- PR #200 (X) — merged 2h ago, contributes commits W1, W2, X1, X2
+
+Options:
+1. Exclude commits from ALL parent PRs (recommended — keeps only Y1, Y2)
+2. Exclude only the immediate parent PR #200 (keeps W1, W2, Y1, Y2)
+3. Let me specify which commits to keep manually
+```
 
 ### Amended Commits
 
@@ -279,12 +297,32 @@ If you amended a commit that was originally from the parent PR:
 
 - The SHA will differ from the parent PR's records
 - You may accidentally classify it as "your own"
-- **Recommendation:** Check commit messages and authors, not just SHAs
+- **Detection:** Check commit messages and authors, not just SHAs
+- **When uncertain:** Present the commit with context and ask user
+
+```
+⚠️ Commit fff6666 "fix: typo in config" has the same message as parent PR
+commit aaa1111, but with a different SHA and author (@you instead of @alice).
+
+Did you amend this commit from the parent PR, or is this your own independent fix?
+1. It's from the parent — exclude it
+2. It's my own work — keep it
+3. Show diff — let me compare both commits
+```
 
 ### Interactive Rebase Before Merge
 
 If you ran `git rebase -i` and squashed/reordered commits:
 
 - Your commit SHAs will differ from what the parent PR had
-- Use commit message matching as fallback
-- Ask user to confirm classification if uncertain
+- SHA-based matching will fail; fall back to commit message matching
+- If messages were also rewritten, fall back to manual selection
+- **Always ask user to confirm** classification when SHAs don't match
+
+### Force-Pushed Child Branch
+
+If the child PR branch was force-pushed (e.g., after a local rebase):
+
+- The commits in the local branch may have different SHAs from both the parent PR API records AND the original child branch
+- **Strategy:** Compare by commit message + author as primary, SHA as secondary
+- If still uncertain, use manual commit selection
