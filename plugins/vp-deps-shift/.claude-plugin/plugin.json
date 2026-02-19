@@ -1,0 +1,14 @@
+{
+  "name": "vp-deps-shift",
+  "version": "1.0.0",
+  "description": "Dependency upgrade and library migration with breaking change detection and test-first verification",
+  "author": {
+    "name": "VdustR",
+    "url": "https://github.com/VdustR"
+  },
+  "homepage": "https://github.com/VdustR/vp-claude-code-marketplace",
+  "repository": "https://github.com/VdustR/vp-claude-code-marketplace",
+  "license": "MIT",
+  "keywords": ["dependencies", "upgrade", "migration", "breaking-changes", "codemod", "dependabot", "renovate", "context7"],
+  "skills": "./skills/"
+}
