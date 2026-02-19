@@ -57,12 +57,12 @@ git merge-base HEAD origin/<baseRefName>
 # List commits from merge-base to HEAD
 git log --oneline $(git merge-base HEAD origin/<baseRefName>)..HEAD
 
-# Get recently merged PRs to find potential parent
-# For stacked PRs where baseRefName is NOT main/master,
-# also search for the PR whose headRefName matches baseRefName.
+# Get recently merged PRs targeting the same base branch
 gh pr list --state merged --base <baseRefName> --limit 20 \
   --json number,title,headRefName,mergeCommit,commits
-# If baseRefName != main/master, also find parent PR directly:
+
+# For stacked PRs (baseRefName != main/master):
+# Find the PR whose head branch IS your base branch — that's likely the parent PR
 gh pr list --state merged --head <baseRefName> --limit 5 \
   --json number,title,headRefName,mergeCommit,commits
 ```
@@ -96,7 +96,7 @@ gh pr list --state merged --head <baseRefName> --limit 5 \
 |------------|----------|--------|
 | **HIGH** | Single candidate with overlap ≥80%; parent PR has >3 commits; SHAs match exactly | Proceed automatically, show classification for confirmation |
 | **MEDIUM** | Multiple candidates; or overlap 50-79%; or parent PR has ≤3 commits; or branch naming suggests relationship | Present candidates with recommendation |
-| **LOW** | No commit overlap; only branch naming or commit message hints; or user's branch was rebased/amended | Must ask user before proceeding |
+| **LOW** | Overlap <50%; or no commit overlap; only branch naming or commit message hints; or user's branch was rebased/amended | Must ask user before proceeding |
 
 **Output (HIGH confidence):**
 ```
@@ -299,7 +299,7 @@ Here are all commits in your branch (oldest first):
 
 1. [aaa1111] feat(x): implement feature A — by @alice, 3 days ago
 2. [bbb2222] feat(x): implement feature B — by @alice, 3 days ago
-3. [ccc3333] fix: address review feedback — by @you, 2 days ago
+3. [ccc3333] fix: handle edge case in feature Y — by @you, 2 days ago
 4. [ddd4444] feat(y): implement feature C — by @you, 1 day ago
 5. [eee5555] feat(y): implement feature D — by @you, 1 day ago
 
@@ -423,7 +423,7 @@ git push --force-with-lease origin <branch>
 
 **4. Summary Report:**
 
-~~~~~~markdown
+~~~~~~
 ## Stacked PR Rebase Summary
 
 **PR:** #456 - Feature Y

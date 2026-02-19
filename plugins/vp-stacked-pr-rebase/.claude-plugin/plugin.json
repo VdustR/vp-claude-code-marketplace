@@ -1,6 +1,6 @@
 {
   "name": "vp-stacked-pr-rebase",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Rebase stacked PRs after parent PR is merged, preserving only your commits",
   "author": {
     "name": "VdustR",
