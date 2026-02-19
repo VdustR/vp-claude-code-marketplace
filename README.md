@@ -79,6 +79,26 @@ Features:
 - Summary report generation after processing all comments
 - Human collaboration - asks when uncertain about fixes
 
+### vp-review-loop
+
+Iterative multi-pass subagent review loop with confidence scoring for code and plans.
+
+```bash
+/plugin install vp-review-loop@vdustr
+```
+
+**Skills included:**
+- **review-loop** — Multi-pass code review (Direct, Best Practice, Critical Think) with iterative fix cycles
+- **plan-review** — Plan optimization with confidence index scoring and pros/cons analysis
+
+Features:
+- 3 built-in passes: Direct (correctness), Best Practice (quality), Critical Think (risk)
+- Context-aware suggested passes: Testability, Accessibility, API Surface, Performance, i18n, Concurrency (code); Incremental Delivery, Stakeholder Impact, Maintenance Burden, Team Coordination (plans)
+- Iterative fix-review loop with stall detection and ping-pong mitigation
+- Generalized confidence index with 5 factors, floor rule, and boost options
+- Structured pros/cons analysis for plan decisions
+- Extensible: custom subagent passes + manual external AI review support
+
 ### vp-skills
 
 Manage agent skills using the npx skills CLI.
