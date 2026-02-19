@@ -51,6 +51,22 @@ Features:
 - Auto-suggest `*.local` and `*.local.*` patterns
 - Support for both project-level and global gitignore
 
+### vp-localsend
+
+Send and receive files over local network using [LocalSend](https://localsend.org/) protocol (like AirDrop).
+
+```bash
+/plugin install vp-localsend@vdustr
+```
+
+Features:
+- Scan for nearby LocalSend devices on local network
+- Send files and directories to any LocalSend client (phone, tablet, PC)
+- Receive files from other devices with background server
+- Auto-downloads [localsend-cli](https://github.com/0w0mewo/localsend-cli) on first use
+- Idle server reminder to prevent forgotten background processes
+- Compatible with all LocalSend apps (iOS, Android, macOS, Windows, Linux)
+
 ### vp-nyan-mode
 
 Cat persona with 'nyan~' verbal tic, emoji support, and language matching.

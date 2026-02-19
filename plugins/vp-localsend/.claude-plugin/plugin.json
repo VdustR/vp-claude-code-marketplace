@@ -1,0 +1,14 @@
+{
+  "name": "vp-localsend",
+  "version": "1.0.0",
+  "description": "Send and receive files over local network using LocalSend protocol",
+  "author": {
+    "name": "VdustR",
+    "url": "https://github.com/VdustR"
+  },
+  "homepage": "https://github.com/VdustR/vp-claude-code-marketplace",
+  "repository": "https://github.com/VdustR/vp-claude-code-marketplace",
+  "license": "MIT",
+  "keywords": ["localsend", "file-transfer", "local-network", "airdrop", "send", "receive", "share"],
+  "skills": "./skills/"
+}
