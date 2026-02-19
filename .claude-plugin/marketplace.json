@@ -36,6 +36,13 @@
       "keywords": ["pr", "pull-request", "review", "comments", "github", "automation"]
     },
     {
+      "name": "vp-review-loop",
+      "source": "./plugins/vp-review-loop",
+      "description": "Iterative multi-pass subagent review loop with confidence scoring for code and plans",
+      "license": "MIT",
+      "keywords": ["code-review", "plan-review", "multi-pass", "confidence-index", "subagent", "iterative", "loop-control"]
+    },
+    {
       "name": "vp-skills",
       "source": "./plugins/vp-skills",
       "description": "Manage agent skills using npx skills CLI",
