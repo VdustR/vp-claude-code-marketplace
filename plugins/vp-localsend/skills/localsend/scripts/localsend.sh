@@ -89,11 +89,13 @@ sha256() {
 }
 
 # Known SHA256 checksums for localsend-cli releases (#11)
-# To populate: download each release tarball and run sha256sum
 expected_checksum() {
   local platform="$1"
   case "$platform" in
-    # TODO: Populate with actual SHA256 checksums
+    darwin-amd64) echo "7e37b55e5d9e68af664f49d56162c39f3bd8b92afe00cd28f9639a2c0f8fdc9f" ;;
+    darwin-arm64) echo "bce5dc36481d922a6fb1ca7a028ca44a8cf5988928d201dac0166bacec0f62bc" ;;
+    linux-amd64)  echo "dfcd8339dd960b274108e1b06af78906dc48d9da66dad2d9f9e573d23684c14c" ;;
+    linux-arm64)  echo "5813e86e650ece74a36bb41c78bbda25272f895b10814ec8598a74167e243219" ;;
     *) echo "" ;;
   esac
 }
