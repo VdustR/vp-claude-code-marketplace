@@ -58,9 +58,12 @@ git merge-base HEAD origin/<baseRefName>
 git log --oneline $(git merge-base HEAD origin/<baseRefName>)..HEAD
 
 # Get recently merged PRs to find potential parent
-# Note: If current PR's baseRefName is NOT main/master (stacked PR scenario),
-# also search for PRs whose headRefName matches the current PR's baseRefName.
+# For stacked PRs where baseRefName is NOT main/master,
+# also search for the PR whose headRefName matches baseRefName.
 gh pr list --state merged --base <baseRefName> --limit 20 \
+  --json number,title,headRefName,mergeCommit,commits
+# If baseRefName != main/master, also find parent PR directly:
+gh pr list --state merged --head <baseRefName> --limit 5 \
   --json number,title,headRefName,mergeCommit,commits
 ```
 
@@ -557,10 +560,13 @@ Options:
 
 **If user chooses Abort (option 4):**
 ```bash
+# If cherry-pick is in progress on temp-rebase branch:
 git cherry-pick --abort
 git checkout <original_branch>
-git reset --hard backup-pr<NUMBER>-<timestamp>
 git branch -D temp-rebase 2>/dev/null || true
+
+# If original branch was already reset (Phase 4 step completed partially):
+git reset --hard backup-pr<NUMBER>-<timestamp>
 ```
 
 ### 7. Ready to force push?
@@ -579,5 +585,4 @@ See Phase 5 "Confirm Force Push" example.
 - Requires `gh` CLI authenticated with appropriate permissions
 - Works with GitHub PRs (GitLab/Bitbucket not supported)
 - Branch must be checked out locally
-- Git 2.38+ recommended for `--update-refs` support
 - Always test with a backup before critical operations
