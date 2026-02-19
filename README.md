@@ -14,6 +14,27 @@ Claude Code plugins by [VdustR](https://github.com/VdustR).
 
 > Plugins are listed in alphabetical order.
 
+### vp-deps-shift
+
+Dependency upgrade and library migration with breaking change detection and test-first verification.
+
+```bash
+/plugin install vp-deps-shift@vdustr
+```
+
+**Skills included:**
+- **deps-upgrade** — Version upgrades with breaking change detection, deps bot PR handling
+- **deps-migrate** — Library replacement and API pattern migration (e.g., forwardRef removal)
+
+Features:
+- Test-first verification in /tmp before batch execution
+- Context7 + changelog parallel documentation lookup
+- Official codemod detection and compat layer support
+- 3-pass subagent review loop (direct, best practice, critical think)
+- Multi-ecosystem support (npm, pnpm, yarn, bun, cargo, pip, go, bundler, composer)
+- Deps bot PR handling (dependabot, renovate)
+- Repo convention compliance (changesets, conventional commits, CI checks)
+
 ### vp-gitignore-builder
 
 Build and merge .gitignore files using github/gitignore templates.
