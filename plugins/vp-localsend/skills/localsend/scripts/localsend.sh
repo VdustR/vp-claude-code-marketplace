@@ -222,7 +222,10 @@ cmd_send() {
   if [[ -d "$target" ]]; then
     while IFS= read -r -d '' f; do
       files+=("$f")
-    done < <(find "$target" -type f -print0)
+    # Prevent find from interpreting target as an option
+    local safe_target="$target"
+    [[ "$safe_target" == -* ]] && safe_target="./$safe_target"
+    done < <(find "$safe_target" -type f -print0)
     [[ ${#files[@]} -eq 0 ]] && die "Directory is empty: $target"
   else
     files=("$target")
