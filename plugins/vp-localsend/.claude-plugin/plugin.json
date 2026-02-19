@@ -1,6 +1,6 @@
 {
   "name": "vp-localsend",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Send and receive files over local network using LocalSend protocol",
   "author": {
     "name": "VdustR",
