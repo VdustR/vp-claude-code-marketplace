@@ -151,7 +151,12 @@ ensure_binary() {
   fi
 
   # Validate tarball contents for path traversal (#12)
-  if tar -tzf "${CACHE_DIR}/${tarball}" 2>/dev/null | grep -q '\.\.'; then
+  local tar_contents
+  if ! tar_contents="$(tar -tzf "${CACHE_DIR}/${tarball}" 2>&1)"; then
+    rm -f "${CACHE_DIR}/${tarball}"
+    die "Failed to read tarball contents (file may be corrupted)"
+  fi
+  if echo "$tar_contents" | grep -q '\.\.'; then
     rm -f "${CACHE_DIR}/${tarball}"
     die "Tarball contains suspicious path traversal entries"
   fi
@@ -222,11 +227,11 @@ cmd_send() {
   # Collect files to send
   local -a files=()
   if [[ -d "$target" ]]; then
-    while IFS= read -r -d '' f; do
-      files+=("$f")
     # Prevent find from interpreting target as an option
     local safe_target="$target"
     [[ "$safe_target" == -* ]] && safe_target="./$safe_target"
+    while IFS= read -r -d '' f; do
+      files+=("$f")
     done < <(find "$safe_target" -type f -print0)
     [[ ${#files[@]} -eq 0 ]] && die "Directory is empty: $target"
   else
@@ -242,13 +247,13 @@ cmd_send() {
     local fname fsize ftype fid
     fname="$(json_escape "$(basename "$f")")"
     fsize="$(stat -f%z "$f" 2>/dev/null || stat -c%s "$f" 2>/dev/null || true)"
-    [[ -n "$fsize" ]] || die "Failed to get size of file: $f"
+    [[ "$fsize" =~ ^[0-9]+$ ]] || die "Failed to get valid file size: $f"
     ftype="application/octet-stream"
     fid="file-${i}"
 
     [[ $i -gt 0 ]] && files_json+=","
     files_json+="\"${fid}\":{\"id\":\"${fid}\",\"fileName\":\"${fname}\",\"size\":${fsize},\"fileType\":\"${ftype}\"}"
-    ((i++))
+    i=$(( i + 1 ))
   done
   files_json+="}"
 
@@ -265,7 +270,7 @@ cmd_send() {
   # Step 1: prepare-upload (#5 - separate stderr)
   echo "Requesting transfer..."
   local prepare_url="https://${ip}:53317/api/localsend/v2/prepare-upload${pin_param}"
-  local response http_code body
+  local response http_code body curl_exit=0
   response=$(curl -sk -w "\n%{http_code}" -X POST "$prepare_url" \
     -H "Content-Type: application/json" \
     -d "{
@@ -278,7 +283,11 @@ cmd_send() {
         \"download\": false
       },
       \"files\": ${files_json}
-    }" 2>/dev/null) || true
+    }" 2>/dev/null) || curl_exit=$?
+
+  if [[ $curl_exit -ne 0 ]]; then
+    die "Network error connecting to ${ip}:53317 (curl exit code ${curl_exit}). Is the device online and running LocalSend?"
+  fi
 
   http_code="$(echo "$response" | tail -1)"
   body="$(echo "$response" | sed '$d')"
@@ -316,25 +325,32 @@ cmd_send() {
 
     if [[ -z "$token" ]]; then
       echo "  SKIP $(basename "$f") (not requested by receiver)"
-      ((i++))
+      i=$(( i + 1 ))
       continue
     fi
 
     local upload_url="https://${ip}:53317/api/localsend/v2/upload?sessionId=$(url_encode "$session_id")&fileId=$(url_encode "$fid")&token=$(url_encode "$token")"
-    local upload_code
+    local upload_code upload_curl_exit=0
     upload_code=$(curl -sk -o /dev/null -w "%{http_code}" \
       -X POST "$upload_url" \
       -H "Content-Type: application/octet-stream" \
-      --data-binary @"$f" 2>/dev/null) || true
+      --data-binary @"$f" 2>/dev/null) || upload_curl_exit=$?
+
+    if [[ $upload_curl_exit -ne 0 ]]; then
+      echo "  FAIL $(basename "$f") (network error, curl exit code ${upload_curl_exit})"
+      fail=$(( fail + 1 ))
+      i=$(( i + 1 ))
+      continue
+    fi
 
     if [[ "$upload_code" == "200" ]]; then
       echo "  OK $(basename "$f")"
-      ((success++))
+      success=$(( success + 1 ))
     else
-      echo "  FAIL $(basename "$f") (HTTP ${upload_code})"
-      ((fail++))
+      echo "  FAIL $(basename "$f") (HTTP ${upload_code:-connection failed})"
+      fail=$(( fail + 1 ))
     fi
-    ((i++))
+    i=$(( i + 1 ))
   done
 
   echo ""
@@ -386,7 +402,7 @@ release_lock() {
 
 receive_start() {
   acquire_lock
-  trap 'release_lock; exit 1' INT TERM
+  trap 'release_lock; exit 1' INT TERM ERR
 
   # Re-check inside lock (#13)
   if receive_is_running; then
@@ -395,7 +411,7 @@ receive_start() {
     echo "Receive server is already running (PID: ${pid})."
     receive_status
     release_lock
-    trap - INT TERM
+    trap - INT TERM ERR
     return 0
   fi
 
@@ -420,7 +436,7 @@ receive_start() {
     echo "Failed to start receive server. Log:"
     cat "$LOG_FILE" 2>/dev/null
     release_lock
-    trap - INT TERM
+    trap - INT TERM ERR
     return 1
   fi
 
@@ -435,13 +451,13 @@ receive_start() {
 
 receive_stop() {
   acquire_lock
-  trap 'release_lock; exit 1' INT TERM
+  trap 'release_lock; exit 1' INT TERM ERR
 
   if ! receive_is_running; then
     echo "No receive server is running."
     rm -f "$PID_FILE" "$START_TIME_FILE"
     release_lock
-    trap - INT TERM
+    trap - INT TERM ERR
     return 0
   fi
 
@@ -454,7 +470,7 @@ receive_stop() {
   local i=0
   while kill -0 "$pid" 2>/dev/null && [[ $i -lt 5 ]]; do
     sleep 1
-    ((i++))
+    i=$(( i + 1 ))
   done
 
   if kill -0 "$pid" 2>/dev/null; then
