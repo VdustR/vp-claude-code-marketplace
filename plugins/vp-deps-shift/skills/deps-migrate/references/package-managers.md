@@ -28,9 +28,9 @@
 | npm | `npm outdated` | `npm install <pkg>@<ver>` | `npm update` | `npm install` | `npm install -D <pkg>` |
 | pnpm | `pnpm outdated` | `pnpm update <pkg>@<ver>` | `pnpm update` | `pnpm install` | `pnpm add -D <pkg>` |
 | yarn classic | `yarn outdated` | `yarn upgrade <pkg>@<ver>` | `yarn upgrade` | `yarn install` | `yarn add -D <pkg>` |
-| yarn berry | `yarn upgrade-interactive` | `yarn up <pkg>@<ver>` | `yarn up` | `yarn install` | `yarn add -D <pkg>` |
+| yarn berry | `yarn outdated` | `yarn up <pkg>@<ver>` | `yarn up` | `yarn install` | `yarn add -D <pkg>` |
 | bun | `bun outdated` | `bun update <pkg>@<ver>` | `bun update` | `bun install` | `bun add -D <pkg>` |
-| cargo | `cargo outdated` | Edit `Cargo.toml` + `cargo update` | `cargo update` | `cargo build` | — |
+| cargo | `cargo outdated` (requires `cargo-outdated`) | Edit `Cargo.toml` + `cargo update` | `cargo update` | `cargo build` | — |
 | pip | `pip list --outdated` | `pip install <pkg>==<ver>` | `pip install -U -r requirements.txt` | `pip install -r requirements.txt` | — |
 | uv | `uv pip list --outdated` | `uv add <pkg>==<ver>` | `uv lock --upgrade` | `uv sync` | `uv add --dev <pkg>` |
 | poetry | `poetry show -o` | `poetry add <pkg>@<ver>` | `poetry update` | `poetry install` | `poetry add -D <pkg>` |

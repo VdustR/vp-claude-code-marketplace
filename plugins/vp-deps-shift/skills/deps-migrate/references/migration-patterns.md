@@ -4,7 +4,7 @@ This file covers **methodology** for building migration plans, with common examp
 
 ## API Mapping Methodology
 
-1. **List all source API imports** across codebase (`grep -r "from '<source>'" --include='*.{ts,tsx,js,jsx}'`)
+1. **List all source API imports** across codebase (use Grep tool or `rg "from '<source>'" --type ts --type js`)
 2. **For each import**, find target equivalent in docs (Context7, migration guides, target library API reference)
 3. **Classify each mapping**:
    - ✅ Direct equivalent (same behavior, different import)
