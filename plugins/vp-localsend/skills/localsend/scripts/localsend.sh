@@ -552,7 +552,10 @@ list_received_files() {
       content="$(head -c 200 "$f" 2>/dev/null | LC_ALL=C tr -cd '[:print:]\n' | head -c 200)"
       echo "  [MSG] ${content} (${size})"
     else
-      echo "  [FILE] ${name} (${size})"
+      # Sanitize filename to prevent terminal escape injection
+      local safe_name
+      safe_name="$(printf '%s' "$name" | LC_ALL=C tr -cd '[:print:]\n')"
+      echo "  [FILE] ${safe_name} (${size})"
     fi
   done
 }
