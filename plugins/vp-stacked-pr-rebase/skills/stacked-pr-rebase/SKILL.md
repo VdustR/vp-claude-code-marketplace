@@ -244,8 +244,8 @@ For each commit in current PR:
 | Priority | Condition | Classification | Confidence |
 |----------|-----------|---------------|------------|
 | 1 | SHA in parent PR's original commits list | Parent → Exclude | HIGH |
-| 2 | Commit message matches parent PR commit AND author matches | Parent (rebased) → Exclude | HIGH |
-| 3 | Commit message matches exactly AND same author but different SHA AND commit time is close (within 1 day) | **UNCERTAIN** → Ask user | — |
+| 2 | Commit message matches parent PR commit exactly (non-generic) AND same author AND different SHA | Parent (rebased) → Exclude | HIGH |
+| 3 | Commit message matches a parent PR commit but author differs; OR message is generic (e.g., "fix: typo", "chore: lint") with same author | **UNCERTAIN** → Ask user | — |
 | 4 | Everything else | **Your commit → Keep** | HIGH |
 
 **Output — Always show for user confirmation:**

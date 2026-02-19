@@ -114,7 +114,7 @@ Use cherry-pick for consistency with other merge types:
 OWN_COMMITS="ccc3333 ddd4444"
 
 # 2. Start fresh from updated main
-git checkout -b temp-rebase origin/main
+git checkout -b temp-rebase origin/<baseRefName>
 
 # 3. Cherry-pick only your commits
 git cherry-pick $OWN_COMMITS
@@ -160,7 +160,7 @@ Cannot use simple `git rebase` because Git won't recognize A, B are "already app
 
 ```bash
 # This will NOT work correctly for squash merge!
-git rebase origin/main
+git rebase origin/<baseRefName>
 # Git will try to apply A, B, C, D - causing conflicts or duplicates
 ```
 
@@ -171,7 +171,7 @@ git rebase origin/main
 OWN_COMMITS="ccc3333 ddd4444"
 
 # 2. Start fresh from updated main
-git checkout -b temp-rebase origin/main
+git checkout -b temp-rebase origin/<baseRefName>
 
 # 3. Cherry-pick only your commits
 git cherry-pick $OWN_COMMITS
@@ -218,7 +218,7 @@ Same as squash merge - cherry-pick only your commits:
 # Even though the content is the same, SHAs differ
 
 # Use cherry-pick strategy (same as squash merge)
-git checkout -b temp-rebase origin/main
+git checkout -b temp-rebase origin/<baseRefName>
 git cherry-pick ccc3333 ddd4444  # Only your commits
 git checkout <your-branch>
 git reset --hard temp-rebase

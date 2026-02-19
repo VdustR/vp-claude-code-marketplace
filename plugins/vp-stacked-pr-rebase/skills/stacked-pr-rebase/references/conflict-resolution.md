@@ -6,8 +6,9 @@ Basic guide for handling merge conflicts during cherry-pick operations.
 
 | Type | Example | Action |
 |------|---------|--------|
-| **Simple** | Import additions, whitespace, comments | Auto-resolve (keep both) |
-| **Complex** | Same line modified, function signature changed | Ask user |
+| **Whitespace-only** | Trailing spaces, line endings, indentation | Auto-resolve; list resolved files for user review |
+| **Additive** | Both sides added different imports/lines | Attempt keep-both; ask if result is unclear |
+| **Semantic** | Same line modified, function signature changed | Always ask user |
 
 ## During Conflict
 
