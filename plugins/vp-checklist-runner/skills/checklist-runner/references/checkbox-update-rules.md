@@ -147,7 +147,11 @@ current_updated_at=$(echo "$result" | jq -r '.updated_at')
 
 # 3. Replace checkboxes and build JSON payload in a single jq pipeline
 #    This keeps the body in JSON throughout, avoiding shell escaping entirely
-echo "$result" | jq '{body: (.body | gsub("- \\[ \\] Item that passed"; "- [x] Item that passed"))}' \
+#    Chain one gsub per passed item — do NOT use a catch-all pattern (would check off failed items too)
+echo "$result" | jq '{body: (.body
+  | gsub("- \\[ \\] First passed item"; "- [x] First passed item")
+  | gsub("- \\[ \\] Second passed item"; "- [x] Second passed item")
+)}' \
   | gh api repos/{o}/{r}/pulls/{n} -X PATCH --input -
 ```
 
@@ -155,7 +159,11 @@ echo "$result" | jq '{body: (.body | gsub("- \\[ \\] Item that passed"; "- [x] I
 
 ```bash
 # Same pattern as PR body, using issues endpoint
-echo "$result" | jq '{body: (.body | gsub("- \\[ \\] Passed item"; "- [x] Passed item"))}' \
+# Chain one gsub per passed item (see PR Body Update above for full example)
+echo "$result" | jq '{body: (.body
+  | gsub("- \\[ \\] First passed item"; "- [x] First passed item")
+  | gsub("- \\[ \\] Second passed item"; "- [x] Second passed item")
+)}' \
   | gh api repos/{o}/{r}/issues/{n} -X PATCH --input -
 ```
 
@@ -168,7 +176,11 @@ result=$(gh api repos/{o}/{r}/issues/comments/{comment_id})
 # 2. Compare updated_at (see Race Condition Prevention)
 
 # 3. Replace checkboxes and PATCH — same jq pipeline pattern
-echo "$result" | jq '{body: (.body | gsub("- \\[ \\] Passed item"; "- [x] Passed item"))}' \
+# Chain one gsub per passed item (see PR Body Update above for full example)
+echo "$result" | jq '{body: (.body
+  | gsub("- \\[ \\] First passed item"; "- [x] First passed item")
+  | gsub("- \\[ \\] Second passed item"; "- [x] Second passed item")
+)}' \
   | gh api repos/{o}/{r}/issues/comments/{comment_id} -X PATCH --input -
 ```
 

@@ -151,7 +151,7 @@ Classify each unchecked item to determine verification strategy. See [classifica
 **Output:**
 
 ```text
-Item Classification:
+Item Classification (confidence = how sure we are about the category, not the verification result):
 ┌───┬─────────────────────────────────────┬──────────┬────────────┐
 │ # │ Item                                │ Category │ Confidence │
 ├───┼─────────────────────────────────────┼──────────┼────────────┤

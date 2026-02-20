@@ -15,7 +15,7 @@ Deterministic file/field checks. Each produces a definitive PASS/FAIL.
 | SKILL.md has valid frontmatter | `awk '/^---$/{c++} c==2{exit}' SKILL.md && head -20 SKILL.md \| grep -q 'name:'` | Opening + closing `---` exist, `name:` field present |
 | Plugins sorted alphabetically | `jq -r '.plugins[].name' .claude-plugin/marketplace.json \| sort -C` | Exit code 0 |
 | Plugin registered in marketplace.json | `jq -r '.plugins[].name' .claude-plugin/marketplace.json \| grep -q '^vp-<name>$'` | Exit code 0 |
-| Version updated | `git diff origin/main -- plugin.json \| grep -q '"version"'` | Exit code 0 |
+| Version updated | `git diff origin/main -- plugin.json \| grep -q '"version"'` | Exit code 0 (MEDIUM confidence — checks field presence in diff, not actual value change) |
 | File exists | `test -f <path>` | Exit code 0 |
 | JSON is valid | `jq empty <file>` | Exit code 0 |
 | YAML frontmatter has required fields | `head -20 SKILL.md \| grep -q 'name:' && head -20 SKILL.md \| grep -q 'description:'` | Exit code 0 |
