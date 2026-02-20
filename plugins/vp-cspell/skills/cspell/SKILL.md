@@ -32,7 +32,7 @@ Prioritized strategy for handling cspell unknown word warnings. Classify each fl
 
 ## Workflow
 
-1. **Check for cspell config** — Search from the file's directory upward for: `.cspell.json`, `cspell.json`, `cspell.config.{yaml,yml,js,cjs,mjs,ts}`, `.vscode/cspell.json`, or `cspell` field in `package.json`. If none found: notify user, do NOT auto-fix, offer to bootstrap (see below). Note: `cspell.*` settings in `.vscode/settings.json` are IDE-local and do not count as project config.
+1. **Check for cspell config** — Search from the file's directory upward for cspell config files: `package.json` (`cspell` field), `.cspell.json`, `cspell.json`, `cspell.config.{json,mjs,js,cjs,yaml,yml,toml}`, `cspell.{yaml,yml}`, and their `.`/`.config/` prefixed variants (e.g., `.cspell.config.yaml`, `.config/cspell.json`). Also check `.vscode/cspell.json`. If none found: notify user, do NOT auto-fix, offer to bootstrap (see below). Note: `cspell.*` settings in `.vscode/settings.json` are IDE-local and do not count as project config.
 2. **Apply fix priority** — Stop at the first applicable level (see table below).
 3. **Select directive** — When using inline directives, consult [decision-tree.md](references/decision-tree.md) for the selection guide.
 
