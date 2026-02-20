@@ -32,13 +32,16 @@ An author is a bot if:
    - `deepsource`, `sonarcloud`, `codeclimate`, `snyk`
 
 ```bash
-# Detection logic
+# Detection logic — regex MUST be in a variable (unquoted in =~), not inline-quoted
 author_lower=$(echo "$author" | tr '[:upper:]' '[:lower:]')
 is_bot=false
 
-if [[ "$author_lower" =~ \[bot\]$ ]]; then
+bot_suffix='\[bot\]$'
+bot_names='^(dependabot|renovate|github-actions|copilot|coderabbitai|codiumai|sourcery-ai|deepsource|sonarcloud|codeclimate|snyk)$'
+
+if [[ "$author_lower" =~ $bot_suffix ]]; then
   is_bot=true
-elif [[ "$author_lower" =~ ^(dependabot|renovate|github-actions|copilot|coderabbitai|codiumai|sourcery-ai|deepsource|sonarcloud|codeclimate|snyk)$ ]]; then
+elif [[ "$author_lower" =~ $bot_names ]]; then
   is_bot=true
 fi
 ```
@@ -61,7 +64,9 @@ gh api repos/{o}/{r} --jq '.permissions.push // false'
 | Auto-check | true | any | false |
 | Suggest-then-check | false | true | false |
 | Comment-only | false | false | any |
-| Comment-only | any | any | true |
+| Comment-only (default for bots) | any | any | true |
+
+> **Bot override**: When `is_bot=true` and `has_push=true`, the default is Comment-only. User can explicitly request "check them for me" to override to Suggest-then-check mode.
 
 ## Update Decision Matrix
 
@@ -106,12 +111,15 @@ I'll post a verification report as a comment instead.
 Phase 1 saves `updated_at` for each source. Before PATCH in Phase 4:
 
 ```bash
-# Re-fetch current body AND updated_at in a SINGLE API call
-result=$(gh api repos/{o}/{r}/pulls/{n} --jq '{body, updated_at}')
-# For issues: gh api repos/{o}/{r}/issues/{n} --jq '{body, updated_at}'
-# For comments: gh api repos/{o}/{r}/issues/comments/{id} --jq '{body, updated_at}'
+# Create a unique temp file to avoid collisions with concurrent executions
+tmpfile=$(mktemp) && trap 'rm -f "$tmpfile"' EXIT
 
-current_updated_at=$(echo "$result" | jq -r '.updated_at')
+# Re-fetch current body AND updated_at in a SINGLE API call — save to temp file
+gh api repos/{o}/{r}/pulls/{n} > "$tmpfile"
+# For issues: gh api repos/{o}/{r}/issues/{n} > "$tmpfile"
+# For comments: gh api repos/{o}/{r}/issues/comments/{id} > "$tmpfile"
+
+current_updated_at=$(jq -r '.updated_at' "$tmpfile")
 
 # Compare with Phase 1 timestamp
 if [ "$current_updated_at" != "$phase1_updated_at" ]; then
@@ -137,50 +145,59 @@ fi
 ### PR Body Update
 
 > **CRITICAL: Do NOT use shell `sed` or `echo` for checkbox replacement.** PR body content may contain shell metacharacters (backticks, `$()`, sed delimiters) that would cause injection or corruption. Use `jq` pipelines piped to `gh api --input -` to keep content in JSON throughout — this avoids shell expansion entirely.
+>
+> **gsub regex escaping**: `jq`'s `gsub` uses Oniguruma regex. Checklist item text may contain regex metacharacters (`.`, `*`, `+`, `?`, `[`, `]`, `(`, `)`, `{`, `}`, `^`, `$`, `|`, `\`). Escape them with `\\` in the gsub pattern. If duplicate item text exists across sources, warn the user — gsub replaces all occurrences and cannot target by position.
 
 ```bash
+# Prerequisite: $tmpfile must be set via mktemp (see Race Condition Prevention)
+#
 # 1. GET current body + updated_at in a single call
-result=$(gh api repos/{o}/{r}/pulls/{n})
+#    IMPORTANT: Save to a temp file, NOT a shell variable — PR body may contain
+#    control characters (newlines, tabs) that corrupt shell variable expansion.
+gh api repos/{o}/{r}/pulls/{n} > "$tmpfile"
 
 # 2. Compare updated_at (see Race Condition Prevention)
-current_updated_at=$(echo "$result" | jq -r '.updated_at')
+current_updated_at=$(jq -r '.updated_at' "$tmpfile")
 
 # 3. Replace checkboxes and build JSON payload in a single jq pipeline
 #    This keeps the body in JSON throughout, avoiding shell escaping entirely
 #    Chain one gsub per passed item — do NOT use a catch-all pattern (would check off failed items too)
-echo "$result" | jq '{body: (.body
+#    NOTE: Parentheses in item text must be regex-escaped in jq gsub: \( \)
+jq '{body: (.body
   | gsub("- \\[ \\] First passed item"; "- [x] First passed item")
-  | gsub("- \\[ \\] Second passed item"; "- [x] Second passed item")
-)}' \
+  | gsub("- \\[ \\] Item with \\(parens\\)"; "- [x] Item with (parens)")
+)}' "$tmpfile" \
   | gh api repos/{o}/{r}/pulls/{n} -X PATCH --input -
 ```
 
 ### Issue Body Update
 
 ```bash
+# Prerequisite: $tmpfile must be set via mktemp (see Race Condition Prevention)
 # Same pattern as PR body, using issues endpoint
-# Chain one gsub per passed item (see PR Body Update above for full example)
-echo "$result" | jq '{body: (.body
+gh api repos/{o}/{r}/issues/{n} > "$tmpfile"
+jq '{body: (.body
   | gsub("- \\[ \\] First passed item"; "- [x] First passed item")
   | gsub("- \\[ \\] Second passed item"; "- [x] Second passed item")
-)}' \
+)}' "$tmpfile" \
   | gh api repos/{o}/{r}/issues/{n} -X PATCH --input -
 ```
 
 ### Comment Update
 
 ```bash
+# Prerequisite: $tmpfile must be set via mktemp (see Race Condition Prevention)
 # 1. GET current comment (body + updated_at in single call)
-result=$(gh api repos/{o}/{r}/issues/comments/{comment_id})
+gh api repos/{o}/{r}/issues/comments/{comment_id} > "$tmpfile"
 
 # 2. Compare updated_at (see Race Condition Prevention)
+current_updated_at=$(jq -r '.updated_at' "$tmpfile")
 
 # 3. Replace checkboxes and PATCH — same jq pipeline pattern
-# Chain one gsub per passed item (see PR Body Update above for full example)
-echo "$result" | jq '{body: (.body
+jq '{body: (.body
   | gsub("- \\[ \\] First passed item"; "- [x] First passed item")
   | gsub("- \\[ \\] Second passed item"; "- [x] Second passed item")
-)}' \
+)}' "$tmpfile" \
   | gh api repos/{o}/{r}/issues/comments/{comment_id} -X PATCH --input -
 ```
 
@@ -218,8 +235,13 @@ When posting a verification report as a comment (instead of editing checkboxes):
 Use `gh api` with JSON wrapping for both PRs and issues (PRs are issues in GitHub API):
 
 ```bash
-# Wrap report in JSON and post — safe for any content
-jq -n --arg body "$report" '{"body": $body}' \
+# Write report to temp file, then wrap in JSON — avoids shell expansion of $report
+# (Do NOT pass report content through shell variables — use --rawfile instead)
+# Note: if $tmpfile trap is already set, combine cleanup:
+#   trap 'rm -f "$tmpfile" "$report_file"' EXIT
+report_file=$(mktemp)
+# ... write report content to "$report_file" ...
+jq -n --rawfile body "$report_file" '{"body": $body}' \
   | gh api repos/{o}/{r}/issues/{n}/comments --input -
 ```
 
@@ -227,4 +249,4 @@ jq -n --arg body "$report" '{"body": $body}' \
 
 If a previous checklist-runner comment exists (detected by `<!-- Generated by checklist-runner -->` marker):
 - Update the existing comment instead of creating a new one
-- Use the comment's `id` for PATCH
+- Use the comment's `databaseId` (integer from GraphQL, same as the REST `id` field) for the PATCH URL path

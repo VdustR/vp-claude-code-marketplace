@@ -11,15 +11,15 @@ Deterministic file/field checks. Each produces a definitive PASS/FAIL.
 | Checklist Item | Command | PASS Condition |
 |----------------|---------|----------------|
 | Plugin name has `vp-` prefix | `jq -r '.name' plugin.json \| grep -q '^vp-'` | Exit code 0 |
-| plugin.json has all required fields | `jq 'has("name","version","description","author","license")' plugin.json` | Returns `true` |
-| SKILL.md has valid frontmatter | `awk '/^---$/{c++} c==2{exit}' SKILL.md && head -20 SKILL.md \| grep -q 'name:'` | Opening + closing `---` exist, `name:` field present |
+| plugin.json has all required fields | `jq '[has("name"), has("version"), has("description"), has("author"), has("license")] \| all' plugin.json` | Returns `true` |
+| SKILL.md has valid frontmatter | `head -1 SKILL.md \| grep -q '^---$' && [ "$(grep -c '^---$' SKILL.md)" -ge 2 ] && head -20 SKILL.md \| grep -q 'name:'` | First line is `---`, at least 2 `---` lines, `name:` field present |
 | Plugins sorted alphabetically | `jq -r '.plugins[].name' .claude-plugin/marketplace.json \| sort -C` | Exit code 0 |
 | Plugin registered in marketplace.json | `jq -r '.plugins[].name' .claude-plugin/marketplace.json \| grep -q '^vp-<name>$'` | Exit code 0 |
-| Version updated | `git diff origin/main -- plugin.json \| grep -q '"version"'` | Exit code 0 (MEDIUM confidence — checks field presence in diff, not actual value change) |
+| Version updated | `git diff $(gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name') -- plugin.json \| grep -q '"version"'` | Exit code 0 (MEDIUM confidence — checks field presence in diff, not actual value change; auto-detects default branch) |
 | File exists | `test -f <path>` | Exit code 0 |
 | JSON is valid | `jq empty <file>` | Exit code 0 |
 | YAML frontmatter has required fields | `head -20 SKILL.md \| grep -q 'name:' && head -20 SKILL.md \| grep -q 'description:'` | Exit code 0 |
-| No sensitive data in fields | `jq -r '.. \| strings' <file> \| grep -iqE '(password\|secret\|token\|api.?key)'; test $? -eq 1` | grep finds nothing |
+| No sensitive data in fields | `jq empty <file> && ! jq -r '.. \| strings' <file> \| grep -iqE '(password\|secret\|token\|api.?key)'` | `jq empty` validates JSON first (FAIL if invalid); `!` inverts grep (PASS when no match) |
 
 ### Custom Recipe Construction
 
@@ -35,31 +35,34 @@ For items not in the table above, construct a recipe:
 ### Fetch CI Status
 
 ```bash
-gh pr checks <N> --json name,state,conclusion
+gh pr checks <N> --json name,state,bucket
 ```
 
 ### Parse Results
 
 ```bash
 # All checks passed?
-gh pr checks <N> --json conclusion --jq 'all(.[]; .conclusion == "SUCCESS")'
+gh pr checks <N> --json bucket --jq 'if length == 0 then "NO_CI" else all(.[]; .bucket == "pass") end'
 
 # Which checks failed?
-gh pr checks <N> --json name,conclusion --jq '.[] | select(.conclusion != "SUCCESS") | "\(.name): \(.conclusion)"'
+gh pr checks <N> --json name,bucket --jq '.[] | select(.bucket != "pass") | "\(.name): \(.bucket)"'
 
 # Any pending?
-gh pr checks <N> --json state --jq 'any(.[]; .state == "PENDING" or .state == "QUEUED")'
+gh pr checks <N> --json bucket --jq 'any(.[]; .bucket == "pending")'
 ```
 
 ### Status Interpretation
 
-| State | Conclusion | Result |
-|-------|-----------|--------|
-| COMPLETED | SUCCESS | PASS |
-| COMPLETED | FAILURE | FAIL |
-| COMPLETED | CANCELLED | FAIL (report as cancelled) |
-| PENDING | — | PENDING |
-| QUEUED | — | PENDING |
+`gh pr checks` uses `bucket` for normalized status:
+
+| Bucket | Result |
+|--------|--------|
+| `pass` | PASS |
+| `fail` | FAIL |
+| `pending` | PENDING |
+| `skipping` | SKIP (report as skipped) |
+| `cancel` | FAIL (report as cancelled) |
+| (empty array) | No CI configured |
 
 ### When No CI is Configured
 
@@ -85,11 +88,11 @@ Single-command checks. Each runs one command and checks exit code.
 | Checklist Item | Command | Notes |
 |----------------|---------|-------|
 | No console.log | `! grep -rn 'console\.log' src/` | Invert: PASS when grep finds nothing |
-| No TODO/FIXME | `! grep -rn 'TODO\|FIXME' src/` | Adjust path as needed |
+| No TODO/FIXME | `! grep -rnE 'TODO|FIXME' src/` | Use `-E` (ERE) for portability; adjust path as needed |
 | No debugger | `! grep -rn 'debugger' src/ --include='*.ts' --include='*.js'` | Language-specific |
 | No unused imports | Prefer CI/lint check (e.g., ESLint `no-unused-vars`) | Reclassify as CI if linter is configured; grep is unreliable for this |
 | No trailing whitespace | `! grep -rn ' $' src/` | May have false positives |
-| No hardcoded URLs | `! grep -rn 'http://\|https://' src/ --include='*.ts'` | Heuristic — MEDIUM confidence |
+| No hardcoded URLs | `! grep -rn 'https\?://' src/ --include='*.ts' \| grep -v '^\s*//'` | Heuristic — MEDIUM confidence; consider reclassifying as Scan for fewer false positives |
 
 ### Recipe Guidelines
 
@@ -237,8 +240,10 @@ gh api graphql -f query='
           id
           comments(first: 10) {
             nodes {
+              databaseId
               body
               author { login }
+              updatedAt
             }
           }
         }
@@ -276,8 +281,4 @@ gh api graphql -f query='
 
 ## Confidence Scoring
 
-| Level | Criteria | Example |
-|-------|----------|---------|
-| **HIGH** | Exact command pass/fail, deterministic output | `jq 'has("name")' → true` |
-| **MEDIUM** | Pattern-based, possible false positive/negative | `grep -rn 'TODO'` (could match in comments about TODO handling) |
-| **LOW** | Heuristic, requires interpretation | "No unused imports" via grep (misses dynamic imports) |
+Confidence levels (HIGH / MEDIUM / LOW) are defined in [classification-patterns.md](classification-patterns.md).

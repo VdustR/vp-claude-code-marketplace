@@ -72,7 +72,7 @@ Input received
 
 Collect all checklist items from the PR/issue body and comments. Use `gh pr view` for the PR body and GraphQL for comments. See [verification-recipes.md](references/verification-recipes.md) for exact API endpoints and queries.
 
-> **Pagination**: GraphQL queries use `first: 100`. When results have `pageInfo.hasNextPage == true`, paginate with `after: endCursor` to avoid silently dropping later comments. Emit a warning if pagination is needed.
+> **Pagination**: Paginate when `pageInfo.hasNextPage` is true. See [verification-recipes.md](references/verification-recipes.md) for pagination handling.
 
 > **API field naming**: `gh pr view --json` uses camelCase (`updatedAt`), while REST `gh api` returns snake_case (`updated_at`). Normalize to `updated_at` internally.
 
@@ -92,29 +92,11 @@ Track for each item:
 
 **Permission Probe:**
 
-```bash
-# Get current authenticated user
-gh api user --jq '.login'
-
-# Check repo write access
-gh api repos/{o}/{r} --jq '.permissions.push'
-```
-
-Compare current user with each checklist source author. Detect bots:
-- Author login ends with `[bot]`
-- Known bot patterns: `dependabot`, `renovate`, `github-actions`, `copilot`
-- For more reliable detection, check GraphQL `__typename` (`User` vs `Bot`) or REST `type` field
+Get current user (`gh api user`), check repo write access (`gh api repos/{o}/{r}`), and compare with each source author. See [checkbox-update-rules.md](references/checkbox-update-rules.md) for full ownership detection, bot detection rules, and permission commands.
 
 > **Null permissions**: If `.permissions` is null or absent (e.g., fine-grained PAT without `metadata:read`), treat as no write access.
 
-**Output update mode to user:**
-
-| Post Owner | Permission | Update Mode |
-|------------|-----------|-------------|
-| Self | Any | Auto-check (own post) |
-| Other (human) | Push access | Suggest-then-check (suggest user self-operate; check only if explicitly requested) |
-| Other (human) | No access | Comment-only (no write access) |
-| Bot | Any | Comment-only (bot PR) |
+**Output update mode to user** (see [checkbox-update-rules.md](references/checkbox-update-rules.md) for the full permission matrix):
 
 ```text
 Source Analysis:
@@ -126,7 +108,7 @@ Source Analysis:
 **Edge Cases:**
 - PR is closed/merged → warn user; ask if proceed anyway
 - No checklist found → report "No checklist items found" and exit
-- All items already checked → report; offer `--force` to re-verify (re-classify and re-verify all items regardless of checked state)
+- All items already checked → report; offer to re-verify if user explicitly requests (re-classify and re-verify all items regardless of checked state)
 - Nested checklists → flatten with parent context preserved; verify each item independently but note its parent condition
 
 ### Phase 2: Item Classification
@@ -174,20 +156,12 @@ See [verification-recipes.md](references/verification-recipes.md) for specific c
 
 **Auto Verification:**
 
-Run specific file/field checks. Each produces a definitive PASS/FAIL.
-
-```bash
-# Example: "Plugin name has vp- prefix"
-jq -r '.name' plugin.json | grep -q '^vp-'
-
-# Example: "Plugins sorted alphabetically"
-jq -r '.plugins[].name' .claude-plugin/marketplace.json | sort -C
-```
+Run specific file/field checks. Each produces a definitive PASS/FAIL. See [verification-recipes.md](references/verification-recipes.md) for common recipes and custom recipe construction.
 
 **CI Verification (one-time check, NO polling):**
 
 ```bash
-gh pr checks <N> --json name,state,conclusion
+gh pr checks <N> --json name,state,bucket
 ```
 
 | CI State | Action |
@@ -199,17 +173,7 @@ gh pr checks <N> --json name,state,conclusion
 
 **Shell Verification:**
 
-Run single-command checks (grep, find, jq). Expected exit code 0 = PASS.
-
-> **Source directories**: Detect the project's source directories from `tsconfig.json`, `package.json`, or directory structure rather than hardcoding `src/`. Verify target directory exists before running — a missing directory silently returns PASS.
-
-```bash
-# Example: "No console.log statements"
-! grep -rn 'console\.log' src/
-
-# Example: "No TODO comments"
-! grep -rn 'TODO\|FIXME' src/
-```
+Run single-command checks (grep, find, jq). Expected exit code 0 = PASS. See [verification-recipes.md](references/verification-recipes.md) for recipe guidelines (source directory detection, `--include` scoping).
 
 **Scan Verification (subagents):**
 
@@ -224,10 +188,9 @@ Will launch 3 scan subagents for:
 Proceed? [y/N]
 ```
 
-- Max 5 subagents per execution
-- Each subagent runs as a Task with `subagent_type=Explore`
-- Returns PASS/FAIL with evidence
-- **Scan results always have MEDIUM confidence** (never HIGH) — subagents can hallucinate; require user confirmation before checking off Scan-verified items, even on own posts
+- Max 5 subagents per execution; returns PASS/FAIL with evidence
+- See [verification-recipes.md](references/verification-recipes.md) for constraints and prompt templates
+- **Scan results always have MEDIUM confidence** (never HIGH) — subagents can hallucinate (e.g., confusing closing ``` with bare opening blocks); always verify scan findings with a targeted grep/command before accepting; require user confirmation before checking off Scan-verified items, even on own posts
 
 **Human Verification:**
 
@@ -241,13 +204,7 @@ The following items need manual verification:
 For each, reply: pass / fail / skip
 ```
 
-**Confidence Scoring per Result:**
-
-| Confidence | Meaning |
-|------------|---------|
-| HIGH | Definitive pass/fail (exact command output) |
-| MEDIUM | Pattern-based (possible false positive/negative) |
-| LOW | Heuristic or user-reported |
+**Confidence Scoring:** See [classification-patterns.md](references/classification-patterns.md) for full definitions of HIGH / MEDIUM / LOW levels.
 
 ### Phase 4: Checkbox Update
 
@@ -258,7 +215,7 @@ Apply ownership rules determined in Phase 1 to update checkboxes. See [checkbox-
 1. `gh api` GET current body/comment — fetch both `body` and `updated_at` in a **single API call**
 2. Compare `updated_at` with Phase 1 timestamp
 3. If changed → **abort update for this source**, notify user (continue with other unaffected sources)
-4. If unchanged → string-replace `- [ ]` to `- [x]` for passed items
+4. If unchanged → use `jq` gsub pipeline to check off passed items (see [checkbox-update-rules.md](references/checkbox-update-rules.md) for mechanics)
 5. PATCH entire body (batch per source — one PATCH per body/comment)
 
 > **Safety**: Checkbox replacement must use `jq` pipelines piped to `gh api --input -`, not shell `sed` or string interpolation — PR body content may contain shell metacharacters that would cause injection or corruption. Keep content in JSON throughout.
@@ -322,7 +279,7 @@ Generate final report after all verifications and updates:
 | Error | Action |
 |-------|--------|
 | No checklist found | Report "No checklist items found" and exit |
-| All items already checked | Report; offer `--force` to re-verify |
+| All items already checked | Report; offer to re-verify if user explicitly requests |
 | PR is closed/merged | Warn; ask if proceed anyway |
 | Different repo URL | Extract owner/repo, verify `gh` access |
 | CI failing | Report which checks failed, mark as FAIL |
@@ -330,7 +287,7 @@ Generate final report after all verifications and updates:
 | No CI configured | Suggest local execution with detected commands |
 | No edit permission | Comment-based verification report |
 | Bot PR | Default to comment mode |
-| Race condition (`updated_at` changed) | Abort PATCH entirely, notify user |
+| Race condition (`updated_at` changed) | Abort PATCH for that source; continue with remaining sources; notify user |
 | Large PR with many scan items | Cap at 5 subagents; confirm before launching |
 | GraphQL API error | Retry once; fall back to REST API if available |
 | `gh` CLI not configured | Report prerequisite; suggest `gh auth login` |
@@ -348,6 +305,5 @@ Generate final report after all verifications and updates:
 - GHES support is best-effort — some instances disable GraphQL or have different pagination limits; test against your target instance
 - Fine-grained PATs need `issues:write` or `pull_requests:write` for checkbox editing, `metadata:read` for permission probe
 - Mixed checklists across multiple comments are supported — each source is tracked and updated independently
-- Re-running the skill on the same PR is safe — already-checked items are skipped unless `--force` is used
-- `--force` re-classifies and re-verifies all items regardless of checked state
+- Re-running the skill on the same PR is safe — already-checked items are skipped unless the user explicitly asks to re-verify all items (which re-classifies and re-verifies regardless of checked state)
 - Race condition prevention is best-effort (TOCTOU between GET and PATCH) — GitHub API has no conditional-write support; the `updated_at` check reduces but does not eliminate the race window

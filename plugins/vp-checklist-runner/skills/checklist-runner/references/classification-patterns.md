@@ -45,13 +45,13 @@ Verifiable via `gh pr checks` API. Single API call, no local execution needed.
 | `type.?check`, `tsc` | "Type check passes" |
 | `build`, `compile` | "Build succeeds", "Project compiles" |
 | `ci.*pass`, `pipeline`, `check.*pass` | "CI passes", "Pipeline green" |
-| `coverage` | "Test coverage above threshold" |
+| `(test\s+)?coverage.*(above\|threshold\|percent\|report)` | "Test coverage above threshold" |
 
 **Regex:**
 ```regex
 (?i)(tests?\s*(pass|green|succeed|ok)|lint(ing)?|type.?check|tsc|
 build\s*(succeed|pass|ok)|compil(e|ation)|ci\s*(pass|green|ok)|
-pipeline|check.*pass|coverage)
+pipeline|check.*pass|(test\s+)?coverage.*(above|threshold|percent|report))
 ```
 
 ### Shell — Single-command grep/find/jq checks
@@ -72,7 +72,7 @@ Verifiable with one shell command. Quick, pattern-based.
 
 **Regex:**
 ```regex
-(?i)(no.*(console\.|todo|fixme|debugger|trailing|hardcod)|
+(?i)(no.*(console\.|todo|fixme|debugger|trailing|whitespace|hardcod)|
 unused.*(import|variable|export)|remove.*(log|debug|print))
 ```
 
@@ -138,7 +138,11 @@ function classify(item_text):
       return (category, confidence)
 
   # Default: Human
-  return (Human, HIGH)
+  human_keywords = ["reviewed", "approved", "sign-off", "sign off"]
+  if any(keyword in normalized for keyword in human_keywords):
+    return (Human, HIGH)   # explicit human-judgment keyword
+  else:
+    return (Human, MEDIUM) # no pattern matched — uncertain classification
 ```
 
 **Priority order for ambiguous matches:**
