@@ -15,6 +15,13 @@
       "keywords": ["checklist", "pr", "issue", "github", "verification", "ci", "automation", "checkbox"]
     },
     {
+      "name": "vp-cspell",
+      "source": "./plugins/vp-cspell",
+      "description": "Handle cspell unknown word warnings with prioritized decision tree and config bootstrapping",
+      "license": "MIT",
+      "keywords": ["cspell", "spelling", "linting", "ide"]
+    },
+    {
       "name": "vp-deps-shift",
       "source": "./plugins/vp-deps-shift",
       "description": "Dependency upgrade and library migration with breaking change detection and test-first verification",

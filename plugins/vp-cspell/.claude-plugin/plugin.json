@@ -1,0 +1,14 @@
+{
+  "name": "vp-cspell",
+  "version": "1.0.0",
+  "description": "Handle cspell unknown word warnings with prioritized decision tree and config bootstrapping",
+  "author": {
+    "name": "VdustR",
+    "url": "https://github.com/VdustR"
+  },
+  "homepage": "https://github.com/VdustR/vp-claude-code-marketplace",
+  "repository": "https://github.com/VdustR/vp-claude-code-marketplace",
+  "license": "MIT",
+  "keywords": ["cspell", "spelling", "linting", "ide"],
+  "skills": "./skills/"
+}

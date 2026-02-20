@@ -31,6 +31,20 @@ Features:
 - Confidence-based automation — only pauses for uncertain items
 - Scan subagents for semantic checks (secrets, docs, changelog) with user confirmation
 
+### vp-cspell
+
+Handle cspell unknown word warnings with prioritized decision tree and config bootstrapping.
+
+```bash
+/plugin install vp-cspell@vdustr
+```
+
+Features:
+- Prioritized decision tree: adjust text > project dictionary > inline directives
+- Smart inline directive selection (cspell:words vs cspell:ignore vs cspell:disable)
+- Interactive config bootstrapping via `cspell init` with guided Q&A
+- Runtime documentation via Context7 — no stale reference files
+
 ### vp-deps-shift
 
 Dependency upgrade and library migration with breaking change detection and test-first verification.
