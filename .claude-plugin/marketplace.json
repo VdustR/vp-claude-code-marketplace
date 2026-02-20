@@ -8,6 +8,13 @@
   },
   "plugins": [
     {
+      "name": "vp-checklist-runner",
+      "source": "./plugins/vp-checklist-runner",
+      "description": "Parse and verify GitHub PR/issue checklists with auto-check and CI integration",
+      "license": "MIT",
+      "keywords": ["checklist", "pr", "issue", "github", "verification", "ci", "automation", "checkbox"]
+    },
+    {
       "name": "vp-deps-shift",
       "source": "./plugins/vp-deps-shift",
       "description": "Dependency upgrade and library migration with breaking change detection and test-first verification",
