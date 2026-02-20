@@ -14,6 +14,23 @@ Claude Code plugins by [VdustR](https://github.com/VdustR).
 
 > Plugins are listed in alphabetical order.
 
+### vp-checklist-runner
+
+Parse and verify GitHub PR/issue checklists with auto-check and CI integration.
+
+```bash
+/plugin install vp-checklist-runner@vdustr
+```
+
+Features:
+- 5-phase workflow: source resolution, classification, verification, checkbox update, summary report
+- Auto-classifies checklist items into Auto / CI / Shell / Scan / Human categories
+- CI-first verification — checks CI status before running tests locally
+- Ownership-aware updates — respects GitHub permissions, defaults to comment mode for others' posts
+- Race condition prevention via `updated_at` timestamp comparison
+- Confidence-based automation — only pauses for uncertain items
+- Scan subagents for semantic checks (secrets, docs, changelog) with user confirmation
+
 ### vp-deps-shift
 
 Dependency upgrade and library migration with breaking change detection and test-first verification.
