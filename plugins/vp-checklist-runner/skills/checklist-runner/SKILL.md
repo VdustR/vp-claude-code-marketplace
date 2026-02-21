@@ -210,15 +210,16 @@ For each, reply: pass / fail / skip
 
 Apply ownership rules determined in Phase 1 to update checkboxes. See [checkbox-update-rules.md](references/checkbox-update-rules.md) for full rules, update mechanics, and comment report template.
 
-**Update Flow (5 steps):**
+**Update Flow (6 steps):**
 
 1. `gh api` GET current body/comment — fetch both `body` and `updated_at` in a **single API call**
 2. Compare `updated_at` with Phase 1 timestamp
 3. If changed → **abort update for this source**, notify user (continue with other unaffected sources)
 4. If unchanged → use `jq` gsub pipeline to check off passed items (see [checkbox-update-rules.md](references/checkbox-update-rules.md) for mechanics)
 5. PATCH entire body (batch per source — one PATCH per body/comment)
+6. **Post-update verification** — assert the PATCH response body contains all expected `[x]` items; escalate to user if assertion fails
 
-> **Safety**: Checkbox replacement must use `jq` pipelines piped to `gh api --input -`, not shell `sed` or string interpolation — PR body content may contain shell metacharacters that would cause injection or corruption. Keep content in JSON throughout.
+> **Safety**: Checkbox replacement must use `jq` pipelines piped to `gh api --input -`, not shell `sed` or string interpolation — keep content in JSON throughout to avoid shell metacharacter corruption. See [checkbox-update-rules.md](references/checkbox-update-rules.md) for the full anti-pattern list, update mechanics, and post-update verification.
 
 Ownership rules from the Phase 1 permission probe determine update behavior. See [checkbox-update-rules.md](references/checkbox-update-rules.md) for the full decision matrix, interaction examples, and comment report template.
 
