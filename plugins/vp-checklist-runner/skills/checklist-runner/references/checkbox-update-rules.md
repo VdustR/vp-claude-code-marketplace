@@ -162,12 +162,13 @@ current_updated_at=$(jq -r '.updated_at' "$tmpfile")
 #    jq -r decodes JSON string to raw text; gh pr edit re-encodes correctly
 #    Chain one gsub per passed item — do NOT use a catch-all pattern
 #    NOTE: Parentheses in item text must be regex-escaped in jq gsub: \( \)
-jq -r '.body
+jq -r '(.body // "")
   | gsub("- \\[ \\] First passed item"; "- [x] First passed item")
   | gsub("- \\[ \\] Item with \\(parens\\)"; "- [x] Item with (parens)")
 ' "$tmpfile" > "$body_file"
 
 # 4. Update PR body — CLI handles encoding
+#    Note: if body was null (empty PR), $body_file contains "" — gh pr edit sets an empty body
 gh pr edit {n} --body-file "$body_file"
 ```
 
@@ -210,7 +211,7 @@ current_updated_at=$(jq -r '.updated_at' "$tmpfile")
 #    This keeps the body in JSON throughout, avoiding shell escaping entirely
 #    Chain one gsub per passed item — do NOT use a catch-all pattern (would check off failed items too)
 #    NOTE: Parentheses in item text must be regex-escaped in jq gsub: \( \)
-jq '{body: (.body
+jq '{body: ((.body // "")
   | gsub("- \\[ \\] First passed item"; "- [x] First passed item")
   | gsub("- \\[ \\] Item with \\(parens\\)"; "- [x] Item with (parens)")
 )}' "$tmpfile" \
@@ -226,7 +227,7 @@ jq '{body: (.body
 tmpfile=$(mktemp) && body_file=$(mktemp) && trap 'rm -f "$tmpfile" "$body_file"' EXIT
 gh api repos/{o}/{r}/issues/{n} > "$tmpfile"
 current_updated_at=$(jq -r '.updated_at' "$tmpfile")
-jq -r '.body
+jq -r '(.body // "")
   | gsub("- \\[ \\] First passed item"; "- [x] First passed item")
   | gsub("- \\[ \\] Second passed item"; "- [x] Second passed item")
 ' "$tmpfile" > "$body_file"
@@ -241,7 +242,7 @@ gh issue edit {n} --body-file "$body_file"
 # Prerequisite: $tmpfile must be set via mktemp (see Race Condition Prevention)
 # Same pattern as PR body, using issues endpoint
 gh api repos/{o}/{r}/issues/{n} > "$tmpfile"
-jq '{body: (.body
+jq '{body: ((.body // "")
   | gsub("- \\[ \\] First passed item"; "- [x] First passed item")
   | gsub("- \\[ \\] Second passed item"; "- [x] Second passed item")
 )}' "$tmpfile" \
@@ -263,7 +264,7 @@ gh api repos/{o}/{r}/issues/comments/{comment_id} > "$tmpfile"
 current_updated_at=$(jq -r '.updated_at' "$tmpfile")
 
 # 3. Replace checkboxes and PATCH — same jq pipeline pattern
-jq '{body: (.body
+jq '{body: ((.body // "")
   | gsub("- \\[ \\] First passed item"; "- [x] First passed item")
   | gsub("- \\[ \\] Second passed item"; "- [x] Second passed item")
 )}' "$tmpfile" \
@@ -302,7 +303,7 @@ The `gh api` PATCH response already returns the updated resource — save it and
 verify_tmpfile=$(mktemp) && trap 'rm -f "${tmpfile:-}" "${verify_tmpfile:-}"' EXIT
 
 # Capture PATCH response (replaces the bare `gh api ... -X PATCH --input -` above)
-jq '{body: (.body
+jq '{body: ((.body // "")
   | gsub("- \\[ \\] First passed item"; "- [x] First passed item")
 )}' "$tmpfile" \
   | gh api "repos/{o}/{r}/$patch_endpoint" -X PATCH --input - > "$verify_tmpfile"
