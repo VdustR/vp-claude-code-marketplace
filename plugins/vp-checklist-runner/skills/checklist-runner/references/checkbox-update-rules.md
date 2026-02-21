@@ -233,6 +233,8 @@ jq -r '.body
 gh issue edit {n} --body-file "$body_file"
 ```
 
+> **Why this is preferred**: Same encoding boundary as PR body — `jq -r` decodes to raw text, `gh issue edit` encodes back to JSON. No manual JSON wrapping, no double-encoding risk.
+
 #### Alternative: Raw API Method
 
 ```bash
@@ -247,6 +249,10 @@ jq '{body: (.body
 ```
 
 ### Comment Update
+
+#### Raw API Method (only option — no CLI shortcut for comments)
+
+The `gh` CLI has no `gh comment edit --body-file` equivalent, so the raw API method is the only option for comment updates.
 
 ```bash
 # Prerequisite: $tmpfile must be set via mktemp (see Race Condition Prevention)
