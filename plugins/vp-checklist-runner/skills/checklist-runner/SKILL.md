@@ -215,11 +215,11 @@ Apply ownership rules determined in Phase 1 to update checkboxes. See [checkbox-
 1. `gh api` GET current body/comment — fetch both `body` and `updated_at` in a **single API call**
 2. Compare `updated_at` with Phase 1 timestamp
 3. If changed → **abort update for this source**, notify user (continue with other unaffected sources)
-4. If unchanged → use `jq` gsub pipeline to check off passed items (see [checkbox-update-rules.md](references/checkbox-update-rules.md) for mechanics)
-5. PATCH entire body (batch per source — one PATCH per body/comment)
-6. **Post-update verification** — assert the PATCH response body contains all expected `[x]` items; escalate to user if assertion fails
+4. If unchanged → apply checkbox replacements via `jq` gsub (see [checkbox-update-rules.md](references/checkbox-update-rules.md) for mechanics)
+5. Update body/comment (batch per source — one update per body/comment)
+6. **Post-update verification** — assert the updated body contains all expected `[x]` items; escalate to user if assertion fails
 
-> **Safety**: Checkbox replacement must use `jq` pipelines piped to `gh api --input -`, not shell `sed` or string interpolation — keep content in JSON throughout to avoid shell metacharacter corruption. See [checkbox-update-rules.md](references/checkbox-update-rules.md) for the full anti-pattern list, update mechanics, and post-update verification.
+> **Preferred method for PR/issue body**: Use `jq -r` to extract modified body to a temp file, then `gh pr edit --body-file` / `gh issue edit --body-file`. The CLI handles JSON encoding internally, eliminating double-encoding risks. Use the raw API method (`jq` pipeline → `gh api --input -`) only for **comments** (no CLI shortcut) or when CLI is unavailable. See [checkbox-update-rules.md](references/checkbox-update-rules.md) for both methods, anti-patterns, and post-update verification.
 
 Ownership rules from the Phase 1 permission probe determine update behavior. See [checkbox-update-rules.md](references/checkbox-update-rules.md) for the full decision matrix, interaction examples, and comment report template.
 

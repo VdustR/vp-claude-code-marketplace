@@ -144,7 +144,52 @@ fi
 
 ### PR Body Update
 
-> **CRITICAL: Do NOT use shell `sed` or `echo` for checkbox replacement.** PR body content may contain shell metacharacters (backticks, `$()`, sed delimiters) that would cause injection or corruption. Use `jq` pipelines piped to `gh api --input -` to keep content in JSON throughout — this avoids shell expansion entirely.
+#### Preferred: CLI Method
+
+Use `gh pr edit --body-file` — the CLI handles JSON encoding internally, eliminating double-encoding risks entirely.
+
+```bash
+# Prerequisite: $tmpfile and $body_file must be set via mktemp
+tmpfile=$(mktemp) && body_file=$(mktemp) && trap 'rm -f "$tmpfile" "$body_file"' EXIT
+
+# 1. GET current body + updated_at in a single call
+gh api repos/{o}/{r}/pulls/{n} > "$tmpfile"
+
+# 2. Compare updated_at (see Race Condition Prevention)
+current_updated_at=$(jq -r '.updated_at' "$tmpfile")
+
+# 3. Extract body with checkbox replacements → raw text file
+#    jq -r decodes JSON string to raw text; gh pr edit re-encodes correctly
+#    Chain one gsub per passed item — do NOT use a catch-all pattern
+#    NOTE: Parentheses in item text must be regex-escaped in jq gsub: \( \)
+jq -r '.body
+  | gsub("- \\[ \\] First passed item"; "- [x] First passed item")
+  | gsub("- \\[ \\] Item with \\(parens\\)"; "- [x] Item with (parens)")
+' "$tmpfile" > "$body_file"
+
+# 4. Update PR body — CLI handles encoding
+gh pr edit {n} --body-file "$body_file"
+```
+
+> **Why this is preferred**: The `jq -r` → file → `--body-file` pipeline has a clean encoding boundary: `jq -r` decodes JSON to raw text, and `gh pr edit` encodes raw text back to JSON. There is no manual JSON wrapping step where double-encoding can occur.
+
+#### Anti-Patterns (DO NOT USE)
+
+These patterns cause **double-encoding** — newlines (`\n`) become literal `\\n` in the PR body, collapsing the entire body into a single unreadable line on GitHub:
+
+| Anti-Pattern | Why It Breaks |
+|-------------|---------------|
+| `gh api --jq '.body' \| jq -Rs '{body: .}'` | `--jq` decodes JSON → raw text; `jq -Rs` re-encodes raw text → JSON, double-escaping `\n` to `\\n` |
+| `body=$(gh api --jq '.body' ...); jq -n --arg b "$body" '{body: $b}'` | Shell variable loses trailing newlines; `--arg` re-encodes, double-escaping |
+| `gh api --jq '.body' \| sed 's/\[ \]/[x]/' \| ...` | `sed` on decoded text + any re-encoding path = double-escape; also vulnerable to shell metacharacter injection |
+
+**Consequence**: The PR/issue body renders as a single line of escaped text on GitHub. All markdown formatting (headers, lists, checkboxes) is destroyed. Requires a manual `gh pr edit --body-file` to fix.
+
+#### Alternative: Raw API Method
+
+Use `jq` pipeline piped to `gh api --input -` when the CLI method is unavailable (e.g., insufficient CLI version, cross-fork PRs).
+
+> **CRITICAL: Do NOT use shell `sed` or `echo` for checkbox replacement.** PR body content may contain shell metacharacters (backticks, `$()`, sed delimiters) that would cause injection or corruption. Keep content in JSON throughout — this avoids shell expansion entirely.
 >
 > **Do NOT use `gh api --jq '.body'` to extract the body as raw text.** This decodes JSON escapes (e.g., `\n` → real newlines), and any subsequent `jq -Rs` re-encoding will double-escape them (`\n` → `\\n`), corrupting the body on PATCH. Always operate on the full JSON response via a temp file so `jq` reads `.body` as a JSON string, not raw text.
 
@@ -173,6 +218,22 @@ jq '{body: (.body
 ```
 
 ### Issue Body Update
+
+#### Preferred: CLI Method
+
+```bash
+# Same pattern as PR body, using gh issue edit
+tmpfile=$(mktemp) && body_file=$(mktemp) && trap 'rm -f "$tmpfile" "$body_file"' EXIT
+gh api repos/{o}/{r}/issues/{n} > "$tmpfile"
+current_updated_at=$(jq -r '.updated_at' "$tmpfile")
+jq -r '.body
+  | gsub("- \\[ \\] First passed item"; "- [x] First passed item")
+  | gsub("- \\[ \\] Second passed item"; "- [x] Second passed item")
+' "$tmpfile" > "$body_file"
+gh issue edit {n} --body-file "$body_file"
+```
+
+#### Alternative: Raw API Method
 
 ```bash
 # Prerequisite: $tmpfile must be set via mktemp (see Race Condition Prevention)
