@@ -266,7 +266,25 @@ jq '{body: (.body
 
 ### Post-Update Verification
 
-After every PATCH, verify the response body contains all expected checkboxes. The `gh api` PATCH response already returns the updated resource — save it and assert:
+After every update, verify the body contains all expected checkboxes.
+
+#### CLI Method Verification
+
+Since `gh pr edit --body-file` / `gh issue edit --body-file` do not return the updated body, re-fetch via API to verify:
+
+```bash
+# After gh pr edit {n} --body-file "$body_file"
+# or    gh issue edit {n} --body-file "$body_file"
+
+# Re-fetch and assert all expected items are checked — one `contains` per item
+# Uses `contains` (literal substring match) instead of `test` (regex) to avoid escaping issues
+gh api "repos/{o}/{r}/pulls/{n}" \
+  | jq -e '.body | contains("- [x] First passed item")'
+```
+
+#### Raw API Method Verification
+
+The `gh api` PATCH response already returns the updated resource — save it and assert:
 
 ```bash
 # Set $patch_endpoint to the same endpoint used for PATCH:
