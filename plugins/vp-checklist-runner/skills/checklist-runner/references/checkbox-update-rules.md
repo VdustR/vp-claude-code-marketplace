@@ -126,8 +126,11 @@ if [ "$current_updated_at" != "$phase1_updated_at" ]; then
   echo "Source has been modified since we started."
   echo "Skipping checkbox update for THIS source."
   echo "Please re-run /checklist to get fresh data for this source."
-  # Continue with other unaffected sources
+  # abort: do not proceed to PATCH for this source
+  # (continue with other unaffected sources in the outer loop)
+  return 1  # or exit 1 if not in a function
 fi
+# Safe to proceed — timestamp matches
 ```
 
 > **TOCTOU note**: There is a residual race window between this GET and the subsequent PATCH. GitHub API has no conditional-write (ETag/If-Match) support for body updates. This timestamp check is best-effort — it reduces but does not eliminate the risk. After PATCH, optionally re-fetch to verify the update applied correctly.
