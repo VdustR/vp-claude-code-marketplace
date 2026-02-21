@@ -272,7 +272,7 @@ Generate final report after all verifications and updates:
 - **Poll CI repeatedly** — one-time check only; offer to re-run later
 - **Auto-edit other people's posts** — always default to suggest or comment
 - **Launch unlimited subagents** — cap at 5 per execution
-- **Pipe PR body through shell** — use `jq` pipelines with `gh api --input -` to keep content in JSON throughout
+- **Pipe PR body through shell variables or `sed`** — use the CLI method (`--body-file`) for PR/issue body, or `jq` pipeline with `gh api --input -` for comments
 - **Force-check on race condition** — abort the affected source and notify user
 
 ## Error Handling
