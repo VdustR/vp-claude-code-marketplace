@@ -1,6 +1,6 @@
 {
   "name": "vp-checklist-runner",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Parse and verify GitHub PR/issue checklists with auto-check and CI integration",
   "author": {
     "name": "VdustR",

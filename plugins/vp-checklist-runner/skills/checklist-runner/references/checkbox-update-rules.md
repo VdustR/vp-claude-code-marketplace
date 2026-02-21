@@ -146,6 +146,8 @@ fi
 
 > **CRITICAL: Do NOT use shell `sed` or `echo` for checkbox replacement.** PR body content may contain shell metacharacters (backticks, `$()`, sed delimiters) that would cause injection or corruption. Use `jq` pipelines piped to `gh api --input -` to keep content in JSON throughout — this avoids shell expansion entirely.
 >
+> **Do NOT use `gh api --jq '.body'` to extract the body as raw text.** This decodes JSON escapes (e.g., `\n` → real newlines), and any subsequent `jq -Rs` re-encoding will double-escape them (`\n` → `\\n`), corrupting the body on PATCH. Always operate on the full JSON response via a temp file so `jq` reads `.body` as a JSON string, not raw text.
+>
 > **gsub regex escaping**: `jq`'s `gsub` uses Oniguruma regex. Checklist item text may contain regex metacharacters (`.`, `*`, `+`, `?`, `[`, `]`, `(`, `)`, `{`, `}`, `^`, `$`, `|`, `\`). Escape them with `\\` in the gsub pattern. If duplicate item text exists across sources, warn the user — gsub replaces all occurrences and cannot target by position.
 
 ```bash
@@ -200,6 +202,19 @@ jq '{body: (.body
 )}' "$tmpfile" \
   | gh api repos/{o}/{r}/issues/comments/{comment_id} -X PATCH --input -
 ```
+
+### Post-Update Verification
+
+After every PATCH, re-fetch the body and verify checkboxes were applied correctly and formatting is intact:
+
+```bash
+# Re-fetch and verify — check that newlines render correctly (no literal \n)
+# and all intended items are checked off
+gh api repos/{o}/{r}/pulls/{n} --jq '.body'
+# Visually confirm: real newlines (not \n), checkboxes show [x], no corruption
+```
+
+If the body contains literal `\n` instead of real newlines, or any other corruption, immediately re-PATCH with a corrected body using `jq -n --arg body "$CORRECT_BODY" '{body: $body}'` with the body in a shell variable (real newlines preserved by the shell).
 
 ### Batching
 
