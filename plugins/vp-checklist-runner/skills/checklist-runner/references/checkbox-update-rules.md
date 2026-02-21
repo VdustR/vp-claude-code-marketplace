@@ -208,8 +208,12 @@ jq '{body: (.body
 After every PATCH, verify the response body contains all expected checkboxes. The `gh api` PATCH response already returns the updated resource — save it and assert:
 
 ```bash
-# $patch_endpoint = the same endpoint used for PATCH (pulls/{n}, issues/{n}, or issues/comments/{id})
-verify_tmpfile=$(mktemp) && trap 'rm -f "$tmpfile" "$verify_tmpfile"' EXIT
+# Set $patch_endpoint to the same endpoint used for PATCH:
+#   patch_endpoint="pulls/{n}"             # for PR body
+#   patch_endpoint="issues/{n}"            # for issue body
+#   patch_endpoint="issues/comments/{id}"  # for comment
+# This trap replaces the earlier EXIT trap — include all temp files from this flow
+verify_tmpfile=$(mktemp) && trap 'rm -f "${tmpfile:-}" "${verify_tmpfile:-}"' EXIT
 
 # Capture PATCH response (replaces the bare `gh api ... -X PATCH --input -` above)
 jq '{body: (.body
@@ -219,21 +223,11 @@ jq '{body: (.body
 
 # Assert all expected items are checked — one `contains` per item
 # Uses `contains` (literal substring match) instead of `test` (regex) to avoid escaping issues
+# Note: `contains` matches anywhere in body — sufficient since we check specific item text
 jq -e '.body | contains("- [x] First passed item")' "$verify_tmpfile"
 ```
 
-**If verification fails** (assertion exits non-zero), re-fetch the current body, correct it, and re-PATCH:
-
-```bash
-repair_file=$(mktemp) && trap 'rm -f "$tmpfile" "$verify_tmpfile" "$repair_file"' EXIT
-# Re-fetch current body as raw text for correction
-# NOTE: jq -r '.body' outputs raw text; --rawfile reads it back as a JSON string value,
-# so no double-escaping occurs
-gh api "repos/{o}/{r}/$patch_endpoint" | jq -r '.body' > "$repair_file"
-# Edit "$repair_file" to fix corruption, then re-PATCH:
-jq -n --rawfile body "$repair_file" '{body: $body}' \
-  | gh api "repos/{o}/{r}/$patch_endpoint" -X PATCH --input -
-```
+**If verification fails** (assertion exits non-zero), report the failure to the user and stop updating this source. Do NOT attempt automatic repair — the failure indicates an unexpected encoding issue that requires human investigation. Include the PATCH response in the summary report as evidence.
 
 ### Batching
 
