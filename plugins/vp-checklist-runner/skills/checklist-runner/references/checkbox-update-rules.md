@@ -148,6 +148,8 @@ fi
 
 Use `gh pr edit --body-file` — the CLI handles JSON encoding internally, eliminating double-encoding risks entirely.
 
+> **Cross-fork PRs**: `gh pr edit` targets the current git remote's repo. For PRs from forks, it may target the wrong repo or fail silently. Use the Raw API Method instead for cross-fork PRs.
+
 ```bash
 # Prerequisite: $tmpfile and $body_file must be set via mktemp
 tmpfile=$(mktemp) && body_file=$(mktemp) && trap 'rm -f "$tmpfile" "$body_file"' EXIT
