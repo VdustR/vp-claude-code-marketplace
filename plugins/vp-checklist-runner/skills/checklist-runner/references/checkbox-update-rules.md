@@ -274,7 +274,7 @@ After every PATCH, verify the response body contains all expected checkboxes. Th
 #   patch_endpoint="issues/{n}"            # for issue body
 #   patch_endpoint="issues/comments/{id}"  # for comment
 # This trap replaces the earlier EXIT trap — include all temp files from this flow
-verify_tmpfile=$(mktemp) && trap 'rm -f "${tmpfile:-}" "${verify_tmpfile:-}"' EXIT
+verify_tmpfile=$(mktemp) && trap 'rm -f "${tmpfile:-}" "${body_file:-}" "${verify_tmpfile:-}"' EXIT
 
 # Capture PATCH response (replaces the bare `gh api ... -X PATCH --input -` above)
 jq '{body: (.body
