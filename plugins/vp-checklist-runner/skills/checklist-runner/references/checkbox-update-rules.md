@@ -278,7 +278,8 @@ Since `gh pr edit --body-file` / `gh issue edit --body-file` do not return the u
 
 # Re-fetch and assert all expected items are checked — one `contains` per item
 # Uses `contains` (literal substring match) instead of `test` (regex) to avoid escaping issues
-gh api "repos/{o}/{r}/pulls/{n}" \
+# Set $source_endpoint to "pulls/{n}" for PRs or "issues/{n}" for issues
+gh api "repos/{o}/{r}/$source_endpoint" \
   | jq -e '.body | contains("- [x] First passed item")'
 ```
 
@@ -292,7 +293,7 @@ The `gh api` PATCH response already returns the updated resource — save it and
 #   patch_endpoint="issues/{n}"            # for issue body
 #   patch_endpoint="issues/comments/{id}"  # for comment
 # This trap replaces the earlier EXIT trap — include all temp files from this flow
-verify_tmpfile=$(mktemp) && trap 'rm -f "${tmpfile:-}" "${body_file:-}" "${verify_tmpfile:-}"' EXIT
+verify_tmpfile=$(mktemp) && trap 'rm -f "${tmpfile:-}" "${verify_tmpfile:-}"' EXIT
 
 # Capture PATCH response (replaces the bare `gh api ... -X PATCH --input -` above)
 jq '{body: (.body
