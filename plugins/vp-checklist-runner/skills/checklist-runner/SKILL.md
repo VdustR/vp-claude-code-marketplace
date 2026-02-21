@@ -217,9 +217,9 @@ Apply ownership rules determined in Phase 1 to update checkboxes. See [checkbox-
 3. If changed → **abort update for this source**, notify user (continue with other unaffected sources)
 4. If unchanged → use `jq` gsub pipeline to check off passed items (see [checkbox-update-rules.md](references/checkbox-update-rules.md) for mechanics)
 5. PATCH entire body (batch per source — one PATCH per body/comment)
-6. **Post-update verification** — verify the PATCH response body contains all expected `[x]` items and no formatting corruption (see [checkbox-update-rules.md](references/checkbox-update-rules.md) for verification mechanics)
+6. **Post-update verification** — verify the PATCH response body contains all expected `[x]` items and no formatting corruption
 
-> **Safety**: Checkbox replacement must use `jq` pipelines piped to `gh api --input -`, not shell `sed` or string interpolation — keep content in JSON throughout to avoid shell metacharacter corruption. See [checkbox-update-rules.md](references/checkbox-update-rules.md) for the full anti-pattern list and update mechanics.
+> **Safety**: Checkbox replacement must use `jq` pipelines piped to `gh api --input -`, not shell `sed` or string interpolation — keep content in JSON throughout to avoid shell metacharacter corruption. See [checkbox-update-rules.md](references/checkbox-update-rules.md) for the full anti-pattern list, update mechanics, and post-update verification.
 
 Ownership rules from the Phase 1 permission probe determine update behavior. See [checkbox-update-rules.md](references/checkbox-update-rules.md) for the full decision matrix, interaction examples, and comment report template.
 

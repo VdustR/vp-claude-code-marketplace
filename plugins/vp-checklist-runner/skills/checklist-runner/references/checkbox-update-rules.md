@@ -147,8 +147,8 @@ fi
 > **CRITICAL: Do NOT use shell `sed` or `echo` for checkbox replacement.** PR body content may contain shell metacharacters (backticks, `$()`, sed delimiters) that would cause injection or corruption. Use `jq` pipelines piped to `gh api --input -` to keep content in JSON throughout — this avoids shell expansion entirely.
 >
 > **Do NOT use `gh api --jq '.body'` to extract the body as raw text.** This decodes JSON escapes (e.g., `\n` → real newlines), and any subsequent `jq -Rs` re-encoding will double-escape them (`\n` → `\\n`), corrupting the body on PATCH. Always operate on the full JSON response via a temp file so `jq` reads `.body` as a JSON string, not raw text.
->
-> **gsub regex escaping**: `jq`'s `gsub` uses Oniguruma regex. Checklist item text may contain regex metacharacters (`.`, `*`, `+`, `?`, `[`, `]`, `(`, `)`, `{`, `}`, `^`, `$`, `|`, `\`). Escape them with `\\` in the gsub pattern. If duplicate item text exists across sources, warn the user — gsub replaces all occurrences and cannot target by position.
+
+> **Note — gsub regex escaping**: `jq`'s `gsub` uses Oniguruma regex. Checklist item text may contain regex metacharacters (`.`, `*`, `+`, `?`, `[`, `]`, `(`, `)`, `{`, `}`, `^`, `$`, `|`, `\`). Escape them with `\\` in the gsub pattern. If duplicate item text exists across sources, warn the user — gsub replaces all occurrences and cannot target by position.
 
 ```bash
 # Prerequisite: $tmpfile must be set via mktemp (see Race Condition Prevention)
@@ -209,6 +209,8 @@ After every PATCH, verify the response body contains all expected checkboxes. Th
 
 ```bash
 # $patch_endpoint = the same endpoint used for PATCH (pulls/{n}, issues/{n}, or issues/comments/{id})
+verify_tmpfile=$(mktemp) && trap 'rm -f "$tmpfile" "$verify_tmpfile"' EXIT
+
 # Capture PATCH response (replaces the bare `gh api ... -X PATCH --input -` above)
 jq '{body: (.body
   | gsub("- \\[ \\] First passed item"; "- [x] First passed item")
@@ -223,9 +225,10 @@ jq -e '.body | contains("- [x] First passed item")' "$verify_tmpfile"
 **If verification fails** (assertion exits non-zero), re-fetch the current body, correct it, and re-PATCH:
 
 ```bash
-repair_file=$(mktemp) && trap 'rm -f "$repair_file"' EXIT
-# Re-fetch current body as raw text for manual correction
-# NOTE: using `jq -r '.body'` here is intentional and safe — the rawfile re-encodes it below
+repair_file=$(mktemp) && trap 'rm -f "$tmpfile" "$verify_tmpfile" "$repair_file"' EXIT
+# Re-fetch current body as raw text for correction
+# NOTE: jq -r '.body' outputs raw text; --rawfile reads it back as a JSON string value,
+# so no double-escaping occurs
 gh api "repos/{o}/{r}/$patch_endpoint" | jq -r '.body' > "$repair_file"
 # Edit "$repair_file" to fix corruption, then re-PATCH:
 jq -n --rawfile body "$repair_file" '{body: $body}' \
