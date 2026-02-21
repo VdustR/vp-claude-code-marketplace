@@ -285,23 +285,28 @@ Since `gh pr edit --body-file` / `gh issue edit --body-file` do not return the u
 # After gh pr edit {n} --body-file "$body_file"
 # or    gh issue edit {n} --body-file "$body_file"
 
+# Set $source_endpoint: "pulls/{n}" for PRs, "issues/{n}" for issues
+source_endpoint="pulls/{n}"
+
 # Re-fetch and assert all expected items are checked — one `contains` per item
 # Uses `contains` (literal substring match) instead of `test` (regex) to avoid escaping issues
-# Set $source_endpoint to "pulls/{n}" for PRs or "issues/{n}" for issues
+# Limitation: `contains` is a substring match — if one item text is a prefix of another
+# (e.g., "Fix bug" vs "Fix bug in auth"), the shorter match may false-positive.
+# For precise matching, use `test` with regex anchoring instead.
 gh api "repos/{o}/{r}/$source_endpoint" \
   | jq -e '.body | contains("- [x] First passed item")'
 ```
+
+> **Error handling**: If `gh api` fails (auth error, rate limit, 404), the error is piped to `jq` which produces a parse error. To get clearer diagnostics, run with `set -o pipefail` or capture the API response separately before piping to `jq`.
 
 #### Raw API Method Verification
 
 The `gh api` PATCH response already returns the updated resource — save it and assert:
 
 ```bash
-# Set $patch_endpoint to the same endpoint used for PATCH:
-#   patch_endpoint="pulls/{n}"             # for PR body
-#   patch_endpoint="issues/{n}"            # for issue body
-#   patch_endpoint="issues/comments/{id}"  # for comment
-# This trap replaces the earlier EXIT trap — include all temp files from this flow
+# Set $patch_endpoint to the same endpoint used for PATCH
+patch_endpoint="pulls/{n}"  # or "issues/{n}" or "issues/comments/{id}"
+
 verify_tmpfile=$(mktemp) && trap 'rm -f "${tmpfile:-}" "${verify_tmpfile:-}"' EXIT
 
 # Capture PATCH response (replaces the bare `gh api ... -X PATCH --input -` above)
@@ -312,7 +317,7 @@ jq '{body: ((.body // "")
 
 # Assert all expected items are checked — one `contains` per item
 # Uses `contains` (literal substring match) instead of `test` (regex) to avoid escaping issues
-# Note: `contains` matches anywhere in body — sufficient since we check specific item text
+# Limitation: substring match — see CLI Method Verification note about prefix ambiguity
 jq -e '.body | contains("- [x] First passed item")' "$verify_tmpfile"
 ```
 
