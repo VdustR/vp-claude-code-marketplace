@@ -205,16 +205,33 @@ jq '{body: (.body
 
 ### Post-Update Verification
 
-After every PATCH, re-fetch the body and verify checkboxes were applied correctly and formatting is intact:
+After every PATCH, verify the response body contains all expected checkboxes and no formatting corruption. The `gh api` PATCH response already returns the updated resource — save it to a temp file and inspect:
 
 ```bash
-# Re-fetch and verify — check that newlines render correctly (no literal \n)
-# and all intended items are checked off
-gh api repos/{o}/{r}/pulls/{n} --jq '.body'
-# Visually confirm: real newlines (not \n), checkboxes show [x], no corruption
+# Capture PATCH response (replaces the bare `gh api ... -X PATCH --input -` above)
+jq '{body: (.body
+  | gsub("- \\[ \\] First passed item"; "- [x] First passed item")
+)}' "$tmpfile" \
+  | gh api repos/{o}/{r}/pulls/{n} -X PATCH --input - > "$verify_tmpfile"
+
+# 1. Assert all expected items are checked — one check per item
+jq -e '.body | test("- \\[x\\] First passed item")' "$verify_tmpfile"
+
+# 2. Assert no double-escaped newlines (literal two-char sequence \n in JSON string)
+jq -e '.body | test("\\\\n") | not' "$verify_tmpfile"
 ```
 
-If the body contains literal `\n` instead of real newlines, or any other corruption, immediately re-PATCH with a corrected body using `jq -n --arg body "$CORRECT_BODY" '{body: $body}'` with the body in a shell variable (real newlines preserved by the shell).
+Use the same endpoint as the PATCH (pulls, issues, or issues/comments) — do not hardcode `/pulls/`.
+
+**If verification fails** (assertion exits non-zero), write the correct body to a temp file and re-PATCH:
+
+```bash
+# Recovery: write correct content to a file, wrap in JSON via --rawfile, re-PATCH
+repair_file=$(mktemp) && trap 'rm -f "$repair_file"' EXIT
+# ... write the correct body text (with real newlines) to "$repair_file" ...
+jq -n --rawfile body "$repair_file" '{body: $body}' \
+  | gh api repos/{o}/{r}/pulls/{n} -X PATCH --input -
+```
 
 ### Batching
 
