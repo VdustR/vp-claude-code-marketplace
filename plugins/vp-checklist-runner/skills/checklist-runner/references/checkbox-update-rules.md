@@ -205,32 +205,31 @@ jq '{body: (.body
 
 ### Post-Update Verification
 
-After every PATCH, verify the response body contains all expected checkboxes and no formatting corruption. The `gh api` PATCH response already returns the updated resource — save it to a temp file and inspect:
+After every PATCH, verify the response body contains all expected checkboxes. The `gh api` PATCH response already returns the updated resource — save it and assert:
 
 ```bash
+# $patch_endpoint = the same endpoint used for PATCH (pulls/{n}, issues/{n}, or issues/comments/{id})
 # Capture PATCH response (replaces the bare `gh api ... -X PATCH --input -` above)
 jq '{body: (.body
   | gsub("- \\[ \\] First passed item"; "- [x] First passed item")
 )}' "$tmpfile" \
-  | gh api repos/{o}/{r}/pulls/{n} -X PATCH --input - > "$verify_tmpfile"
+  | gh api "repos/{o}/{r}/$patch_endpoint" -X PATCH --input - > "$verify_tmpfile"
 
-# 1. Assert all expected items are checked — one check per item
-jq -e '.body | test("- \\[x\\] First passed item")' "$verify_tmpfile"
-
-# 2. Assert no double-escaped newlines (literal two-char sequence \n in JSON string)
-jq -e '.body | test("\\\\n") | not' "$verify_tmpfile"
+# Assert all expected items are checked — one `contains` per item
+# Uses `contains` (literal substring match) instead of `test` (regex) to avoid escaping issues
+jq -e '.body | contains("- [x] First passed item")' "$verify_tmpfile"
 ```
 
-Use the same endpoint as the PATCH (pulls, issues, or issues/comments) — do not hardcode `/pulls/`.
-
-**If verification fails** (assertion exits non-zero), write the correct body to a temp file and re-PATCH:
+**If verification fails** (assertion exits non-zero), re-fetch the current body, correct it, and re-PATCH:
 
 ```bash
-# Recovery: write correct content to a file, wrap in JSON via --rawfile, re-PATCH
 repair_file=$(mktemp) && trap 'rm -f "$repair_file"' EXIT
-# ... write the correct body text (with real newlines) to "$repair_file" ...
+# Re-fetch current body as raw text for manual correction
+# NOTE: using `jq -r '.body'` here is intentional and safe — the rawfile re-encodes it below
+gh api "repos/{o}/{r}/$patch_endpoint" | jq -r '.body' > "$repair_file"
+# Edit "$repair_file" to fix corruption, then re-PATCH:
 jq -n --rawfile body "$repair_file" '{body: $body}' \
-  | gh api repos/{o}/{r}/pulls/{n} -X PATCH --input -
+  | gh api "repos/{o}/{r}/$patch_endpoint" -X PATCH --input -
 ```
 
 ### Batching
