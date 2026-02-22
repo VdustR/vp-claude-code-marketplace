@@ -57,6 +57,13 @@
       "keywords": ["pr", "pull-request", "review", "comments", "github", "automation"]
     },
     {
+      "name": "vp-qrcp",
+      "source": "./plugins/vp-qrcp",
+      "description": "Transfer files over Wi-Fi by scanning a QR code from the terminal",
+      "license": "MIT",
+      "keywords": ["qrcp", "qr-code", "file-transfer", "wifi", "send", "receive", "share"]
+    },
+    {
       "name": "vp-review-loop",
       "source": "./plugins/vp-review-loop",
       "description": "Iterative multi-pass subagent review loop with confidence scoring for code and plans",
