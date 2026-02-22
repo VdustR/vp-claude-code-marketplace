@@ -126,21 +126,6 @@ Features:
 - Summary report generation after processing all comments
 - Human collaboration - asks when uncertain about fixes
 
-### vp-qrcp
-
-Transfer files over Wi-Fi by scanning a QR code from the terminal using [qrcp](https://github.com/claudiodangelis/qrcp).
-
-```bash
-/plugin install vp-qrcp@vdustr
-```
-
-Features:
-- Availability check with installation guidance
-- Send files/directories — generates a QR code for the receiver to scan
-- Receive files — generates a QR code that opens an upload page in the browser
-- No app needed on the receiving device, just a browser
-- Points to upstream README for up-to-date usage and configuration
-
 ### vp-review-loop
 
 Iterative multi-pass subagent review loop with confidence scoring for code and plans.
