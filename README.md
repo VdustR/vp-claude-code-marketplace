@@ -66,6 +66,21 @@ Features:
 - Deps bot PR handling (dependabot, renovate)
 - Repo convention compliance (changesets, conventional commits, CI checks)
 
+### vp-gmaps-list
+
+Extract all places from a Google Maps saved list via internal API.
+
+```bash
+/plugin install vp-gmaps-list@vdustr
+```
+
+Features:
+- Single API call extraction — bypasses UI scroll-based rendering to get all items at once
+- Full place data: name, address, coordinates, Google Place ID, user notes
+- Supports short URLs (`maps.app.goo.gl/...`) and full URLs
+- Output as summary table, JSON, or CSV
+- Requires [agent-browser](https://github.com/anthropics/claude-code/tree/main/.claude/skills/agent-browser) skill
+
 ### vp-gitignore-builder
 
 Build and merge .gitignore files using github/gitignore templates.
@@ -108,7 +123,7 @@ Research-driven macOS app uninstallation with thorough cleanup of all associated
 
 Features:
 - 7-phase workflow: detect install method → research → scan → subagent review → plan → execute → verify
-- Detects Homebrew, DMG, PKG, Mac App Store, CLI tools (npm/pip/cargo), and manual installs
+- Detects Homebrew, DMG, PKG, Mac App Store, CLI tools (npm/pip3/cargo), and manual installs
 - Mandatory web research with official vendor docs prioritized over community sources
 - Deep associated data scan across ~/Library, /Library, ~/.config, ~/.local, and dotfiles
 - Categorized removal plan with file sizes and recommendations
