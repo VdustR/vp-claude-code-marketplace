@@ -98,6 +98,23 @@ Features:
 - Idle server reminder to prevent forgotten background processes
 - Compatible with all LocalSend apps (iOS, Android, macOS, Windows, Linux)
 
+### vp-macos-clean-uninstall
+
+Research-driven macOS app uninstallation with thorough cleanup of all associated data.
+
+```bash
+/plugin install vp-macos-clean-uninstall@vdustr
+```
+
+Features:
+- 7-phase workflow: detect install method → research → scan → subagent review → plan → execute → verify
+- Detects Homebrew, DMG, PKG, Mac App Store, CLI tools (npm/pip3/cargo), and manual installs
+- Mandatory web research with official vendor docs prioritized over community sources
+- Deep associated data scan across ~/Library, /Library, ~/.config, ~/.local, and dotfiles
+- Categorized removal plan with file sizes and recommendations
+- Defaults to clean removal — recommends removing all residual data
+- Always confirms before deletion — flags irreplaceable user data separately
+
 ### vp-nyan-mode
 
 Cat persona with 'nyan~' verbal tic, emoji support, and language matching.

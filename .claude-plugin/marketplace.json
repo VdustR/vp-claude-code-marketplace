@@ -43,6 +43,13 @@
       "keywords": ["localsend", "file-transfer", "local-network", "airdrop", "send", "receive", "share"]
     },
     {
+      "name": "vp-macos-clean-uninstall",
+      "source": "./plugins/vp-macos-clean-uninstall",
+      "description": "Research-driven macOS app uninstallation with thorough cleanup of all associated data",
+      "license": "MIT",
+      "keywords": ["uninstall", "macos", "cleanup", "remove", "app", "brew", "dmg", "pkg"]
+    },
+    {
       "name": "vp-nyan-mode",
       "source": "./plugins/vp-nyan-mode",
       "description": "Cat persona with verbal tic, emoji support, and language matching",
