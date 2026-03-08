@@ -184,7 +184,7 @@ Warn about: login items, browser extensions, privacy permissions, kernel extensi
    If processes are found, present options to the user:
    | Option | Action |
    |--------|--------|
-   | Quit gracefully | `osascript -e 'tell application "${APP_DISPLAY}" to quit'` then wait and recheck |
+   | Quit gracefully | `osascript -e "tell application \"${APP_DISPLAY}\" to quit"` then wait and recheck |
    | Force kill | `killall "${APP_DISPLAY}"` (warn: may lose unsaved data) |
    | Remove auto-launch first, reboot later | Unload launch agents/daemons (step 3) + remove login items, then ask user to reboot and re-run removal |
 3. **Unload launch agents/daemons**:
