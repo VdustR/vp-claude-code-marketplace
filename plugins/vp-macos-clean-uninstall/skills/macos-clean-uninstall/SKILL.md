@@ -177,7 +177,17 @@ Warn about: login items, browser extensions, privacy permissions, kernel extensi
 ### Phase 6: Execute with Confirmation
 
 1. **Ask for confirmation** before any deletion
-2. **Unload launch agents/daemons first**:
+2. **Check for running processes** before removal:
+   ```bash
+   pgrep -il "${APP_NAME}"
+   ```
+   If processes are found, present options to the user:
+   | Option | Action |
+   |--------|--------|
+   | Quit gracefully | `osascript -e 'tell application "${APP_DISPLAY}" to quit'` then wait and recheck |
+   | Force kill | `killall "${APP_DISPLAY}"` (warn: may lose unsaved data) |
+   | Remove auto-launch first, reboot later | Unload launch agents/daemons (step 3) + remove login items, then ask user to reboot and re-run removal |
+3. **Unload launch agents/daemons**:
    ```bash
    LABEL=$(/usr/libexec/PlistBuddy -c "Print :Label" "<plist-path>")
    # User agent (~/Library/LaunchAgents/)
@@ -187,13 +197,13 @@ Warn about: login items, browser extensions, privacy permissions, kernel extensi
    # Verify
    launchctl print "gui/$(id -u)/${LABEL}" 2>&1 | grep -q "Could not find" && echo "Unloaded"
    ```
-3. **Use Homebrew** if applicable — use the **exact cask/formula token** from Phase 1 `brew list` output (not the user-provided name):
+4. **Use Homebrew** if applicable — use the **exact cask/formula token** from Phase 1 `brew list` output (not the user-provided name):
    - Cask: `brew uninstall --zap --cask "<exact-token>"` (`--zap` removes all associated files)
    - Formula: `brew uninstall "<exact-token>"`
    If multiple tokens matched `grep -i` in Phase 1, list all matches and ask the user to select the correct one
-4. **Use vendor uninstaller** if one was found in Phase 1
-5. **Remove associated data** — Trash for user data, `rm -rf` for caches. Explicit paths only
-6. **Forget PKG receipts** — **ALWAYS after removing files** (once forgotten, file list is unrecoverable): `sudo pkgutil --forget <pkg-id>`
+5. **Use vendor uninstaller** if one was found in Phase 1
+6. **Remove associated data** — Trash for user data, `rm -rf` for caches. Explicit paths only
+7. **Forget PKG receipts** — **ALWAYS after removing files** (once forgotten, file list is unrecoverable): `sudo pkgutil --forget <pkg-id>`
 
 ### Phase 7: Post-Removal Verification
 
