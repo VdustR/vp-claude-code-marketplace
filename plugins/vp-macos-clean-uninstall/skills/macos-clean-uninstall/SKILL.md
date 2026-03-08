@@ -60,7 +60,8 @@ brew list --cask | grep -i "${APP_NAME}"
 ls "/Applications/${APP_DISPLAY}.app" ~/Applications/*"${APP_NAME}"* 2>/dev/null
 
 # Bundle ID (use mdls first; osascript may launch the app — use only as fallback)
-mdls -name kMDItemCFBundleIdentifier "/Applications/${APP_DISPLAY}.app" 2>/dev/null
+mdls -name kMDItemCFBundleIdentifier "/Applications/${APP_DISPLAY}.app" 2>/dev/null \
+  || mdls -name kMDItemCFBundleIdentifier ~/Applications/*"${APP_NAME}"*.app 2>/dev/null
 
 # PKG receipt
 pkgutil --pkgs | grep -i "${APP_NAME}"
@@ -74,7 +75,7 @@ find "/Applications/${APP_DISPLAY}.app/Contents" -maxdepth 3 \
 ls "/Applications/"*"${APP_NAME}"*[Uu]ninstall* 2>/dev/null
 
 # Symlink check
-RESOLVED=$(readlink -f "$(command -v "${APP_NAME}")" 2>/dev/null)
+RESOLVED=$(readlink "$(command -v "${APP_NAME}")" 2>/dev/null)
 [ -L "$(command -v "${APP_NAME}")" ] && echo "Symlink: $(command -v "${APP_NAME}") → ${RESOLVED}"
 ```
 
@@ -110,6 +111,15 @@ command -v cargo >/dev/null && cargo install --list 2>/dev/null | grep -i "${APP
 
 ### Phase 3: Scan Associated Data
 
+**If the app name is ambiguous** (shorter than 4 characters or a common word like `go`, `pro`, `mail`, `code`, `sync`, `file`, `app`), use bundle ID only:
+
+```bash
+find ~/Library /Library -maxdepth 3 -iname "*${BUNDLE_ID}*" 2>/dev/null
+find ~/.config ~/.local -maxdepth 2 -iname "*${BUNDLE_ID}*" 2>/dev/null
+```
+
+**Otherwise**, scan with both app name and bundle ID:
+
 ```bash
 echo "=== User Library ==="
 find ~/Library -maxdepth 3 \( -iname "*${APP_NAME}*" -o -iname "*${BUNDLE_ID}*" \) 2>/dev/null
@@ -124,7 +134,7 @@ echo "=== Dotfiles ==="
 ls -d ~/."${APP_NAME}" ~/."${APP_NAME}"rc 2>/dev/null
 ```
 
-**Ambiguous name guard**: For app names shorter than 4 characters or common English words/substrings (e.g., `go`, `pro`, `mail`, `code`, `sync`, `file`, `app`), rely on **bundle ID matching only** for all scans including Library and dotfiles. Require manual verification of every name-based match before including in the removal plan.
+In both cases, require manual verification of every name-based match before including in the removal plan.
 
 ### Phase 4: Subagent Review of Removal Plan
 
@@ -177,8 +187,10 @@ Warn about: login items, browser extensions, privacy permissions, kernel extensi
    # Verify
    launchctl print "gui/$(id -u)/${LABEL}" 2>&1 | grep -q "Could not find" && echo "Unloaded"
    ```
-3. **Use Homebrew** if applicable — use the **exact cask/formula token** from Phase 1 `brew list` output (not the user-provided name): `brew uninstall --cask "<exact-token>"`
-   If multiple casks matched `grep -i` in Phase 1, list all matches and ask the user to select the correct one
+3. **Use Homebrew** if applicable — use the **exact cask/formula token** from Phase 1 `brew list` output (not the user-provided name):
+   - Cask: `brew uninstall --zap --cask "<exact-token>"` (`--zap` removes all associated files)
+   - Formula: `brew uninstall "<exact-token>"`
+   If multiple tokens matched `grep -i` in Phase 1, list all matches and ask the user to select the correct one
 4. **Use vendor uninstaller** if one was found in Phase 1
 5. **Remove associated data** — Trash for user data, `rm -rf` for caches. Explicit paths only
 6. **Forget PKG receipts** — **ALWAYS after removing files** (once forgotten, file list is unrecoverable): `sudo pkgutil --forget <pkg-id>`
