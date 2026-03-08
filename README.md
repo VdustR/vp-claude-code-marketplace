@@ -84,18 +84,24 @@ Features:
 
 ### vp-gmaps-list
 
-Extract all places from a Google Maps saved list via internal API.
+Extract and manage Google Maps saved lists with business status checking.
 
 ```bash
 /plugin install vp-gmaps-list@vdustr
 ```
 
+**Skills included:**
+- **gmaps-list** — Extract all places from a saved list via internal API (requires agent-browser)
+- **gmaps-status-check** — Check business status to find closed/defunct places (requires gcloud or Playwright)
+
 Features:
 - Single API call extraction — bypasses UI scroll-based rendering to get all items at once
 - Full place data: name, address, coordinates, Google Place ID, user notes
+- Business status checking via Google Places API (recommended) or Playwright (free)
+- Identifies permanently closed (永久歇業) and temporarily closed (暫停營業) places
+- Generates clickable Google Maps links for results
 - Supports short URLs (`maps.app.goo.gl/...`) and full URLs
 - Output as summary table, JSON, or CSV
-- Requires agent-browser skill
 
 ### vp-localsend
 

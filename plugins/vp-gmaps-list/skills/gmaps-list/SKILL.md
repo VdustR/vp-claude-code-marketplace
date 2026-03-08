@@ -122,5 +122,7 @@ Parse the JSON output (`{ listName, count, items }` on success, `{ error }` on f
 - The response has a `)]}'\n` XSSI protection prefix — always strip it before parsing
 - The `fetch()` MUST run inside the browser page context; the API requires Google Maps session cookies
 - Older items in long lists may have empty address/coordinates fields (only name preserved)
+- **Empty `gid` does NOT mean the place is invalid** — older list items may lose their gid reference while the place still exists and functions normally on Google Maps
 - The `!4i500` parameter controls max items; increase if a list has 500+ items
 - Close the browser session after extraction to avoid leaked processes
+- The raw response contains additional internal fields beyond those documented above — these are not needed for extraction but may be relevant for advanced list management operations

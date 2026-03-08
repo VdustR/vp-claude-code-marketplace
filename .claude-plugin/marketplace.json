@@ -38,9 +38,9 @@
     {
       "name": "vp-gmaps-list",
       "source": "./plugins/vp-gmaps-list",
-      "description": "Extract all places from a Google Maps saved list via internal API",
+      "description": "Extract and manage Google Maps saved lists with business status checking",
       "license": "MIT",
-      "keywords": ["google-maps", "saved-list", "places", "extract", "scrape", "agent-browser"]
+      "keywords": ["google-maps", "saved-list", "places", "extract", "scrape", "agent-browser", "business-status", "closed", "gcloud", "places-api"]
     },
     {
       "name": "vp-localsend",
