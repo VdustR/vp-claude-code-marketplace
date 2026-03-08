@@ -57,7 +57,7 @@ brew list --formula | grep -i "${APP_NAME}"
 brew list --cask | grep -i "${APP_NAME}"
 
 # App bundle
-ls "/Applications/${APP_DISPLAY}.app" ~/Applications/*"${APP_NAME}"* 2>/dev/null
+ls "/Applications/${APP_DISPLAY}.app" ~/Applications/*"${APP_NAME}"*.app 2>/dev/null
 
 # Bundle ID (use mdls first; osascript may launch the app — use only as fallback)
 mdls -name kMDItemCFBundleIdentifier "/Applications/${APP_DISPLAY}.app" 2>/dev/null \
@@ -194,10 +194,10 @@ Warn about: login items, browser extensions, privacy permissions, kernel extensi
    LABEL=$(/usr/libexec/PlistBuddy -c "Print :Label" "<plist-path>")
    # User agent (~/Library/LaunchAgents/)
    launchctl bootout "gui/$(id -u)/${LABEL}"
+   launchctl print "gui/$(id -u)/${LABEL}" 2>&1 | grep -q "Could not find" && echo "User agent unloaded"
    # System daemon (/Library/LaunchDaemons/) — requires sudo
    sudo launchctl bootout "system/${LABEL}"
-   # Verify
-   launchctl print "gui/$(id -u)/${LABEL}" 2>&1 | grep -q "Could not find" && echo "Unloaded"
+   sudo launchctl print "system/${LABEL}" 2>&1 | grep -q "Could not find" && echo "System daemon unloaded"
    ```
 4. **Use Homebrew** if applicable — use the **exact cask/formula token** from Phase 1 `brew list` output (not the user-provided name):
    - Cask: `brew uninstall --zap --cask "<exact-token>"` (`--zap` removes all associated files)
