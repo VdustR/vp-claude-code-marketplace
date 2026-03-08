@@ -152,7 +152,7 @@ Subagent prompt must include: app name, bundle ID, installation method, full fil
 - [ ] Kernel extensions or system extensions identified if applicable
 - [ ] PKG receipt files list reviewed — no shared components being removed
 - [ ] Homebrew apps: `brew uses --installed <name>` checked for reverse dependencies
-- [ ] Execution order is safe (unload services → remove app → remove data → forget receipts)
+- [ ] Execution order is safe (check/stop processes → unload services → remove app → remove data → forget receipts)
 - [ ] All paths are absolute and explicitly listed
 - [ ] Each scan match cross-referenced against bundle ID, not just app name
 
@@ -184,9 +184,11 @@ Warn about: login items, browser extensions, privacy permissions, kernel extensi
    If processes are found, present options to the user:
    | Option | Action |
    |--------|--------|
-   | Quit gracefully | `osascript -e "tell application \"${APP_DISPLAY}\" to quit"` then wait and recheck |
+   | Quit gracefully | `osascript -e "tell application \"${APP_DISPLAY}\" to quit"` then recheck after 5s (max 3 retries, then offer force kill) |
    | Force kill | `killall "${APP_DISPLAY}"` (warn: may lose unsaved data) |
    | Remove auto-launch first, reboot later | Unload launch agents/daemons (step 3) + remove login items, then ask user to reboot and re-run removal |
+
+   **Note:** If a launch agent has `KeepAlive` enabled, the process will respawn after quit/kill. In that case, fall back to the "Remove auto-launch first" option.
 3. **Unload launch agents/daemons**:
    ```bash
    LABEL=$(/usr/libexec/PlistBuddy -c "Print :Label" "<plist-path>")
