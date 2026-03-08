@@ -55,37 +55,50 @@ Execute this JavaScript **inside the browser context** (the API requires the pag
 
 ```js
 (async () => {
-  const entry = performance.getEntriesByType("resource")
-    .find(e => e.name.includes("entitylist/getlist"));
-  const resp = await fetch(entry.name);
-  const text = await resp.text();
-  // Remove XSSI protection prefix ")]}'\n"
-  const jsonStr = text.substring(text.indexOf('\n') + 1);
-  const data = JSON.parse(jsonStr);
+  try {
+    const entry = performance.getEntriesByType("resource")
+      .find(e => e.name.includes("entitylist/getlist"));
 
-  const listName = data[0][4];
-  const items = data[0][8];
+    if (!entry) {
+      return JSON.stringify({ error: "API endpoint not found. The page may not have loaded fully — wait a few seconds and retry." });
+    }
 
-  const results = items.map((item, idx) => {
-    const loc = item[1];
-    return JSON.stringify({
-      i: idx + 1,
-      name: item[2] || "",
-      address: loc?.[4] ?? "",
-      lat: loc?.[5]?.[1] ?? "",
-      lng: loc?.[5]?.[2] ?? "",
-      note: item[3] ?? "",
-      gid: loc?.[7] ?? ""
+    const resp = await fetch(entry.name);
+    if (!resp.ok) {
+      return JSON.stringify({ error: "API request failed: " + resp.status + " " + resp.statusText });
+    }
+
+    const text = await resp.text();
+    // Remove XSSI protection prefix ")]}'\n"
+    const jsonStr = text.substring(text.indexOf('\n') + 1);
+    const data = JSON.parse(jsonStr);
+
+    const listName = data?.[0]?.[4] ?? "";
+    const items = Array.isArray(data?.[0]?.[8]) ? data[0][8] : [];
+
+    const results = items.map((item, idx) => {
+      const loc = item[1];
+      return {
+        i: idx + 1,
+        name: item[2] || "",
+        address: loc?.[4] ?? "",
+        lat: loc?.[5]?.[1] ?? "",
+        lng: loc?.[5]?.[2] ?? "",
+        note: item[3] ?? "",
+        gid: loc?.[7] ?? ""
+      };
     });
-  });
 
-  return "LIST:" + listName + "\nCOUNT:" + items.length + "\n" + results.join("\n");
+    return JSON.stringify({ listName, count: items.length, items: results });
+  } catch (e) {
+    return JSON.stringify({ error: e.message });
+  }
 })()
 ```
 
 ### Phase 4: Present results
 
-Parse the output and present it to the user. Common output formats:
+Parse the JSON output (`{ listName, count, items }` on success, `{ error }` on failure) and present it to the user. If `error` is present, diagnose and retry. Common output formats:
 - **Summary table** — name, address, note (default)
 - **JSON** — full structured data if user wants to process further
 - **CSV** — if user wants to import into a spreadsheet
