@@ -71,11 +71,11 @@ Execute this JavaScript **inside the browser context** (the API requires the pag
     return JSON.stringify({
       i: idx + 1,
       name: item[2] || "",
-      address: (loc && loc[4]) || "",
-      lat: (loc && loc[5] && loc[5][1]) || "",
-      lng: (loc && loc[5] && loc[5][2]) || "",
-      note: item[3] || "",
-      gid: (loc && loc[7]) || ""
+      address: loc?.[4] ?? "",
+      lat: loc?.[5]?.[1] ?? "",
+      lng: loc?.[5]?.[2] ?? "",
+      note: item[3] ?? "",
+      gid: loc?.[7] ?? ""
     });
   });
 
