@@ -29,13 +29,6 @@
       "keywords": ["dependencies", "upgrade", "migration", "breaking-changes", "codemod", "dependabot", "renovate", "context7"]
     },
     {
-      "name": "vp-gmaps-list",
-      "source": "./plugins/vp-gmaps-list",
-      "description": "Extract all places from a Google Maps saved list via internal API",
-      "license": "MIT",
-      "keywords": ["google-maps", "saved-list", "places", "extract", "scrape", "agent-browser"]
-    },
-    {
       "name": "vp-gitignore-builder",
       "source": "./plugins/vp-gitignore-builder",
       "description": "Build and merge .gitignore files using github/gitignore templates",
