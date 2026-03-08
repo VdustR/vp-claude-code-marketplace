@@ -1,0 +1,14 @@
+{
+  "name": "vp-gmaps-list",
+  "version": "1.0.0",
+  "description": "Extract all places from a Google Maps saved list via internal API",
+  "author": {
+    "name": "VdustR",
+    "url": "https://github.com/VdustR"
+  },
+  "homepage": "https://github.com/VdustR/vp-claude-code-marketplace",
+  "repository": "https://github.com/VdustR/vp-claude-code-marketplace",
+  "license": "MIT",
+  "keywords": ["google-maps", "saved-list", "places", "extract", "scrape", "agent-browser"],
+  "skills": "./skills/"
+}

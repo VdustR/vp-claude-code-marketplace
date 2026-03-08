@@ -82,6 +82,21 @@ Features:
 - Auto-suggest `*.local` and `*.local.*` patterns
 - Support for both project-level and global gitignore
 
+### vp-gmaps-list
+
+Extract all places from a Google Maps saved list via internal API.
+
+```bash
+/plugin install vp-gmaps-list@vdustr
+```
+
+Features:
+- Single API call extraction — bypasses UI scroll-based rendering to get all items at once
+- Full place data: name, address, coordinates, Google Place ID, user notes
+- Supports short URLs (`maps.app.goo.gl/...`) and full URLs
+- Output as summary table, JSON, or CSV
+- Requires agent-browser skill
+
 ### vp-localsend
 
 Send and receive files over local network using [LocalSend](https://localsend.org/) protocol (like AirDrop).

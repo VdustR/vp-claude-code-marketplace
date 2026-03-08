@@ -36,6 +36,13 @@
       "keywords": ["gitignore", "git", "ignore", "templates", "github"]
     },
     {
+      "name": "vp-gmaps-list",
+      "source": "./plugins/vp-gmaps-list",
+      "description": "Extract all places from a Google Maps saved list via internal API",
+      "license": "MIT",
+      "keywords": ["google-maps", "saved-list", "places", "extract", "scrape", "agent-browser"]
+    },
+    {
       "name": "vp-localsend",
       "source": "./plugins/vp-localsend",
       "description": "Send and receive files over local network using LocalSend protocol",
