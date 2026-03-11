@@ -96,15 +96,35 @@ Add entry to `.claude-plugin/marketplace.json`:
    ```yaml
    ---
    name: skill-name
-   description: One-line description for when to use this skill
+   description: >-
+     Brief description of what the skill does.
+     Use when <trigger phrase 1>, <trigger phrase 2>, <trigger phrase 3>,
+     or when <context condition>.
+     Boundary: <when NOT to use this skill>.
    ---
    ```
 
-2. **Sections** (recommended):
-   - `# Title` - Clear skill name
-   - `## When to Use` - Trigger conditions
-   - `## Usage` - Commands and examples
-   - `## Notes` - Edge cases, limitations
+   Existing plugins are not required to retroactively update their frontmatter. The multi-line format is the standard for new plugins.
+
+   - `name`: Must match the skill directory name
+   - `description`: Multi-line with `>-` block scalar. Include:
+     - What the skill does (first sentence)
+     - Trigger phrases: natural language patterns users might say (e.g., "review this code", "deep review")
+     - Context conditions: when Claude should proactively suggest it
+     - Boundary: when NOT to use (to avoid false triggers)
+
+2. **Body sections** (recommended order):
+   - `# Title` — Clear skill name
+   - Intro paragraph — One-liner summary of the skill
+   - `## Quick Start` — Example invocations (natural language, not commands)
+   - `## When to Use` — Bullet list of trigger conditions
+   - `## Workflow` — Numbered phases with details
+   - `## Guidelines` — DO / DON'T lists
+   - `## Error Handling` — Table of error → action pairs
+   - `## Reference Files` — Links to `references/` files (if any)
+   - `## Notes` — Edge cases, limitations
+
+   Not all sections are needed for every skill. Use what's appropriate for the complexity.
 
 ### plugin.json Requirements
 
@@ -137,6 +157,35 @@ Add entry to `.claude-plugin/marketplace.json`:
 - 2-space indentation
 - No trailing commas
 - Keys in logical order: name → version → description → author → ...
+
+### README.md Plugin Entry Format
+
+Each plugin entry in `README.md` follows this structure:
+
+```markdown
+### vp-<plugin-name>
+
+<Description sentence from plugin.json, with period.>
+
+\`\`\`bash
+/plugin install vp-<plugin-name>@vdustr
+\`\`\`
+
+Features:
+- Feature 1
+- Feature 2
+```
+
+For plugins with multiple skills, add a skills section before features:
+
+```markdown
+**Skills included:**
+- **skill-name-1** — One-line description
+- **skill-name-2** — One-line description
+
+Features:
+- Feature 1
+```
 
 ## Plugin Change Checklist
 

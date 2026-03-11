@@ -43,6 +43,13 @@
       "keywords": ["google-maps", "saved-list", "places", "extract", "scrape", "agent-browser", "business-status", "closed", "gcloud", "places-api"]
     },
     {
+      "name": "vp-guided-focus",
+      "source": "./plugins/vp-guided-focus",
+      "description": "Guided focus questioning to align on requirements before planning or complex tasks",
+      "license": "MIT",
+      "keywords": ["focus", "questions", "planning", "discovery", "alignment", "pre-plan"]
+    },
+    {
       "name": "vp-localsend",
       "source": "./plugins/vp-localsend",
       "description": "Send and receive files over local network using LocalSend protocol",
