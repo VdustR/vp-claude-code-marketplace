@@ -151,8 +151,7 @@ After presenting the summary:
 - **Start without confirmation** when triggered proactively — always ask first
 - **Ask obvious questions** — skip questions where the answer is clearly implied by context
 - **Force linear order** — if a user's answer makes a later question urgent, reorder
-- **Over-question** — if requirements are clear, wrap up; never exceed 15 questions total
-- **Exceed the hard cap** — 15 questions is the absolute maximum regardless of dynamic adjustment
+- **Over-question** — if requirements are clear, wrap up. The number of questions is dynamic but must not exceed the hard cap of 15
 
 ## Notes
 
