@@ -103,6 +103,23 @@ Features:
 - Supports short URLs (`maps.app.goo.gl/...`) and full URLs
 - Output as summary table, JSON, or CSV
 
+### vp-guided-focus
+
+Guided focus questioning to align on requirements before planning or complex tasks.
+
+```bash
+/plugin install vp-guided-focus@vdustr
+```
+
+Features:
+- One-at-a-time structured questioning with options, trade-off analysis, and recommendations
+- Dynamic question count (default 10, configurable, auto-adjusts with explanation)
+- Proactive trigger on complex/ambiguous tasks (asks permission first)
+- Flexible responses: select, combine, free-form, counter-question, skip/defer
+- Confidence badges on decisions (confirmed / uncertain / undecided)
+- Dependency-aware question ordering — adapts based on previous answers
+- Summary with review and handoff to plan or execute
+
 ### vp-localsend
 
 Send and receive files over local network using [LocalSend](https://localsend.org/) protocol (like AirDrop).
