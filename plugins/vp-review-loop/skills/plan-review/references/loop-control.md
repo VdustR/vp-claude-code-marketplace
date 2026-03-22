@@ -63,7 +63,7 @@ After auto-fixes are applied, determine which passes to re-run:
 All passes return zero findings. Report success with iteration history.
 
 ### Auto-Fix Complete
-All remaining findings after auto-fix are HIGH or ambiguous MEDIUM. Present these to user for decision (Phase 6).
+All remaining findings after auto-fix are HIGH or ambiguous MEDIUM. Present these to user for decision (Phase 7).
 
 ### Max Iterations
 3 full cycles completed with remaining findings. Present final findings table to user with options:
