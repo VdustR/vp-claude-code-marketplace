@@ -1,7 +1,7 @@
 {
   "name": "vp-review-loop",
-  "version": "1.0.0",
-  "description": "Iterative multi-pass subagent review loop with confidence scoring for code and plans",
+  "version": "1.1.0",
+  "description": "Iterative multi-pass subagent review loop with simplify integration and confidence scoring for code and plans",
   "author": {
     "name": "VdustR",
     "url": "https://github.com/VdustR"
@@ -9,6 +9,6 @@
   "homepage": "https://github.com/VdustR/vp-claude-code-marketplace",
   "repository": "https://github.com/VdustR/vp-claude-code-marketplace",
   "license": "MIT",
-  "keywords": ["code-review", "plan-review", "multi-pass", "confidence-index", "subagent", "iterative", "loop-control"],
+  "keywords": ["code-review", "plan-review", "multi-pass", "confidence-index", "subagent", "iterative", "loop-control", "simplify", "code-reuse", "auto-fix"],
   "skills": "./skills/"
 }

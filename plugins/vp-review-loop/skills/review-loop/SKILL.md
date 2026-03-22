@@ -2,9 +2,11 @@
 name: review-loop
 description: >-
   Iterative multi-pass subagent code review with fix-review loop.
+  Incorporates the official Claude Code simplify skill for code reuse and efficiency.
   Use when asked to "review this code", "review my changes", "multi-pass review",
-  "run 3-pass review", "review loop", "subagent review", "deep code review",
-  "review this diff", "optimize this code", "review and fix loop",
+  "run 4-pass review", "review loop", "subagent review", "deep code review",
+  "review this diff", "optimize this code", "simplify this code",
+  "review and fix loop", "find reusable code",
   or when another skill needs subagent review as fallback,
   or when high-stakes code changes (pre-merge, pre-deploy, critical features)
   require thorough multi-perspective review.
@@ -13,7 +15,7 @@ description: >-
 
 # Review Loop
 
-Iterative multi-pass subagent code review with fix-review loop. Three built-in review passes catch different categories of issues, with context-aware suggested passes for deeper coverage. Fixes are applied and affected passes re-run until clean.
+Iterative multi-pass subagent code review with fix-review loop. Four built-in review passes catch different categories of issues, with context-aware suggested passes for deeper coverage. Fixes are applied and affected passes re-run until clean. Incorporates the official Claude Code `simplify` skill methodology for code reuse and efficiency analysis.
 
 ## Quick Start
 
@@ -54,13 +56,16 @@ If ambiguous, ask the user what scope to review.
 
 ### Phase 2: Reviewer Configuration
 
-**Built-in passes** (always run all 3 unless user overrides):
+**Built-in passes** (always run all 4 unless user overrides):
 
 | Pass | Focus | What It Catches |
 |------|-------|-----------------|
 | Direct | Correctness | Syntax errors, import issues, type errors, logic bugs, null safety, missing returns |
 | Best Practice | Quality | Idiomatic patterns, performance issues, readability, DRY violations, naming |
 | Critical Think | Risk | Edge cases, security vulnerabilities, race conditions, hidden assumptions, failure modes |
+| Simplify | Reuse & Efficiency | Existing utilities not reused, redundant state, parameter sprawl, missed concurrency, hot-path bloat, TOCTOU, unnecessary comments/nesting |
+
+The Simplify pass incorporates the official Claude Code `simplify` skill methodology. Unlike other passes that review the diff in isolation, Simplify **actively searches the codebase** for existing utilities and patterns that could replace newly written code.
 
 See [review-passes.md](references/review-passes.md) for full pass specifications and subagent prompt templates.
 
@@ -78,7 +83,7 @@ See [review-passes.md](references/review-passes.md) for full pass specifications
 Present matching suggestions to the user — they choose which to enable:
 - **all**: Enable all suggested passes
 - **pick**: User selects specific passes from the suggestions
-- **none**: Run only the 3 built-in passes
+- **none**: Run only the 4 built-in passes
 
 Suggested passes run in parallel alongside built-in passes and follow the same finding format, fix & iterate loop, and severity rules.
 
@@ -90,9 +95,10 @@ Suggested passes run in parallel alongside built-in passes and follow the same f
 
 Run each pass as an **independent subagent** (parallel when possible):
 
-1. Launch 3 subagents (one per pass) using the Task tool
+1. Launch 4 subagents (one per built-in pass) using the Task tool
 2. Each subagent receives: code content + pass-specific prompt from [review-passes.md](references/review-passes.md)
-3. Collect findings from all passes
+3. The Simplify subagent additionally receives instructions to search the broader codebase (not just the diff) for reusable utilities
+4. Collect findings from all passes
 
 **Finding format** (each subagent must return findings in this structure):
 
@@ -157,11 +163,11 @@ Generate a consolidated report:
 
 ### DO
 
-- **Run all 3 passes** — each catches different issue categories
+- **Run all 4 passes** — each catches different issue categories
 - **Fix and re-verify** — don't just report, iterate until clean
 - **Track findings across iterations** — detect stalls and ping-pong early
 - **Respect severity levels** — HIGH findings need user approval before fixing
-- **Use parallel subagents** — launch all 3 passes simultaneously for speed
+- **Use parallel subagents** — launch all 4 passes simultaneously for speed
 - **Report iteration history** — show what was found and fixed in each cycle
 
 ### DON'T
@@ -189,7 +195,7 @@ Generate a consolidated report:
 
 ## Notes
 
-- **Parallel execution**: All 3 passes run as independent subagents in parallel for speed
+- **Parallel execution**: All 4 built-in passes run as independent subagents in parallel for speed
 - **Suggested passes**: 6 optional passes (Testability, Accessibility, API Surface, Performance, i18n, Concurrency) are suggested based on code content signals — not a blind checklist
 - **Extensibility**: Users can add fully custom passes beyond the suggested ones; future versions may support MCP tool integration and CLI tool integration (Gemini, Codex, etc.)
 - **Privacy**: When using manual paste mode for external AI review, a privacy notice is displayed before generating the prompt — be aware that code content will be shared externally

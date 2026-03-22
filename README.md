@@ -183,20 +183,22 @@ Features:
 
 ### vp-review-loop
 
-Iterative multi-pass subagent review loop with confidence scoring for code and plans.
+Iterative multi-pass subagent review loop with simplify integration and confidence scoring for code and plans.
 
 ```bash
 /plugin install vp-review-loop@vdustr
 ```
 
 **Skills included:**
-- **review-loop** — Multi-pass code review (Direct, Best Practice, Critical Think) with iterative fix cycles
-- **plan-review** — Plan optimization with confidence index scoring and pros/cons analysis
+- **review-loop** — Multi-pass code review (Direct, Best Practice, Critical Think, Simplify) with iterative fix cycles
+- **plan-review** — Plan optimization with auto-fix loop, confidence index scoring, and pros/cons analysis
 
 Features:
-- 3 built-in passes: Direct (correctness), Best Practice (quality), Critical Think (risk)
+- 4 built-in passes: Direct (correctness), Best Practice (quality), Critical Think (risk), Simplify (reuse & efficiency — integrates official Claude Code `simplify` skill)
+- Simplify pass actively searches the codebase for existing utilities to replace newly written code
 - Context-aware suggested passes: Testability, Accessibility, API Surface, Performance, i18n, Concurrency (code); Incremental Delivery, Stakeholder Impact, Maintenance Burden, Team Coordination (plans)
 - Iterative fix-review loop with stall detection and ping-pong mitigation
+- Plan review auto-fix loop: trivial findings fixed automatically, only HIGH/ambiguous findings require user input
 - Generalized confidence index with 5 factors, floor rule, and boost options
 - Structured pros/cons analysis for plan decisions
 - Extensible: custom subagent passes + manual external AI review support
