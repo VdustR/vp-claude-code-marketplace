@@ -1,8 +1,9 @@
 ---
 name: plan-review
 description: >-
-  Review, optimize, and score implementation plans with confidence index
-  and pros/cons analysis. Use when asked to "review this plan", "score this plan",
+  Review, optimize, and score implementation plans with confidence index,
+  pros/cons analysis, and auto-fix loop for trivial findings.
+  Use when asked to "review this plan", "score this plan",
   "how confident in this plan", "write a plan for X", "design an implementation plan",
   "optimize this plan", "refine this plan", "improve this plan",
   "pros and cons of this approach", "reasons for and against",
@@ -13,7 +14,7 @@ description: >-
 
 # Plan Review
 
-Review, optimize, and score implementation plans with a confidence index and structured pros/cons analysis. Three built-in passes evaluate plans from different angles, with context-aware suggested passes for deeper coverage. A confidence index quantifies readiness to proceed.
+Review, optimize, and score implementation plans with a confidence index, structured pros/cons analysis, and auto-fix loop for trivial findings. Three built-in passes evaluate plans from different angles, with context-aware suggested passes for deeper coverage. Trivial and uncontroversial findings are auto-fixed without asking; only HIGH severity or ambiguous findings require user input. A confidence index quantifies readiness to proceed.
 
 ## Quick Start
 
@@ -100,7 +101,31 @@ Each pass returns findings:
 | # | Pass | Severity | Plan Step | Issue | Recommendation |
 ```
 
-### Phase 4: Confidence Index
+### Phase 4: Auto-Fix Loop
+
+See [loop-control.md](references/loop-control.md) for iteration limits, fix authorization rules, and exit conditions.
+
+**Auto-fix trivial findings** without asking the user:
+
+| Severity | Ambiguity | Action |
+|----------|-----------|--------|
+| LOW | Any | Auto-fix — revise plan and note in summary |
+| MEDIUM | Unambiguous (single clear fix) | Auto-fix — revise plan and note in summary |
+| MEDIUM | Ambiguous (multiple valid approaches) | Present to user with options |
+| HIGH | Any | Present to user with recommendation |
+
+**After auto-fixing**:
+1. Re-run only the passes whose findings were fixed
+2. If auto-fixes changed plan structure (steps added/reordered), re-run all 3 passes
+3. Repeat until no more auto-fixable findings, or max 3 full cycles reached
+
+**Exit conditions**:
+- All passes return zero findings → proceed to Phase 5
+- Only HIGH/ambiguous findings remain → proceed to Phase 5 (present these in Phase 7)
+- Max 3 cycles reached → proceed to Phase 5 with remaining findings
+- Stall detected (same findings persist) → escalate to user
+
+### Phase 5: Confidence Index
 
 Calculate a confidence score using 5 domain-agnostic factors. See [confidence-index.md](references/confidence-index.md) for full specification.
 
@@ -116,7 +141,7 @@ Calculate a confidence score using 5 domain-agnostic factors. See [confidence-in
 
 **Floor rule**: If ANY single factor scores below 40%, overall indicator is forced to 🔴 regardless of weighted average.
 
-### Phase 5: Pros/Cons Analysis
+### Phase 6: Pros/Cons Analysis
 
 For each major decision in the plan, generate a structured pros/cons analysis. See [pros-cons-analysis.md](references/pros-cons-analysis.md) for the framework.
 
@@ -136,7 +161,7 @@ Format:
 **Recommendation**: [Proceed / Reconsider / Need more info]
 ```
 
-### Phase 6: User Decision
+### Phase 7: User Decision
 
 Present the full assessment and ask the user:
 
@@ -147,22 +172,24 @@ Present the full assessment and ask the user:
 | **Revise** | Agent suggests revisions based on findings; user approves diff before applying |
 | **Abort** | Discard plan, start over or abandon |
 
-### Phase 7: Iterate (if revise/boost)
+### Phase 8: Iterate (if revise/boost)
 
 If user chooses **Revise**:
 1. Agent suggests specific changes as a diff
 2. User reviews and approves changes
 3. Re-run affected review passes (not all 3 unless changes are fundamental)
 4. Recalculate confidence index
-5. Return to Phase 6
+5. Return to Phase 7
 
 If user chooses **Boost**:
 1. Execute the selected boost action(s)
 2. Re-score the affected confidence factor(s)
 3. Recalculate overall confidence
-4. Return to Phase 6
+4. Return to Phase 7
 
 **Max iterations**: 3 revise/boost cycles. After 3, present final state and recommend proceeding or aborting.
+
+**Total iteration budget**: Up to 3 auto-fix cycles (Phase 4) + up to 3 user-driven cycles (Phase 8) = 6 cycles maximum across the entire plan review.
 
 ## Example Output
 
@@ -214,17 +241,20 @@ Proceed with current confidence, or boost first? [proceed / boost / revise / abo
 ### DO
 
 - **Run all 3 passes** — feasibility, optimality, and risk catch different issues
+- **Auto-fix trivial findings** — LOW and unambiguous MEDIUM findings should be fixed without asking
 - **Show confidence breakdown** — factor-level scores help users understand weaknesses
 - **Provide actionable boosts** — each boost option must be concrete and executable
-- **Get approval for revisions** — never silently change the user's plan
+- **Get approval for HIGH/ambiguous findings** — these involve strategic choices
 - **Structure pros/cons per decision** — not one big list for the whole plan
+- **Track auto-fix history** — show what was auto-fixed in the iteration summary
 
 ### DON'T
 
-- **Silently modify the plan** — always show diff and get approval
+- **Ask for trivial fixes** — auto-fix LOW/unambiguous MEDIUM findings, don't interrupt the user
+- **Auto-fix strategic decisions** — HIGH severity or ambiguous findings need user input
 - **Skip confidence index** — it's the core value proposition
 - **Give vague boost options** — "do more research" is not actionable
-- **Loop indefinitely** — max 3 revise/boost cycles
+- **Loop indefinitely** — max 3 full auto-fix cycles, then escalate
 - **Conflate code review with plan review** — plans are about approach, not syntax
 
 ## Error Handling
@@ -242,12 +272,14 @@ Proceed with current confidence, or boost first? [proceed / boost / revise / abo
 - [plan-review-passes.md](references/plan-review-passes.md) — Feasibility, Optimality, Risk Analysis pass specifications
 - [confidence-index.md](references/confidence-index.md) — Generalized confidence index with 5 factors
 - [pros-cons-analysis.md](references/pros-cons-analysis.md) — Structured pros/cons framework
+- [loop-control.md](references/loop-control.md) — Auto-fix authorization, iteration limits, exit conditions
 
 ## Notes
 
-- **Auto-revision**: Agent suggests revisions as diffs; user approves before applying. No silent plan changes.
+- **Auto-fix loop**: Trivial findings (LOW, unambiguous MEDIUM) are auto-fixed without asking. Only HIGH or ambiguous findings require user input. This makes plan review faster and less interruptive.
 - **Plan mode integration**: Works with Claude Code's `EnterPlanMode` — can review plans generated in plan mode
-- **Iterative refinement**: The review → revise → re-review loop is capped at 3 cycles to prevent diminishing returns
+- **Iterative refinement**: The auto-fix → re-review loop is capped at 3 cycles to prevent diminishing returns. User-driven revise/boost cycles add up to 3 more.
 - **Suggested passes**: 4 optional passes (Incremental Delivery, Stakeholder Impact, Maintenance Burden, Team Coordination) are suggested based on plan content signals
 - **Domain-agnostic**: Confidence factors are designed for any implementation plan, not specific to dependencies or migrations
+- **Confidence re-calculation**: Confidence index is recalculated after each auto-fix cycle, giving continuous feedback on plan quality improvement
 - **Scope**: This skill reviews plans. For reviewing code already written, use `review-loop` instead

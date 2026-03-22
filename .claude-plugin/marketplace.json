@@ -80,9 +80,9 @@
     {
       "name": "vp-review-loop",
       "source": "./plugins/vp-review-loop",
-      "description": "Iterative multi-pass subagent review loop with confidence scoring for code and plans",
+      "description": "Iterative multi-pass subagent review loop with simplify integration and confidence scoring for code and plans",
       "license": "MIT",
-      "keywords": ["code-review", "plan-review", "multi-pass", "confidence-index", "subagent", "iterative", "loop-control"]
+      "keywords": ["code-review", "plan-review", "multi-pass", "confidence-index", "subagent", "iterative", "loop-control", "simplify", "code-reuse", "auto-fix"]
     },
     {
       "name": "vp-skills",

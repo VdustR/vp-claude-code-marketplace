@@ -18,8 +18,10 @@ After fixes are applied, determine which passes to re-run:
 |-----------|--------|
 | Direct findings fixed | Re-run Direct |
 | Best Practice findings fixed | Re-run Best Practice |
+| Simplify findings fixed (reuse/refactor) | Re-run Simplify |
+| Simplify fixes change function signatures or public API | Re-run Direct + Best Practice |
 | HIGH severity findings fixed (any pass) | Re-run Critical Think |
-| Best Practice fixes touch security-sensitive regions | Re-run Critical Think |
+| Best Practice or Simplify fixes touch security-sensitive regions | Re-run Critical Think |
 | Only LOW findings fixed | Re-run only the originating pass |
 
 **Security-sensitive regions** (trigger Critical Think re-run):
@@ -119,4 +121,4 @@ Iteration 3:
   [C-MED-file:15]  Carried: No rate limiting → PRESENTED TO USER
 ```
 
-Legend: `[Pass-Severity-Location]` where D=Direct, B=Best Practice, C=Critical Think
+Legend: `[Pass-Severity-Location]` where D=Direct, B=Best Practice, C=Critical Think, S=Simplify
