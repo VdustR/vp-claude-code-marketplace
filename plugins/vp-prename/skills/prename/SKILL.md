@@ -7,7 +7,6 @@ description: >-
   or when the user invokes /prename.
   Outputs a /rename command for the user to execute.
   Boundary: not for renaming files, variables, or git branches.
-model: haiku
 ---
 
 # Prename
