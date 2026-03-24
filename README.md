@@ -192,7 +192,7 @@ Generate meaningful session names based on overall session theme.
 Features:
 - Names sessions by overall theme and purpose, not just the last action
 - Emoji + topic format for scannable session history
-- Matches the user's language for topic description
+- Adapts language for topic description based on user and context
 - Outputs `/rename` command for easy execution
 
 ### vp-review-loop
