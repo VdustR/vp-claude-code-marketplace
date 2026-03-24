@@ -78,6 +78,13 @@
       "keywords": ["pr", "pull-request", "review", "comments", "github", "automation"]
     },
     {
+      "name": "vp-prename",
+      "source": "./plugins/vp-prename",
+      "description": "Generate meaningful session names based on overall session theme",
+      "license": "MIT",
+      "keywords": ["session", "rename", "naming", "summary", "emoji"]
+    },
+    {
       "name": "vp-review-loop",
       "source": "./plugins/vp-review-loop",
       "description": "Iterative multi-pass subagent review loop with simplify integration and confidence scoring for code and plans",
