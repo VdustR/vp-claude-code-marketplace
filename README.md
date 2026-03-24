@@ -181,6 +181,20 @@ Features:
 - Summary report generation after processing all comments
 - Human collaboration - asks when uncertain about fixes
 
+### vp-prename
+
+Generate meaningful session names based on overall session theme.
+
+```bash
+/plugin install vp-prename@vdustr
+```
+
+Features:
+- Names sessions by overall theme and purpose, not just the last action
+- Emoji + topic format for scannable session history
+- Adapts language for topic description based on user and context
+- Outputs `/rename` command for easy execution
+
 ### vp-review-loop
 
 Iterative multi-pass subagent review loop with simplify integration and confidence scoring for code and plans.
