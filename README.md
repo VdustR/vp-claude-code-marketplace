@@ -189,12 +189,6 @@ Generate meaningful session names based on overall session theme.
 /plugin install vp-prename@vdustr
 ```
 
-Recommended usage — `/btw` (built-in single-message fork) keeps the naming request isolated without consuming main session context:
-
-```
-/btw /prename
-```
-
 Features:
 - Names sessions by overall theme and purpose, not just the last action
 - Emoji + topic format for scannable session history
