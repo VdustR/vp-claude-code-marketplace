@@ -99,7 +99,9 @@ Close the retro explicitly: tell the user the retro is complete and that recomme
 
 ### DON'T
 
-- Execute any action — commit, push, create branches/PRs, or modify files. Retro ends at recommendations. Any response during the retro ("yes", "sounds good", "let's do it", "go ahead") is an acknowledgement, not an execution request. Only a new, specific instruction after the retro has closed counts as an execution request
+- Execute any action (e.g., commit, push, modify files). This skill is for analysis and recommendations only
+- Interpret user agreement (e.g., "yes", "sounds good", "go ahead") as a request for execution. Such responses are acknowledgements only
+- Act on any instruction before the retro is explicitly closed. Only a new, specific instruction after the retro has concluded is a valid request for action
 - Force a rigid phase sequence — adapt to the conversation
 - Over-analyze sessions with minimal issues
 - Spawn subagents without user permission
