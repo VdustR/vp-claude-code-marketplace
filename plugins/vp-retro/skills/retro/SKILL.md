@@ -103,7 +103,7 @@ For each action, present execution options based on the target — see [subagent
 - Over-analyze sessions with minimal issues
 - Spawn subagents without user permission
 - Recommend changes without explaining why
-- Skip the "do nothing / skip" option when presenting choices
+- Omit the "do nothing / skip" option when presenting choices
 - Be judgmental about the user's prompts or workflow — be constructive
 
 ## Reference Files
