@@ -85,6 +85,13 @@
       "keywords": ["session", "rename", "naming", "summary", "emoji"]
     },
     {
+      "name": "vp-retro",
+      "source": "./plugins/vp-retro",
+      "description": "Session retrospective — reflect on recent work to discover improvement opportunities through interactive dialogue",
+      "license": "MIT",
+      "keywords": ["retro", "retrospective", "session-review", "improvement", "workflow", "optimization"]
+    },
+    {
       "name": "vp-review-loop",
       "source": "./plugins/vp-review-loop",
       "description": "Iterative multi-pass subagent review loop with simplify integration and confidence scoring for code and plans",
