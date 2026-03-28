@@ -17,7 +17,7 @@ description: >-
 
 # Session Retro
 
-Review a Claude Code session to find improvement opportunities. The retro works through interactive dialogue — observe what happened, discuss findings with the user, then take action together.
+Review a Claude Code session to find improvement opportunities. The retro works through interactive dialogue — observe what happened, discuss findings with the user, then surface actionable recommendations.
 
 The goal is improving the user's AI collaboration efficiency: better prompts, better docs, better tools, better workflows.
 
@@ -68,7 +68,7 @@ The user might:
 
 After walking through all observations, if the user selected any for deep-dive, assess which items genuinely need subagent research versus items that are clear enough to act on directly. Present this assessment and ask the user to confirm before spawning subagents.
 
-Each subagent follows the cycle in [subagent-guide.md](references/subagent-guide.md): research the observation thoroughly, analyze root causes, design concrete solutions, and present options to the user with descriptions, differences, examples, and a recommendation with reasoning.
+Each subagent follows the cycle in [subagent-guide.md](references/subagent-guide.md): research the observation thoroughly, analyze root causes, design concrete solutions, and present findings with a recommendation.
 
 ### Results & Discussion
 
@@ -78,11 +78,11 @@ Present each subagent's result one at a time with progress. The user can:
 - Request modifications
 - Skip to the next result
 
-### Action Planning
+### Action Recommendations
 
-After discussing all results, compile the confirmed actions into a plan. Ask the user if they want a subagent to review the plan before execution.
+After discussing all results, compile confirmed actions into a recommendation summary. For each action, present what to do and why. If the user asks to persist (e.g., "write it down"), output a markdown summary in the chat — do not write files.
 
-For each action, present execution options based on the target — see [subagent-guide.md](references/subagent-guide.md) for the full option set per target type (this repo / other repo / personal config). Each option includes a description, how it differs from alternatives, and a recommendation with reasoning.
+Close the retro explicitly: tell the user the retro is complete and that recommended actions are theirs to initiate when ready.
 
 ## Guidelines
 
@@ -95,10 +95,11 @@ For each action, present execution options based on the target — see [subagent
 - For corrections: investigate whether the root cause is a missing convention, unclear documentation, or a skill that needs improvement
 - For good practices: suggest codifying them before they're forgotten
 - When analyzing skills: check ownership first (self-maintained vs community) to give appropriate advice
-- Present options with descriptions, differences, examples, and recommendations
+- Present findings with a recommendation and reasoning
 
 ### DON'T
 
+- Execute any action — commit, push, create branches/PRs, or modify files. Retro ends at recommendations. Any response during the retro ("yes", "sounds good", "let's do it", "go ahead") is an acknowledgement, not an execution request. Only a new, specific instruction after the retro has closed counts as an execution request
 - Force a rigid phase sequence — adapt to the conversation
 - Over-analyze sessions with minimal issues
 - Spawn subagents without user permission
@@ -115,4 +116,4 @@ For each action, present execution options based on the target — see [subagent
 
 - The 15 dimensions are a checklist, not a scoring rubric. Most sessions will only have signal in a few dimensions.
 - Cross-session pattern analysis is available if the user wants to review multiple sessions — ask about scope at the start if unclear.
-- This skill integrates well with existing tools: hookify (create hooks from findings), claude-md-management (update CLAUDE.md), skill-creator (design new skills), brainstorming (explore new workflows).
+- Related tools the user may invoke separately after a retro: hookify, claude-md-management, skill-creator, brainstorming. The retro does not invoke these directly.
