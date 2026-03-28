@@ -41,33 +41,7 @@ Use the standard option format:
 - Recommendation: [Weak / Moderate / Strong] — reasoning
 ```
 
-Always include recommendation with reasoning. The user makes the final call.
-
-## Universal: Action Target Options
-
-When an action is confirmed, present execution options based on where it targets. Include description, differences, and a recommendation with reasoning for each.
-
-### This Repo
-
-- **Direct edit** — Modify files in the current working tree
-- **Worktree** — Create an isolated worktree for the change
-- **Append to existing PR / changes** — Add to work already in progress
-- **New PR** — Create a dedicated pull request
-- **File issue** — Record as a GitHub issue for later
-- **Save as .md note** — Write to a markdown file for reference
-
-### Other Repo (community skill, upstream tool, etc.)
-
-- **File issue** — Open an issue on the target repo
-- **Fork + PR** — Fork the repo and submit a pull request
-- **Save as .md note** — Record locally for reference
-- **Skip** — Acknowledge but take no action
-
-### Personal Config (~/.claude/CLAUDE.md, personal skills, memory)
-
-- **Direct edit** — Modify the file directly
-- **Save as .md note** — Write a note to review later
-- **Skip** — No action needed
+Always include a recommendation with reasoning. The user makes the final call. After presenting, your task is complete.
 
 ## Dimension-Specific: Correction Analysis Chain
 
