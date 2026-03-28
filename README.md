@@ -201,6 +201,23 @@ Features:
 - Adapts language for topic description based on user and context
 - Outputs `/rename` command for easy execution
 
+### vp-retro
+
+Session retrospective — reflect on recent work to discover improvement opportunities through interactive dialogue.
+
+```bash
+/plugin install vp-retro@vdustr
+```
+
+Features:
+- Open-ended session observation with 15-dimension safety-net checklist
+- Interactive deep-dive with parallel subagent research
+- Full analysis cycle per finding: research → analyze → design solutions → present options
+- Correction root-cause analysis: traces to missing conventions, unclear docs, or skill gaps
+- Proactive discovery: codifies good practices before they're forgotten
+- Skill ecosystem audit: checks ownership before recommending changes
+- Context-aware action planning (direct edit / worktree / PR / issue / .md note)
+
 ### vp-review-loop
 
 Iterative multi-pass subagent review loop with simplify integration and confidence scoring for code and plans.
