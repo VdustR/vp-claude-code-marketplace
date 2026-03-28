@@ -73,7 +73,28 @@ Add entry to `.claude-plugin/marketplace.json`:
 }
 ```
 
+## Plugin Development Workflow
+
+Proven end-to-end flow for developing new plugins:
+
+1. **Research** — Survey existing community plugins and prior art
+2. **Brainstorm** — Explore ideas, identify skill boundaries and user triggers
+3. **Guided focus** — Align on requirements through structured questioning
+4. **Plan** — Write an implementation plan before touching code
+5. **Worktree** — Create a git worktree for isolated development
+6. **Implement** — Build the plugin following Quality Standards below
+7. **Review** — Subagent code review for quality and consistency
+8. **Commit** — Follow Git Conventions; verify Plugin Change Checklist
+9. **PR** — Open pull request with description and test plan
+10. **Merge** — Merge and clean up the worktree
+
+Not every plugin needs all steps — lightweight fixes can skip research/brainstorm. Use judgment.
+
 ## Quality Standards
+
+### Design Philosophy
+
+Keep skills flexible — describe intent and guidance, not rigid step-by-step procedures. Trust the AI to adapt to the actual conversation. A well-written skill defines *what* to achieve and *why*, then lets the model determine *how* based on context.
 
 ### Plugin Naming
 
