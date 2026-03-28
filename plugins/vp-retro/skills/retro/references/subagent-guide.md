@@ -41,7 +41,7 @@ Use the standard option format:
 - Recommendation: [Weak / Moderate / Strong] — reasoning
 ```
 
-Always include recommendation with reasoning. The user makes the final call. After presenting, your task is complete.
+Always include a recommendation with reasoning. The user makes the final call. After presenting, your task is complete.
 
 ## Dimension-Specific: Correction Analysis Chain
 
