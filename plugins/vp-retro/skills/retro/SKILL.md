@@ -57,7 +57,7 @@ Include both:
 
 ### Interactive Deep-Dive
 
-Present observations one at a time with a progress indicator (e.g., `[2/6]`). For each observation, give the initial recommendation and ask if the user wants to deep-dive with a friendly prompt (e.g., `(y/n)`).
+Present observations one at a time with a progress indicator (e.g., `[2/6]`). For each observation, give the initial recommendation and ask if the user wants to deep-dive.
 
 The user might:
 - Say yes — note it for deep-dive
@@ -66,7 +66,7 @@ The user might:
 - Bring up observations the AI missed
 - Say "enough" to skip remaining and proceed
 
-After walking through all observations, if the user selected any for deep-dive, assess which items genuinely need subagent research versus items that are clear enough to act on directly. Present this assessment and ask the user to confirm before spawning subagents. Only spawn for items that benefit from deeper investigation.
+After walking through all observations, if the user selected any for deep-dive, assess which items genuinely need subagent research versus items that are clear enough to act on directly. Present this assessment and ask the user to confirm before spawning subagents.
 
 Each subagent follows the cycle in [subagent-guide.md](references/subagent-guide.md): research the observation thoroughly, analyze root causes, design concrete solutions, and present options to the user with descriptions, differences, examples, and a recommendation with reasoning.
 
