@@ -1,6 +1,13 @@
 ---
 name: typescript-best-practices
-description: This skill should be used when the user asks to "review TypeScript code", "check my TS code", "review this TypeScript", "write TypeScript", or when writing, reviewing, or refactoring TypeScript code in projects with tsconfig.json or .ts/.tsx files. Provides dos and don'ts for type design, naming conventions, generics, and patterns.
+description: >-
+  TypeScript coding guidelines with dos and don'ts for type design and patterns.
+  Use when writing, reviewing, or refactoring TypeScript code in projects with
+  tsconfig.json or .ts/.tsx files. Trigger when the user asks to "review TypeScript
+  code", "check my TS code", "write TypeScript", or when creating or modifying
+  any .ts/.tsx file. Also applies when discussing type design, generics, naming
+  conventions, interface vs type decisions, or TypeScript patterns.
+  Boundary: not for JavaScript-only projects without TypeScript configuration.
 ---
 
 # TypeScript Best Practices

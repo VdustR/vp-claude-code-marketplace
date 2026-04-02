@@ -6,7 +6,10 @@ description: >-
   removal, Vue 3 Options API to Composition API). Use when asked to "replace X with Y",
   "migrate from X to Y", "switch from X to Y", "swap X for Y", "convert from X to Y",
   "port from X to Y", "remove deprecated forwardRef", "migrate to new API",
-  or when planning library replacement or API migration.
+  or when planning library replacement or API migration. Also trigger when the user
+  mentions switching libraries, finding alternatives, or removing deprecated patterns.
+  Boundary: for replacing libraries or migrating API patterns. Use deps-upgrade for
+  version bumps within the same library.
 ---
 
 # Dependency Migration

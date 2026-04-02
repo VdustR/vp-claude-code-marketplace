@@ -1,6 +1,14 @@
 ---
 name: pr-comment-resolver
-description: This skill should be used when the user asks to "handle PR comments", "resolve PR review comments", "fix PR feedback", "process review comments", "address PR suggestions", or provides a GitHub PR URL with review comments to handle. Automates the workflow of reviewing, fixing, and resolving PR comments with atomic commits.
+description: >-
+  Automate PR comment review, fix, and resolution workflow with atomic commits.
+  Use when the user asks to "handle PR comments", "resolve PR review comments",
+  "fix PR feedback", "process review comments", "address PR suggestions",
+  "deal with review comments", or provides a GitHub PR URL with review comments.
+  Also trigger when the user mentions unresolved PR threads or wants to
+  batch-process reviewer feedback.
+  Boundary: not for writing PR reviews (use code-review) or PR checklists
+  (use checklist-runner).
 ---
 
 # PR Comment Resolver

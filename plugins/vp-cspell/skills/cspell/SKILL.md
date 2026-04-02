@@ -1,11 +1,15 @@
 ---
 name: cspell
 description: >-
-  This skill should be used when users encounter cspell unknown word warnings,
-  spelling errors from cspell diagnostics, or CI/linting failures on
-  unrecognized words. Also applies when users ask to add words to the cspell
-  dictionary, suppress or ignore cspell warnings, choose between cspell:words
-  and cspell:ignore directives, or bootstrap cspell config in a new project
+  Handle cspell unknown word warnings with a prioritized decision tree and
+  config bootstrapping. Use when users encounter cspell diagnostics, spelling
+  errors from cspell, CI or linting failures on unrecognized words, or ask to
+  add words to the cspell dictionary, suppress cspell warnings, or choose
+  between cspell:words and cspell:ignore directives. Also trigger when setting
+  up cspell in a new project, when any cspell-related IDE warning appears,
+  or when a pre-commit hook fails due to unknown words.
+  Boundary: not for non-cspell spell checkers (typo, codespell, Vale, textlint)
+  or other linting tools (ESLint, markdownlint).
 ---
 
 # cspell

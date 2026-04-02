@@ -1,6 +1,6 @@
 {
   "name": "vp-deps-shift",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Dependency upgrade and library migration with breaking change detection and test-first verification",
   "author": {
     "name": "VdustR",

@@ -3,8 +3,11 @@ name: checklist-runner
 description: >-
   Parse and verify checklists from GitHub PRs and issues, auto-checking items
   that pass verification. Use when asked to verify PR/issue checklists, check off
-  items, process checklist tasks, or when a PR/issue contains unchecked items
-  that need verification.
+  items, process checklist tasks, run the checklist, or when a PR/issue contains
+  unchecked checkbox items that need verification. Also trigger when the user
+  mentions "checklist", "checkbox", or wants to auto-verify PR merge requirements.
+  Boundary: not for creating new checklists (just write markdown) or handling
+  PR review comments (use pr-comment-resolver).
 ---
 
 # Checklist Runner

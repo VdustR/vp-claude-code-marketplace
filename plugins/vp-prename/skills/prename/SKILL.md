@@ -15,10 +15,12 @@ Generate a session name that captures the **overall theme and purpose**, not jus
 
 ## Process
 
-1. Reflect on the entire conversation — what was the overarching goal or theme?
-2. Consider all phases: research, planning, implementation, debugging, review
-3. Generate a name: emoji + concise topic description
-4. Output the rename command
+Dispatch naming to a **haiku subagent** — this task is lightweight and doesn't need a heavy model.
+
+1. Summarize the conversation's key themes in 2-3 sentences
+2. Spawn a haiku subagent with the summary and the naming style below
+3. The subagent returns the `/rename` command
+4. Output the result directly — nothing else
 
 ## Naming Style
 
@@ -42,7 +44,7 @@ Generate a session name that captures the **overall theme and purpose**, not jus
 🔀 auth middleware refactor
 🎫 PROJ-123 User onboarding flow
 🧪 session naming
-🔌 vp-review-loop improvements
+🔌 vp-deps-shift improvements
 💬 architecture decisions
 ```
 

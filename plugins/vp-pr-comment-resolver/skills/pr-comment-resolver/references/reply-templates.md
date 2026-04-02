@@ -399,27 +399,7 @@ No changes needed - {BRIEF_REASON}.
 
 ## Language Matching
 
-Match the language of the reviewer when appropriate:
-
-**If reviewer writes in Chinese:**
-
-```markdown
-- [{SHORT_HASH} {COMMIT_MESSAGE}]({COMMIT_URL})
-
-**修改檔案：**
-- `{FILE_PATH}`
-```
-
-**If reviewer writes in Japanese:**
-
-```markdown
-- [{SHORT_HASH} {COMMIT_MESSAGE}]({COMMIT_URL})
-
-**変更ファイル：**
-- `{FILE_PATH}`
-```
-
-Default to English if unsure.
+Match the language of the reviewer when appropriate. Translate "Files modified" into the reviewer's language. Default to English if unsure.
 
 ## Summary Report Template
 
