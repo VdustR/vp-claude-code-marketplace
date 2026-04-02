@@ -82,27 +82,6 @@ Features:
 - Auto-suggest `*.local` and `*.local.*` patterns
 - Support for both project-level and global gitignore
 
-### vp-gmaps-list
-
-Extract and manage Google Maps saved lists with business status checking.
-
-```bash
-/plugin install vp-gmaps-list@vdustr
-```
-
-**Skills included:**
-- **gmaps-list** — Extract all places from a saved list via internal API (requires agent-browser)
-- **gmaps-status-check** — Check business status to find closed/defunct places (requires gcloud or Playwright)
-
-Features:
-- Single API call extraction — bypasses UI scroll-based rendering to get all items at once
-- Full place data: name, address, coordinates, Google Place ID, user notes
-- Business status checking via Google Places API (recommended) or Playwright (free)
-- Identifies permanently closed (永久歇業) and temporarily closed (暫停營業) places
-- Generates clickable Google Maps links for results
-- Supports short URLs (`maps.app.goo.gl/...`) and full URLs
-- Output as summary table, JSON, or CSV
-
 ### vp-guided-focus
 
 Guided focus questioning to align on requirements before planning or complex tasks.
@@ -120,22 +99,6 @@ Features:
 - Dependency-aware question ordering — adapts based on previous answers
 - Summary with review and handoff to plan or execute
 
-### vp-localsend
-
-Send and receive files over local network using [LocalSend](https://localsend.org/) protocol (like AirDrop).
-
-```bash
-/plugin install vp-localsend@vdustr
-```
-
-Features:
-- Scan for nearby LocalSend devices on local network
-- Send files and directories to any LocalSend client (phone, tablet, PC)
-- Receive files from other devices with background server
-- Auto-downloads [localsend-cli](https://github.com/0w0mewo/localsend-cli) on first use
-- Idle server reminder to prevent forgotten background processes
-- Compatible with all LocalSend apps (iOS, Android, macOS, Windows, Linux)
-
 ### vp-macos-clean-uninstall
 
 Research-driven macOS app uninstallation with thorough cleanup of all associated data.
@@ -152,19 +115,6 @@ Features:
 - Categorized removal plan with file sizes and recommendations
 - Defaults to clean removal — recommends removing all residual data
 - Always confirms before deletion — flags irreplaceable user data separately
-
-### vp-nyan-mode
-
-Cat persona with 'nyan~' verbal tic, emoji support, and language matching.
-
-```bash
-/plugin install vp-nyan-mode@vdustr
-```
-
-Features:
-- Adds 'nyan~' verbal tic to responses
-- Enables emoji usage
-- Matches user's language preference
 
 ### vp-pr-comment-resolver
 
@@ -192,7 +142,7 @@ Generate meaningful session names based on overall session theme.
 Features:
 - Names sessions by overall theme and purpose, not just the last action
 - Emoji + topic format for scannable session history
-- Adapts language for topic description based on user and context
+- Lightweight haiku subagent for efficient naming
 - Outputs `/rename` command for easy execution
 
 ### vp-retro
@@ -212,28 +162,6 @@ Features:
 - Skill ecosystem audit: checks ownership before recommending changes
 - Context-aware action planning (direct edit / worktree / PR / issue / .md note)
 
-### vp-review-loop
-
-Iterative multi-pass subagent review loop with simplify integration and confidence scoring for code and plans.
-
-```bash
-/plugin install vp-review-loop@vdustr
-```
-
-**Skills included:**
-- **review-loop** — Multi-pass code review (Direct, Best Practice, Critical Think, Simplify) with iterative fix cycles
-- **plan-review** — Plan optimization with auto-fix loop, confidence index scoring, and pros/cons analysis
-
-Features:
-- 4 built-in passes: Direct (correctness), Best Practice (quality), Critical Think (risk), Simplify (reuse & efficiency — integrates official Claude Code `simplify` skill)
-- Simplify pass actively searches the codebase for existing utilities to replace newly written code
-- Context-aware suggested passes: Testability, Accessibility, API Surface, Performance, i18n, Concurrency (code); Incremental Delivery, Stakeholder Impact, Maintenance Burden, Team Coordination (plans)
-- Iterative fix-review loop with stall detection and ping-pong mitigation
-- Plan review auto-fix loop: trivial findings fixed automatically, only HIGH/ambiguous findings require user input
-- Generalized confidence index with 5 factors, floor rule, and boost options
-- Structured pros/cons analysis for plan decisions
-- Extensible: custom subagent passes + manual external AI review support
-
 ### vp-skills
 
 Manage agent skills using the npx skills CLI.
@@ -247,21 +175,6 @@ Features:
 - List, search, and discover available skills
 - Update all installed skills with one command
 - Support for global and project-level skill scopes
-
-### vp-somafm
-
-Play SomaFM internet radio as background music during coding sessions.
-
-```bash
-/plugin install vp-somafm@vdustr
-```
-
-Features:
-- Stream any SomaFM channel with one command (default: groovesalad)
-- Browse channels with live listener counts from SomaFM API
-- Now-playing track info and playback status
-- Seamless volume control via mpv IPC socket
-- Auto-detect missing dependencies with install guidance
 
 ### vp-stacked-pr-rebase
 
@@ -295,20 +208,6 @@ Features:
 - Generic const pattern for strict literal inference
 - Type testing guidelines with `*.test-d.ts`
 - Environment setup with strictest tsconfig and ts-reset
-
-### vp-wenyan-mode
-
-Classical Chinese (文言文) writing style with concise, elegant expressions.
-
-```bash
-/plugin install vp-wenyan-mode@vdustr
-```
-
-Features:
-- Always-active classical Chinese writing style
-- Concise expressions (言簡意賅)
-- Technical terms preserved (function, API, commit, etc.)
-- Minimal use of classical particles (之乎者也)
 
 ## Development
 

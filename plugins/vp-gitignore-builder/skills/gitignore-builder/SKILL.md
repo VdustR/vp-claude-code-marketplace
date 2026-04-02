@@ -1,6 +1,13 @@
 ---
 name: gitignore-builder
-description: This skill should be used when the user asks to "create gitignore", "build .gitignore", "add gitignore templates", requests "/gitignore", or when observing projects without .gitignore or seeing untracked files like node_modules/ or .env in git status. Builds and merges .gitignore files using github/gitignore templates.
+description: >-
+  Build and merge .gitignore files using github/gitignore templates with smart
+  project detection. Use when the user asks to "create gitignore", "build .gitignore",
+  "add gitignore templates", "set up gitignore", "update gitignore", or requests
+  "/gitignore". Also trigger when observing projects without .gitignore, seeing
+  untracked files like node_modules/, .env, __pycache__/, or *.log in git status,
+  or after git init in a new repo.
+  Boundary: not for .dockerignore or other non-git ignore files.
 ---
 
 # Gitignore Builder

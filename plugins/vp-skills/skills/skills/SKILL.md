@@ -1,6 +1,14 @@
 ---
 name: skills
-description: This skill should be used when the user asks to "install a skill", "add a skill", "remove a skill", "list skills", "update skills", "find skills", "search for skills", or mentions "npx skills", skill management, or agent skill installation.
+description: >-
+  Manage agent skills using the npx skills CLI. Use when the user asks to
+  "install a skill", "add a skill", "remove a skill", "list skills",
+  "update skills", "find skills", "search for skills", or mentions "npx skills",
+  skill management, or agent skill installation. Also trigger when the user
+  mentions skills.sh, agent-skills, vercel skills, or wants to discover
+  available skills for their environment.
+  Boundary: not for creating new skills (use skill-creator) or managing
+  plugins (/plugin commands).
 ---
 
 # Agent Skills Management

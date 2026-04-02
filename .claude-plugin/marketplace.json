@@ -36,13 +36,6 @@
       "keywords": ["gitignore", "git", "ignore", "templates", "github"]
     },
     {
-      "name": "vp-gmaps-list",
-      "source": "./plugins/vp-gmaps-list",
-      "description": "Extract and manage Google Maps saved lists with business status checking",
-      "license": "MIT",
-      "keywords": ["google-maps", "saved-list", "places", "extract", "scrape", "agent-browser", "business-status", "closed", "gcloud", "places-api"]
-    },
-    {
       "name": "vp-guided-focus",
       "source": "./plugins/vp-guided-focus",
       "description": "Guided focus questioning to align on requirements before planning or complex tasks",
@@ -50,25 +43,11 @@
       "keywords": ["focus", "questions", "planning", "discovery", "alignment", "pre-plan"]
     },
     {
-      "name": "vp-localsend",
-      "source": "./plugins/vp-localsend",
-      "description": "Send and receive files over local network using LocalSend protocol",
-      "license": "MIT",
-      "keywords": ["localsend", "file-transfer", "local-network", "airdrop", "send", "receive", "share"]
-    },
-    {
       "name": "vp-macos-clean-uninstall",
       "source": "./plugins/vp-macos-clean-uninstall",
       "description": "Research-driven macOS app uninstallation with thorough cleanup of all associated data",
       "license": "MIT",
       "keywords": ["uninstall", "macos", "cleanup", "remove", "app", "brew", "dmg", "pkg"]
-    },
-    {
-      "name": "vp-nyan-mode",
-      "source": "./plugins/vp-nyan-mode",
-      "description": "Cat persona with verbal tic, emoji support, and language matching",
-      "license": "MIT",
-      "keywords": ["cat", "nyan", "persona", "emoji", "kawaii", "verbal-tic"]
     },
     {
       "name": "vp-pr-comment-resolver",
@@ -92,25 +71,11 @@
       "keywords": ["retro", "retrospective", "session-review", "improvement", "workflow", "optimization"]
     },
     {
-      "name": "vp-review-loop",
-      "source": "./plugins/vp-review-loop",
-      "description": "Iterative multi-pass subagent review loop with simplify integration and confidence scoring for code and plans",
-      "license": "MIT",
-      "keywords": ["code-review", "plan-review", "multi-pass", "confidence-index", "subagent", "iterative", "loop-control", "simplify", "code-reuse", "auto-fix"]
-    },
-    {
       "name": "vp-skills",
       "source": "./plugins/vp-skills",
       "description": "Manage agent skills using npx skills CLI",
       "license": "MIT",
       "keywords": ["skills", "management", "npx"]
-    },
-    {
-      "name": "vp-somafm",
-      "source": "./plugins/vp-somafm",
-      "description": "Play SomaFM internet radio as background music during coding sessions",
-      "license": "MIT",
-      "keywords": ["somafm", "radio", "music", "streaming", "ambient", "mpv"]
     },
     {
       "name": "vp-stacked-pr-rebase",
@@ -125,13 +90,6 @@
       "description": "TypeScript coding guidelines with dos and don'ts for type design and patterns",
       "license": "MIT",
       "keywords": ["typescript", "best-practices", "type-design", "coding-guidelines", "style-guide"]
-    },
-    {
-      "name": "vp-wenyan-mode",
-      "source": "./plugins/vp-wenyan-mode",
-      "description": "Classical Chinese (文言文) writing style with concise, elegant expressions",
-      "license": "MIT",
-      "keywords": ["wenyan", "classical-chinese", "文言文", "persona", "writing-style"]
     }
   ]
 }

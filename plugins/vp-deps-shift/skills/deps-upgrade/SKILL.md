@@ -7,7 +7,11 @@ description: >-
   "handle dependabot PR", "handle renovate PR", "check for breaking changes",
   "upgrade <package> to <version>", "check outdated dependencies", "scan for updates",
   or when reviewing dependency bot PRs (dependabot, renovate, GitHub Actions),
-  or when addressing security alerts, CVE notices, or vulnerability patches in dependencies.
+  or when addressing security alerts, CVE notices, or vulnerability patches.
+  Also trigger when the user mentions outdated packages, version bumps, or
+  package manager update commands.
+  Boundary: for version bumps within the same library. Use deps-migrate when
+  replacing one library with another.
 ---
 
 # Dependency Upgrade

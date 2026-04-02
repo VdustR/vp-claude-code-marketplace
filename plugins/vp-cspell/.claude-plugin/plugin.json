@@ -1,6 +1,6 @@
 {
   "name": "vp-cspell",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Handle cspell unknown word warnings with prioritized decision tree and config bootstrapping",
   "author": {
     "name": "VdustR",

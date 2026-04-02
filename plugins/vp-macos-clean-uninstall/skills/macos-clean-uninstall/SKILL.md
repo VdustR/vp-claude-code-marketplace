@@ -3,9 +3,11 @@ name: macos-clean-uninstall
 description: >-
   Cleanly uninstall applications on macOS with thorough research and cleanup.
   Use when the user asks to "uninstall", "remove", "delete", or "clean up"
-  an application, program, CLI tool, or package on macOS.
-  Also use when the user wants to check what residual data an app has left behind,
-  or asks to "check leftover files" for an app.
+  an application, program, CLI tool, or package on macOS. Also trigger when
+  the user wants to check what residual data an app has left behind, asks to
+  "check leftover files", or mentions cleaning up after an app removal.
+  Boundary: macOS only. Not for Linux/Windows, removing SIP-protected system
+  apps, or clearing browser data.
 ---
 
 # Clean Uninstall (macOS)
