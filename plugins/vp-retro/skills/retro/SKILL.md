@@ -11,8 +11,7 @@ description: >-
   "what can I improve", "retrospective", "what went wrong", "how can I be more efficient",
   or when the user wants to improve their CLAUDE.md, discover useful skills,
   optimize existing skills, or design new workflows based on recent patterns.
-  Boundary: not for code review (use review-loop), not for PR review
-  (use pr-review-toolkit), not for plan review (use plan-review).
+  Boundary: not for code review, not for PR review (use pr-review-toolkit).
 ---
 
 # Session Retro
