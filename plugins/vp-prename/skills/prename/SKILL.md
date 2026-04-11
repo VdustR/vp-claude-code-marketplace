@@ -15,12 +15,9 @@ Generate a session name that captures the **overall theme and purpose**, not jus
 
 ## Process
 
-Dispatch naming to a **haiku subagent** — this task is lightweight and doesn't need a heavy model.
-
-1. Summarize the conversation's key themes in 2-3 sentences
-2. Spawn a haiku subagent with the summary and the naming style below
-3. The subagent returns the `/rename` command
-4. Output the result directly — nothing else
+1. Review the conversation's key themes
+2. Generate a name following the naming style below
+3. Output the `/rename` command — nothing else
 
 ## Naming Style
 
