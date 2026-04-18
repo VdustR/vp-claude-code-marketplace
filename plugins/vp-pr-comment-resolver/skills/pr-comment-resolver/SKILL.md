@@ -443,27 +443,28 @@ Comment Received
          │
          ▼
 ┌─────────────────┐
-│ Comment clear?  │──No──▶ Ask user for clarification
-└────────┬────────┘
-         │Yes
+│ Comment clear?  │──No──▶ Ask user for clarification ──┐
+└────────┬────────┘                                     │
+         │Yes                                           │
+         ▼                                              │
+┌─────────────────┐                                     │
+│ Comment passes  │──No──▶ Discuss with user first ─────┤
+│ Validity        │        └──▶ Politely disagree       │
+│ Checklist?      │                                     │
+└────────┬────────┘                                     │
+         │Yes                                           │
+         ▼                                              │
+┌─────────────────┐                                     │
+│ Code change     │──No──▶ Reply with explanation ──────┤
+│ needed?         │                                     │
+└────────┬────────┘                                     │
+         │Yes                                           │
+         ▼                                              │
+   Fix → Commit → Push → Reply ─────────────────────────┤
+                                                        │
+         ┌──────────────────────────────────────────────┘
          ▼
-┌─────────────────┐
-│ Comment passes  │──No──▶ Discuss with user first
-│ Validity        │        └──▶ Politely disagree with evidence
-│ Checklist?      │
-└────────┬────────┘
-         │Yes
-         ▼
-┌─────────────────┐
-│ Code change     │──No──▶ Reply with explanation
-│ needed?         │
-└────────┬────────┘
-         │Yes
-         ▼
-   Fix → Commit → Push → Reply
-         │
-         ▼
-  (After ANY action: fix, no-fix, or disagree)
+  (After ANY action: fix, no-fix, disagree, or clarification)
          │
          ▼
 ┌─────────────────┐
