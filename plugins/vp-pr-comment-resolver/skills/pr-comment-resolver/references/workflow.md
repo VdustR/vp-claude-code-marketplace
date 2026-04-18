@@ -300,9 +300,9 @@ When you determine a reviewer's suggestion is technically incorrect:
    - Provide code references or examples
    - Offer to discuss further
 
-5. **Do NOT auto-resolve**
-   - Leave the thread open for the reviewer to respond
-   - Only resolve after reaching consensus or user instruction
+5. **Resolution behavior depends on author**
+   - **If the author is a bot** → resolve the thread after posting the reply; the bot won't follow up, so the thread is terminal
+   - **If the author is a human** → leave the thread open for the reviewer to respond; only resolve after reaching consensus or on user instruction
 
 ### Comment on Deleted Lines
 
