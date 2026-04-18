@@ -126,6 +126,7 @@ Automate PR comment review, fix, and resolution workflow.
 
 Features:
 - Interactive mode (review each comment) and auto mode (process all automatically)
+- Smart author classification — auto-resolves bot threads (including disagreements), preserves human threads for manual review
 - Atomic commits per fix with smart grouping for related comments
 - Detailed reply format with commit links: `- [hash message](url)`
 - Summary report generation after processing all comments

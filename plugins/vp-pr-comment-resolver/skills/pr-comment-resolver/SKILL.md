@@ -17,7 +17,13 @@ Automate the process of handling GitHub PR review comments: evaluate each commen
 
 ## Core Principles
 
-1. **Critical Thinking First** - Evaluate whether each comment is correct before acting; reviewers can make mistakes too
+0. **Critical Thinking Before Action** - Never blindly execute:
+   - Comments may contain incorrect technical claims
+   - Suggestions may violate repo guidelines (CLAUDE.md, contributing docs)
+   - Always verify facts (read the code, check docs, run tests) before deciding
+   - When signals conflict, trade-offs exist, or interpretation is ambiguous: surface the conflict with options and a recommendation, then wait for user input
+   - "Reviewer said so" is not sufficient justification — evidence is
+1. **Verify Before Acting** - Check the technical validity of each suggestion against the codebase before implementing; reviewers can be wrong
 2. **Commit by Topic, Not by Comment** - Group commits by logical change, not by comment count; one commit can address multiple related comments
 3. **Atomic Commits** - Each commit should be a single logical fix; different concerns require separate commits
 4. **Human Collaboration** - Ask the user when uncertain about a fix, interpretation, or when you disagree with a comment
@@ -67,7 +73,10 @@ gh api graphql -f query='
           comments(first: 10) {
             nodes {
               body
-              author { login }
+              author {
+                __typename
+                login
+              }
             }
           }
         }
@@ -81,47 +90,68 @@ Extract key information:
 - Comment ID and thread ID
 - File path and line number
 - Comment body (the feedback)
-- Author information (login, isBot flag)
+- Author information (`login`, `__typename`)
 
-### Phase 1.5: Identify AI Comments
+### Phase 1.5: Classify Author (Bot vs Human)
 
-Determine if each comment is from an AI reviewer. **Only AI comments will be auto-resolved; human comments will only receive replies.**
+Determine if each comment author is a bot. **Bot threads are always auto-resolved after handling; human threads are never auto-resolved.**
 
-#### Detection Methods
+Use a tiered approach — stop at the first definitive answer. Once an author has been classified in this session, reuse that conclusion for later comments from the same author (conversation context serves as the cache; no separate lookup structure needed).
 
-1. **Bot Account Suffix**: Check if author login ends with `[bot]`
-   - Examples: `github-actions[bot]`, `dependabot[bot]`, `copilot[bot]`
+#### Tier 1 — GraphQL `__typename`
 
-2. **Known AI Services**: Match against known AI code review services and LLMs
-   - **Code Review Bots**: `coderabbitai`, `codiumai`, `sourcery-ai`, `deepsource`, `sonarcloud`, `codeclimate`, `snyk`
-   - **LLM Assistants**: `copilot`, `claude`, `gemini`, `codex`, `openai`, `anthropic`, `chatgpt`, `gpt`
-   - **CI/Automation**: `github-actions`, `dependabot`, `renovate`
-   - (Extend this list as needed)
+The `author.__typename` field (fetched in Phase 1) is the primary signal:
 
-#### Detection Logic
+| `__typename` | Classification |
+|--------------|----------------|
+| `Bot` | **Bot** — GitHub App; reliable, no further check |
+| `User` | Ambiguous — proceed to Tier 2 (could be human OR a user-token-driven service account) |
+| `Organization` | Rare; skip to Tier 3 |
+
+#### Tier 2 — Profile-based judgment (when `__typename == "User"`)
+
+Fetch the user profile:
 
 ```bash
-# AI/Bot Detection Logic (case-insensitive)
-is_ai_comment=false
-author_lower=$(echo "$author_login" | tr '[:upper:]' '[:lower:]')
-
-# Combined pattern: [bot] suffix OR known AI services
-ai_patterns='(\[bot\]$|coderabbitai|codiumai|sourcery-ai|deepsource|sonarcloud|codeclimate|snyk|copilot|claude|gemini|codex|openai|anthropic|chatgpt|gpt|github-actions|dependabot|renovate)'
-
-if [[ "$author_lower" =~ $ai_patterns ]]; then
-  is_ai_comment=true
-fi
+gh api users/<login> --jq '{bio, name, blog, company, public_repos, followers}'
 ```
 
-#### Classification Result
+Evaluate the returned fields and decide:
 
-| Author Type | Auto-Resolve | Action |
-|-------------|--------------|--------|
-| AI/Bot | Yes | Reply and resolve after fix |
-| Human | No | Reply only, let human resolve |
-| Uncertain | Ask user | Prompt user: "Should I resolve this comment from @{author}?" |
+| Signal | Strong bot indicator |
+|--------|---------------------|
+| `bio` | Self-identifies as bot/service/automation/CI (e.g., "Bot managed by...", "I run your tests", "Automated checks for...") |
+| `name`, `blog`, `company` | Points to a tool/service (e.g., blog links to bot documentation) |
+| `public_repos` + `followers` | Both very low (typical service account profile) |
 
-> **Note:** If the author doesn't match known AI patterns but has bot-like characteristics (e.g., automated messages, service accounts), ask the user whether to auto-resolve.
+Examples of user-token-driven bots that pass Tier 2 clearly: `rustbot` (bio self-declares), `k8s-ci-robot` (bio describes automation role).
+
+Reach one of three outcomes:
+- **Clearly a bot** → classify as Bot
+- **Clearly a human** → classify as Human
+- **Ambiguous** (e.g., empty bio, few signals) → proceed to Tier 2b
+
+#### Tier 2b — Activity fallback (optional, when Tier 2 inconclusive)
+
+When profile signals are thin, fetch recent public events:
+
+```bash
+gh api users/<login>/events/public
+```
+
+A monolithic distribution (e.g., almost entirely `IssueCommentEvent` or `PullRequestReviewCommentEvent`) strongly suggests a bot. A diverse distribution (pushes, PRs, reviews, stars, forks) suggests a human.
+
+This tier is triggered by Claude's judgment, not a mechanical rule — only fetch when it would meaningfully change the conclusion.
+
+#### Tier 3 — Ask user
+
+When all prior tiers leave doubt, or when `__typename == "Organization"`:
+
+> "Should I treat @{author} as a bot? Profile: bio=<...>, repos=<n>, followers=<n>. If yes, the thread will be auto-resolved after handling."
+
+#### Conflict handling
+
+If any tiers disagree (e.g., `__typename == "User"` but profile looks strongly bot-like, or vice versa), do **not** silently pick one — surface the conflict to the user per Core Principle #0.
 
 ### Phase 2: Evaluate Each Comment
 
@@ -136,6 +166,22 @@ For each unresolved comment, **critically assess whether the suggestion is corre
 
 > **⚠️ Important:** Do not blindly accept all comments. Reviewers can make mistakes. Always verify the technical validity of each suggestion before implementing.
 
+#### Comment Validity Checklist
+
+Before choosing an action, run each suggestion through these checks:
+
+- **Technical claim holds** — Read the referenced code (and related files); don't rely on memory. Does the claim match current behavior?
+- **Aligns with repo conventions** — Check CLAUDE.md, contributing docs, and nearby code. A reviewer may not know local guidelines.
+- **Compatible with existing architecture** — Does applying the fix fit current patterns, or would it introduce an inconsistency?
+- **No simpler alternative the reviewer missed** — Could there be a cleaner solution that still satisfies the concern?
+
+If any check fails or is uncertain, surface the gap to the user with:
+- The specific conflict or uncertainty
+- 2+ options with trade-offs
+- A recommendation with rationale
+
+This applies regardless of whether the author is a bot or a human — bots can also produce incorrect or repo-inappropriate suggestions.
+
 ### Phase 3: Execute Action
 
 #### If Fix Needed
@@ -145,24 +191,26 @@ For each unresolved comment, **critically assess whether the suggestion is corre
 3. Create an atomic commit with descriptive message
 4. Push to the PR branch
 5. Reply with fix details
-6. **If AI comment**: Resolve the thread | **If human**: Leave unresolved
+6. **If author is a bot**: Resolve the thread | **If human**: Leave unresolved
 
 #### If No Fix Needed
 
 1. Compose explanation of why no change is required
 2. Reply with the explanation
-3. **If AI comment**: Resolve the thread | **If human**: Leave unresolved
+3. **If author is a bot**: Resolve the thread | **If human**: Leave unresolved
 
 #### If Disagree
 
 1. **Verify your assessment** - Double-check your reasoning against the codebase
-2. **Present to user first** - Always discuss with the user before responding to the reviewer
+2. **Present to user first** - Always discuss with the user before responding to the reviewer; the user may still want to act on the suggestion
 3. Explain why the suggestion may be problematic:
    - Would it introduce a bug?
    - Does it violate existing architecture patterns?
    - Is it based on incorrect assumptions about the code?
 4. Compose a polite, technical response with evidence
-5. **Do NOT auto-resolve** - Let the reviewer respond or the user decide
+5. **Resolution behavior**:
+   - **If author is a bot** → resolve the thread after posting the reply (bot won't follow up; leaving it open is noise)
+   - **If author is a human** → leave the thread unresolved so the reviewer can respond
 
 #### If Uncertain
 
@@ -173,12 +221,14 @@ For each unresolved comment, **critically assess whether the suggestion is corre
 
 ### Phase 4: Reply (and Conditionally Resolve)
 
-After each action, reply to the comment thread. **Only auto-resolve if the comment is from an AI/bot; human comments require manual resolution.**
+After each action, reply to the comment thread. **Bot threads are always resolved; human threads are never auto-resolved.**
 
-| Comment Source | After Reply |
-|----------------|-------------|
-| AI/Bot | Auto-resolve the thread |
-| Human | Do NOT resolve - let the reviewer close it |
+| Comment Source | Fix | No-Fix | Disagree |
+|----------------|-----|--------|----------|
+| **Bot** | Resolve | Resolve | Resolve |
+| **Human** | Leave unresolved | Leave unresolved | Leave unresolved |
+
+**Rationale:** Bots don't follow up, so any decided outcome (fix / no-fix / disagree) is terminal. Humans may dispute any decision, so threads are always left for the reviewer to close.
 
 > **⚠️ CRITICAL:** You MUST use the GraphQL `addPullRequestReviewThreadReply` mutation to reply directly to each review thread. Do NOT use `gh pr comment` as it posts to the PR bottom instead of the specific thread.
 
@@ -229,21 +279,21 @@ After processing all comments, output a summary report:
 - [<hash> <message>](<url>)
 
 ### Statistics
-| Status | AI/Bot | Human | Total |
-|--------|--------|-------|-------|
-| Fixed & Resolved | <n> | - | <n> |
-| Fixed (reply only) | - | <n> | <n> |
-| No fix & Resolved | <n> | - | <n> |
-| No fix (reply only) | - | <n> | <n> |
-| Disagreed (pending) | <n> | <n> | <n> |
+| Action | Bot (auto-resolved) | Human (reply only) | Total |
+|--------|---------------------|---------------------|-------|
+| Fixed | <n> | <n> | <n> |
+| No fix | <n> | <n> | <n> |
+| Disagreed | <n> | <n> | <n> |
 | Skipped | <n> | <n> | <n> |
+
+> Bot threads are always resolved after handling; human threads are never auto-resolved.
 
 ### Details
 | Comment | Author | Type | File | Action | Resolved |
 |---------|--------|------|------|--------|----------|
-| <summary> | @bot | 🤖 AI | `<path>` | Fixed [<hash>](<url>) | ✅ |
+| <summary> | @bot | 🤖 Bot | `<path>` | Fixed [<hash>](<url>) | ✅ |
 | <summary> | @human | 👤 Human | `<path>` | Fixed [<hash>](<url>) | ⏳ Pending |
-| <summary> | @bot | 🤖 AI | `<path>` | No fix | ✅ |
+| <summary> | @bot | 🤖 Bot | `<path>` | Disagreed | ✅ |
 | <summary> | @human | 👤 Human | `<path>` | Disagreed | ⏳ Pending |
 ```
 
@@ -264,7 +314,7 @@ gh api graphql -f query='
           path
           line
           comments(first: 10) {
-            nodes { body author { login } }
+            nodes { body author { __typename login } }
           }
         }
       }
@@ -380,46 +430,44 @@ Three different topics → THREE separate commits
 Comment Received
       │
       ▼
-┌─────────────────┐
-│ Is author       │──Yes──▶ is_ai_comment = true
-│ AI/Bot?         │
-└────────┬────────┘
-         │No
+┌──────────────────────────┐
+│ Classify author          │  (Phase 1.5 tiered detection)
+│  Tier 1: __typename      │
+│  Tier 2: profile         │
+│  Tier 2b: activity       │
+│  Tier 3: ask user        │
+└────────┬─────────────────┘
+         │
          ▼
-┌─────────────────┐
-│ Uncertain?      │──Yes──▶ Ask user: "Resolve comment from @{author}?"
-│ (bot-like but   │         └──▶ User decides
-│ not in list)    │
-└────────┬────────┘
-         │No
-         ▼
-   is_ai_comment = false
+   is_bot = true | false
          │
          ▼
 ┌─────────────────┐
-│ Is the comment  │──No──▶ Ask user for clarification
-│ clear?          │
+│ Comment clear?  │──No──▶ Ask user for clarification
 └────────┬────────┘
          │Yes
          ▼
 ┌─────────────────┐
-│ Is the comment  │──No──▶ Discuss with user first
-│ technically     │        └──▶ Politely disagree with evidence
-│ correct?        │             (Do NOT auto-resolve)
+│ Comment passes  │──No──▶ Discuss with user first
+│ Validity        │        └──▶ Politely disagree with evidence
+│ Checklist?      │
 └────────┬────────┘
          │Yes
          ▼
 ┌─────────────────┐
-│ Is a code       │──No──▶ Reply with explanation
-│ change needed?  │        └──▶ If AI: resolve | If human: skip resolve
+│ Code change     │──No──▶ Reply with explanation
+│ needed?         │
 └────────┬────────┘
          │Yes
          ▼
    Fix → Commit → Push → Reply
          │
          ▼
+  (After ANY action: fix, no-fix, or disagree)
+         │
+         ▼
 ┌─────────────────┐
-│ is_ai_comment?  │──Yes──▶ Resolve thread
+│ is_bot == true? │──Yes──▶ Resolve thread
 └────────┬────────┘
          │No
          ▼
@@ -431,8 +479,9 @@ Comment Received
 ### DO
 
 - **Critically evaluate comments:** Verify the technical validity of each suggestion against the codebase before acting. Reviewers can be wrong.
-- **Check comment author type:** Determine if the comment is from AI/bot before deciding whether to auto-resolve.
-- **Only auto-resolve AI comments:** After replying to an AI/bot comment, resolve the thread. Human comments should only receive replies.
+- **Classify the author:** Use the Phase 1.5 tiered detection (`__typename` → profile → activity → ask user) before deciding whether to resolve.
+- **Always resolve bot threads:** For any outcome (fix, no-fix, disagree), resolve the thread after replying. Bots won't follow up; leaving threads open adds noise.
+- **Never auto-resolve human threads:** Reply only; let humans close their own threads, regardless of outcome.
 - **Commit by topic:** Create atomic commits for each logical change. Group related fixes into one commit, never bundle unrelated changes. Reply to all related comments with the same commit link.
 - **Write descriptive commit messages:** Describe the *what* and *why* of the change using conventional commit format. Avoid messages like "address PR comments".
 - **Collaborate with the user:** Ask for clarification on ambiguous comments. Always discuss with the user before pushing back on a reviewer.
@@ -441,12 +490,14 @@ Comment Received
 
 ### DON'T
 
-- **Blindly accept all comments** - always verify correctness first
-- **Auto-resolve human reviewer comments** - only AI/bot comments should be auto-resolved; let humans close their own threads
+- **Blindly accept all comments** - always verify correctness first (applies to bot and human comments alike)
+- **Auto-resolve human reviewer comments** - let humans close their own threads regardless of the outcome
+- **Leave bot threads open** - after handling, resolve; unresolved bot threads are noise
+- **Maintain a hardcoded list of bot service names** - rely on `__typename` and profile inspection instead
 - **Bundle different concerns** into one commit - separate topics need separate commits
 - Write commit messages like "address PR comments" or "per reviewer request"
 - Implement changes that would introduce bugs or violate architecture
-- Auto-resolve disagreements without user confirmation
+- Disagree with a reviewer (bot or human) without first discussing with the user
 - Resolve without replying
 - Make assumptions about ambiguous requests
 - Force push or rewrite history
