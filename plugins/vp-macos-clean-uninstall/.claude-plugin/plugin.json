@@ -1,6 +1,6 @@
 {
   "name": "vp-macos-clean-uninstall",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Research-driven macOS app uninstallation with thorough cleanup of all associated data",
   "author": {
     "name": "VdustR",
