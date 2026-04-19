@@ -76,17 +76,31 @@ echo "=== ~/Applications bundle (fallback) ==="
 found=$(find ~/Applications -maxdepth 2 -iname "*${A}*.app" 2>/dev/null)
 [ -n "$found" ] && echo "$found" || echo "(none)"
 
-echo "=== Bundle ID (mdls) ==="
+echo "=== Bundle ID (mdls, with defaults fallback) ==="
+# Spotlight may be disabled or the app un-indexed, making mdls return empty
+# or "(null)". Fall back to reading Info.plist directly so downstream phases
+# never see an empty BUNDLE_ID (which would cause `find -iname "*${BUNDLE_ID}*"`
+# to match every path).
+emit_bid() {
+  app="$1"
+  raw=$(mdls -raw -name kMDItemCFBundleIdentifier "$app" 2>/dev/null)
+  if [ -z "$raw" ] || [ "$raw" = "(null)" ]; then
+    raw=$(defaults read "${app%/}/Contents/Info" CFBundleIdentifier 2>/dev/null)
+  fi
+  if [ -n "$raw" ]; then
+    echo "$app: $raw"
+  else
+    echo "$app: (bundle ID unavailable — Spotlight off or Info.plist unreadable; do NOT proceed with empty BUNDLE_ID to Phase 3)"
+  fi
+}
 bid_found=0
 if [ -d "/Applications/${D}.app" ]; then
-  bid=$(mdls -name kMDItemCFBundleIdentifier "/Applications/${D}.app" 2>/dev/null)
-  echo "/Applications/${D}.app: $bid"
+  emit_bid "/Applications/${D}.app"
   bid_found=1
 fi
 while IFS= read -r app; do
   [ -z "$app" ] && continue
-  bid=$(mdls -name kMDItemCFBundleIdentifier "$app" 2>/dev/null)
-  echo "$app: $bid"
+  emit_bid "$app"
   bid_found=1
 done < <(find ~/Applications -maxdepth 2 -iname "*${A}*.app" 2>/dev/null)
 [ $bid_found -eq 0 ] && echo "(no .app found)"
@@ -113,10 +127,13 @@ echo "=== CLI in PATH ==="
 CMD=$(command -v "$A" 2>/dev/null || true)
 if [ -n "$CMD" ] && [ -x "$CMD" ]; then
   echo "path: $CMD"
-  [ -L "$CMD" ] && echo "symlink -> $(readlink "$CMD")"
+  if [ -L "$CMD" ]; then
+    echo "symlink -> $(readlink "$CMD")"
+  fi
 else
   echo "(not in PATH)"
 fi
+exit 0  # explicit clean exit so the consolidated script returns 0 regardless of individual section find/grep misses
 ```
 
 **If every primary section above prints `(none)`/`(not ...)`**, also check CLI package managers:
@@ -167,6 +184,13 @@ Do not state a negative ("not Homebrew", "no bundle ID") without quoting the `(n
 **Critical**: Some apps have dedicated uninstallers or CLI commands. Missing these can leave kernel extensions, daemons, or system modifications behind.
 
 ### Phase 3: Scan Associated Data
+
+**Safety preamble (always prepend to any Phase 3 script)** — an empty `BUNDLE_ID` would make `find -iname "*${BUNDLE_ID}*"` expand to `**` and match every file on disk. Guard against it:
+
+```bash
+# Guard: block empty BUNDLE_ID from cascading into a match-everything scan
+: "${BUNDLE_ID:?BUNDLE_ID required for Phase 3. If Phase 1 could not resolve it (e.g., CLI-only install, no .app bundle, Spotlight disabled), either resolve it manually (defaults read <app>/Contents/Info CFBundleIdentifier) or remove BUNDLE_ID branches from the find expressions below and rely on APP_NAME + extra manual verification.}"
+```
 
 **If the app name is ambiguous** (shorter than 4 characters or a common word like `go`, `pro`, `mail`, `code`, `sync`, `file`, `app`), use bundle ID only:
 
