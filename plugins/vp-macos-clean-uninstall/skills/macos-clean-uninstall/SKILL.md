@@ -133,8 +133,10 @@ else
   [ -n "$hits" ] && echo "$hits" || echo "(none)"
 fi
 
-echo "=== Sibling uninstaller apps in /Applications ==="
-found=$(find /Applications -maxdepth 1 \( -iname "*${A}*uninstall*" -o -iname "*${A}*remove*" \) 2>/dev/null)
+echo "=== Sibling uninstaller apps (/Applications and ~/Applications) ==="
+# Symmetrical with the bundled-uninstaller scan: check both system and user app dirs.
+# find tolerates a missing ~/Applications via 2>/dev/null.
+found=$(find /Applications ~/Applications -maxdepth 1 \( -iname "*${A}*uninstall*" -o -iname "*${A}*remove*" \) 2>/dev/null)
 [ -n "$found" ] && echo "$found" || echo "(none)"
 
 echo "=== CLI in PATH ==="
