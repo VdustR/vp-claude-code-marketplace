@@ -112,11 +112,25 @@ echo "=== Mac App Store receipt ==="
 [ -e "/Applications/${D}.app/Contents/_MASReceipt" ] && echo "MAS receipt present" || echo "(not MAS)"
 
 echo "=== Bundled uninstaller (inside .app) ==="
-if [ -d "/Applications/${D}.app/Contents" ]; then
-  found=$(find "/Applications/${D}.app/Contents" -maxdepth 3 \( -iname "*uninstall*" -o -iname "*remove*" \) 2>/dev/null | head -20)
-  [ -n "$found" ] && echo "$found" || echo "(none)"
-else
+# Scan Contents of every candidate .app (both /Applications and ~/Applications)
+contents_list=""
+[ -d "/Applications/${D}.app/Contents" ] && contents_list="/Applications/${D}.app/Contents"
+while IFS= read -r app; do
+  [ -z "$app" ] && continue
+  [ -d "$app/Contents" ] && contents_list="${contents_list:+$contents_list
+}$app/Contents"
+done < <(find ~/Applications -maxdepth 2 -iname "*${A}*.app" 2>/dev/null)
+if [ -z "$contents_list" ]; then
   echo "(no .app)"
+else
+  hits=""
+  while IFS= read -r c; do
+    [ -z "$c" ] && continue
+    more=$(find "$c" -maxdepth 3 \( -iname "*uninstall*" -o -iname "*remove*" \) 2>/dev/null | head -20)
+    [ -n "$more" ] && hits="${hits:+$hits
+}$more"
+  done <<< "$contents_list"
+  [ -n "$hits" ] && echo "$hits" || echo "(none)"
 fi
 
 echo "=== Sibling uninstaller apps in /Applications ==="
