@@ -138,7 +138,8 @@ found=$(find /Applications -maxdepth 1 \( -iname "*${A}*uninstall*" -o -iname "*
 [ -n "$found" ] && echo "$found" || echo "(none)"
 
 echo "=== CLI in PATH ==="
-CMD=$(command -v "$A" 2>/dev/null || true)
+# Use `-- "$A"` so names starting with `-` are not parsed as options
+CMD=$(command -v -- "$A" 2>/dev/null || true)
 if [ -n "$CMD" ] && [ -x "$CMD" ]; then
   echo "path: $CMD"
   if [ -L "$CMD" ]; then
@@ -153,10 +154,10 @@ exit 0  # explicit clean exit so the consolidated script returns 0 regardless of
 **If every primary section above prints `(none)`/`(not ...)`**, also check CLI package managers:
 
 ```bash
-echo "=== command path ==="; command -v "${APP_NAME}" 2>/dev/null || echo "(none)"
+echo "=== command path ==="; command -v -- "${APP_NAME}" 2>/dev/null || echo "(none)"
 echo "=== npm global ==="; npm list -g "${APP_NAME}" 2>/dev/null | grep -i "${APP_NAME}" || echo "(none)"
 echo "=== pip ==="; pip3 show "${APP_NAME}" 2>/dev/null || echo "(none)"
-echo "=== cargo ==="; command -v cargo >/dev/null && cargo install --list 2>/dev/null | grep -i "${APP_NAME}" || echo "(none)"
+echo "=== cargo ==="; command -v -- cargo >/dev/null && cargo install --list 2>/dev/null | grep -i "${APP_NAME}" || echo "(none)"
 ```
 
 **Gate before Phase 2** — explicitly declare in your response:
