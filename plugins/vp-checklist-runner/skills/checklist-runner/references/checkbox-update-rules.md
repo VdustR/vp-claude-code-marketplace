@@ -343,7 +343,7 @@ When posting a verification report as a comment (instead of editing checkboxes):
 
 | Status | Item | Evidence |
 |--------|------|----------|
-| ✅ PASS | ~~Plugin name has `vp-` prefix~~ | `jq -r '.name' plugin.json` → `vp-checklist-runner` |
+| ✅ PASS | ~~Plugin name has `vp-` prefix~~ | `jq -r '.name' .codex-plugin/plugin.json` → `vp-checklist-runner` |
 | ✅ PASS | ~~Tests pass~~ | CI: all 12 checks passed |
 | ❌ FAIL | **No secrets in code** | Found potential key in `src/config.ts:42` |
 | ⏳ PENDING | Lint passes | CI check still running |

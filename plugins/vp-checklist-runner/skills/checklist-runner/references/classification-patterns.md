@@ -13,16 +13,16 @@ Verifiable by reading files and checking fields. Instant, deterministic.
 | Pattern | Example Item |
 |---------|-------------|
 | `file.*exist` | "Config file exists" |
-| `has.*field`, `required.*field` | "plugin.json has all required fields" |
+| `has.*field`, `required.*field` | ".codex-plugin/plugin.json has all required fields" |
 | `prefix`, `naming`, `convention` | "Plugin name has `vp-` prefix" |
 | `sorted`, `alphabetical`, `order` | "Plugins sorted alphabetically" |
 | `frontmatter`, `yaml.*valid` | "SKILL.md has valid frontmatter" |
-| `version.*updated`, `version.*bump` | "Version updated in package.json" |
+| `version.*updated`, `version.*bump` | "Version updated in .codex-plugin/plugin.json" |
 | `format`, `structure` | "JSON format is valid" |
 | `registered`, `listed` | "Plugin registered in marketplace.json" |
 | `path.*correct`, `path.*valid` | "All paths are relative and correct" |
 
-> **Note**: "No sensitive data" / "No credentials" without a specific file reference belong in **Scan**, not Auto. Auto only matches when the item explicitly references a specific file or field (e.g., "No sensitive data in config fields", "No credentials in plugin.json").
+> **Note**: "No sensitive data" / "No credentials" without a specific file reference belong in **Scan**, not Auto. Auto only matches when the item explicitly references a specific file or field (e.g., "No sensitive data in config fields", "No credentials in .codex-plugin/plugin.json").
 
 **Regex:**
 ```regex
