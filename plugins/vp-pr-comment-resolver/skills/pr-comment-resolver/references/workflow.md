@@ -17,25 +17,56 @@ git checkout <headRefName>
 git pull origin <headRefName>
 ```
 
-### Step 2: Fetch All Review Comments
+### Step 2: Fetch Unresolved Review Comments
 
-Retrieve unresolved review threads:
+Retrieve unresolved review threads with GraphQL. Include `isOutdated`; do not filter it out.
 
 ```bash
-gh pr view <NUMBER> --json reviewThreads --jq '
-  [.reviewThreads[] | select(.isResolved == false) | {
-    id: .id,
-    path: .path,
-    line: .line,
-    comments: [.comments[] | {
-      id: .id,
-      author: .author.login,
-      body: .body,
-      createdAt: .createdAt
-    }]
-  }]
+gh api graphql -f owner="<OWNER>" -f repo="<REPO>" -F number=<NUMBER> -f query='
+query($owner:String!, $repo:String!, $number:Int!) {
+  repository(owner:$owner, name:$repo) {
+    pullRequest(number:$number) {
+      reviewThreads(first:100) {
+        nodes {
+          id
+          isResolved
+          isOutdated
+          path
+          line
+          comments(first:20) {
+            nodes {
+              id
+              author { __typename login }
+              body
+              createdAt
+              url
+            }
+          }
+        }
+      }
+    }
+  }
+}' --jq '
+  [.data.repository.pullRequest.reviewThreads.nodes[]
+   | select(.isResolved == false)
+   | {
+       id,
+       isOutdated,
+       path,
+       line,
+       comments: [.comments.nodes[] | {
+         id,
+         author: .author.login,
+         authorType: .author.__typename,
+         body,
+         createdAt,
+         url
+       }]
+     }]
 '
 ```
+
+Process outdated unresolved threads too. Their diff context has been superseded, so re-read the current file before deciding whether the feedback is already addressed, needs another fix, or should receive a no-fix explanation.
 
 ### Step 3: Build Comment Queue
 
@@ -46,10 +77,12 @@ Queue Structure:
 [
   {
     threadId: "thread-1",
+    isOutdated: false,
     filePath: "src/auth.ts",
     lineNumber: 42,
     originalComment: "Add null check here",
     author: "reviewer1",
+    authorType: "User",
     status: "pending"  // pending | processing | fixed | skipped | uncertain
   },
   ...
@@ -62,7 +95,7 @@ For each comment in the queue:
 
 #### 4.1 Read Context
 
-Use the **Read tool** to read file contents:
+Use the current agent's file-reading tool to read file contents:
 
 ```
 Read file: <filePath>
@@ -71,7 +104,7 @@ Read file: <filePath>
 Read file: <filePath> (offset: <start>, limit: <count>)
 ```
 
-> **Note:** In Claude Code, always use the Read tool instead of bash commands like `cat` or `sed` for reading files. The Read tool provides better integration and avoids permission issues.
+> **Note:** Prefer the agent's structured file-reading tool when available. If the current agent does not provide one, use a focused shell read command such as `sed -n` or `rg` with a narrow range.
 
 #### 4.2 Analyze Comment
 
@@ -102,7 +135,7 @@ Read file: <filePath> (offset: <start>, limit: <count>)
 
 ```bash
 # Make changes to file
-# (Use Edit tool or manual editing)
+# (Use the current agent's edit tool or manual editing)
 
 # Stage changes
 git add <filePath>

@@ -10,12 +10,17 @@ Deterministic file/field checks. Each produces a definitive PASS/FAIL.
 
 | Checklist Item | Command | PASS Condition |
 |----------------|---------|----------------|
-| Plugin name has `vp-` prefix | `jq -r '.name' plugin.json \| grep -q '^vp-'` | Exit code 0 |
-| plugin.json has all required fields | `jq '[has("name"), has("version"), has("description"), has("author"), has("license")] \| all' plugin.json` | Returns `true` |
+| Plugin name has `vp-` prefix | `jq -r '.name' .codex-plugin/plugin.json \| grep -q '^vp-'` | Exit code 0 |
+| plugin.json has all required fields | `jq '[has("name"), has("version"), has("description"), has("author"), has("license")] \| all' .codex-plugin/plugin.json` | Returns `true` |
 | SKILL.md has valid frontmatter | `head -1 SKILL.md \| grep -q '^---$' && [ "$(grep -c '^---$' SKILL.md)" -ge 2 ] && head -20 SKILL.md \| grep -q 'name:'` | First line is `---`, at least 2 `---` lines, `name:` field present |
 | Plugins sorted alphabetically | `jq -r '.plugins[].name' .claude-plugin/marketplace.json \| sort -C` | Exit code 0 |
 | Plugin registered in marketplace.json | `jq -r '.plugins[].name' .claude-plugin/marketplace.json \| grep -q '^vp-<name>$'` | Exit code 0 |
-| Version updated | `git diff $(gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name') -- plugin.json \| grep -q '"version"'` | Exit code 0 (MEDIUM confidence — checks field presence in diff, not actual value change; auto-detects default branch) |
+| Canonical Codex manifest exists | `test -f plugins/vp-<name>/.codex-plugin/plugin.json` | Exit code 0 |
+| Claude manifest is an adapter | `test -L plugins/vp-<name>/.claude-plugin/plugin.json` | Exit code 0 |
+| Canonical plugin skill source exists | `test -f plugins/vp-<name>/skills/<skill-name>/SKILL.md` | Exit code 0 |
+| Plugin skill source is self-contained | `test ! -L plugins/vp-<name>/skills/<skill-name>` | Exit code 0 |
+| Repo skill index is an adapter | `test -L skills/<skill-name>` | Exit code 0 |
+| Version updated | `git diff $(gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name') -- .codex-plugin/plugin.json \| grep -q '"version"'` | Exit code 0 (MEDIUM confidence — checks field presence in diff, not actual value change; auto-detects default branch) |
 | File exists | `test -f <path>` | Exit code 0 |
 | JSON is valid | `jq empty <file>` | Exit code 0 |
 | YAML frontmatter has required fields | `head -20 SKILL.md \| grep -q 'name:' && head -20 SKILL.md \| grep -q 'description:'` | Exit code 0 |

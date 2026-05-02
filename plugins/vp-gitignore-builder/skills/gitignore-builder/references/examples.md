@@ -5,7 +5,7 @@
 ```
 User: /gitignore
 
-Claude: Detected project root: /Users/dev/my-app
+Agent: Detected project root: /Users/dev/my-app
         Found: package.json
 
         Recommended templates:
@@ -15,7 +15,7 @@ Claude: Detected project root: /Users/dev/my-app
 
 User: Y
 
-Claude: Fetching Node.gitignore from github/gitignore...
+Agent: Fetching Node.gitignore from github/gitignore...
 
         📄 Will write to: /Users/dev/my-app/.gitignore
 
@@ -56,7 +56,7 @@ Claude: Fetching Node.gitignore from github/gitignore...
 
 User: Y
 
-Claude: ✅ Created /Users/dev/my-app/.gitignore
+Agent: ✅ Created /Users/dev/my-app/.gitignore
 ```
 
 ## Example 2: Global Gitignore Request Inside a Repo
@@ -64,7 +64,7 @@ Claude: ✅ Created /Users/dev/my-app/.gitignore
 ```
 User: Create a global gitignore for me
 
-Claude: ⚠️ You're currently inside a git repository (/Users/dev/my-app).
+Agent: ⚠️ You're currently inside a git repository (/Users/dev/my-app).
         Global gitignore is recommended to be placed at ~/.gitignore
 
         Options:
@@ -75,7 +75,7 @@ Claude: ⚠️ You're currently inside a git repository (/Users/dev/my-app).
 
 User: 1
 
-Claude: Detecting environment...
+Agent: Detecting environment...
         - OS: macOS (Darwin)
         - Editors: VS Code, Vim
 
@@ -92,7 +92,7 @@ Claude: Detecting environment...
 ```
 User: Add Python ignores to my gitignore
 
-Claude: Found existing .gitignore at /Users/dev/my-app/.gitignore (15 lines)
+Agent: Found existing .gitignore at /Users/dev/my-app/.gitignore (15 lines)
 
         Fetching Python.gitignore...
 
@@ -140,7 +140,7 @@ Claude: Found existing .gitignore at /Users/dev/my-app/.gitignore (15 lines)
 ```
 User: git status
 
-Claude: [observes output showing node_modules/ and .env in untracked files]
+Agent: [observes output showing node_modules/ and .env in untracked files]
 
         ⚠️ Noticed potentially sensitive/generated files in git status:
         - node_modules/ (should typically be ignored)

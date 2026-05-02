@@ -5,7 +5,8 @@ description: >-
   the last action. Use when asked to "name this session", "rename session",
   "prename", "give this session a name", "what should I call this session",
   or when the user invokes /prename.
-  Outputs a /rename command for the user to execute.
+  Outputs a concise session title, with a platform-specific rename command only
+  when the current agent supports one.
   Boundary: not for renaming files, variables, or git branches.
 ---
 
@@ -17,7 +18,7 @@ Generate a session name that captures the **overall theme and purpose**, not jus
 
 1. Review the conversation's key themes
 2. Generate a name following the naming style below
-3. Output the `/rename` command — nothing else
+3. Output the title in the platform's supported form
 
 ## Naming Style
 
@@ -53,8 +54,14 @@ Generate a session name that captures the **overall theme and purpose**, not jus
 
 ## Output
 
-Output ONLY the rename command, nothing else:
+If the current agent supports a session rename command, output only that command:
 
 ```
 /rename <emoji> <topic>
+```
+
+Otherwise output only the title:
+
+```
+<emoji> <topic>
 ```

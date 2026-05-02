@@ -57,7 +57,7 @@ Process all comments automatically, only pausing for truly ambiguous cases.
 
 ### Phase 1: Fetch Comments
 
-Use `gh api graphql` to retrieve all unresolved review comments:
+Use `gh api graphql` to retrieve unresolved review comments, including `isOutdated` so stale diff anchors are visible:
 
 ```bash
 gh api graphql -f query='
@@ -68,6 +68,7 @@ gh api graphql -f query='
         nodes {
           id
           isResolved
+          isOutdated
           path
           line
           comments(first: 10) {
@@ -88,9 +89,12 @@ gh api graphql -f query='
 
 Extract key information:
 - Comment ID and thread ID
+- Resolution and outdated state
 - File path and line number
 - Comment body (the feedback)
 - Author information (`login`, `__typename`)
+
+Do not skip outdated threads. An outdated unresolved thread still needs a decision; `isOutdated` only means the line anchor may no longer match the current diff. Re-read the current file, verify whether a newer commit already addressed the feedback, then reply and apply the normal bot/human resolution policy.
 
 ### Phase 1.5: Classify Author (Bot vs Human)
 
@@ -141,7 +145,7 @@ gh api users/<login>/events/public
 
 A monolithic distribution (e.g., almost entirely `IssueCommentEvent` or `PullRequestReviewCommentEvent`) strongly suggests a bot. A diverse distribution (pushes, PRs, reviews, stars, forks) suggests a human.
 
-This tier is triggered by Claude's judgment, not a mechanical rule — only fetch when it would meaningfully change the conclusion.
+This tier is triggered by the agent's judgment, not a mechanical rule — only fetch when it would meaningfully change the conclusion.
 
 #### Tier 3 — Ask user
 
@@ -240,7 +244,7 @@ After each action, reply to the comment thread. **Bot threads are always resolve
 **Files modified:**
 - `<file-path>`
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
+Generated with [pr-comment-resolver](https://github.com/VdustR/vp-claude-code-marketplace).
 ```
 
 Example:
@@ -251,7 +255,7 @@ Example:
 **Files modified:**
 - `src/auth/session.ts`
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
+Generated with [pr-comment-resolver](https://github.com/VdustR/vp-claude-code-marketplace).
 ```
 
 **Reply format for no-fix:**
@@ -261,7 +265,7 @@ No changes needed.
 
 **Reason:** <explanation of why no fix is required>
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
+Generated with [pr-comment-resolver](https://github.com/VdustR/vp-claude-code-marketplace).
 ```
 
 ### Phase 5: Summary Report
@@ -311,6 +315,7 @@ gh api graphql -f query='
         nodes {
           id
           isResolved
+          isOutdated
           path
           line
           comments(first: 10) {

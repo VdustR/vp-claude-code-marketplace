@@ -201,7 +201,7 @@ Detect and follow project conventions (see [repo-conventions.md](references/repo
 ## Notes
 
 - **Requirements**: `gh` CLI (for bot PRs, releases API), package manager CLI
-- **Context7**: Optional but recommended; install via `/plugin marketplace add upstash/context7`
+- **Context7**: Optional but recommended; install through the current agent's plugin or MCP setup flow.
 - **Supported ecosystems**: npm, pnpm, yarn, bun, cargo, pip/uv/poetry, go, bundler, composer
 - **Limitations**: Private registry auth requires manual setup; no auto-handling of 2FA prompts
 - **Monorepos**: Detected automatically, but user may need to specify target package for large workspaces

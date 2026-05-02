@@ -52,7 +52,7 @@ When analyzing a correction or undocumented good practice:
 1. **Determine type** — naming convention, architecture pattern, tool usage, workflow preference, etc.
 2. **Scan the repo** — does a consistent convention already exist in the codebase?
    - **Convention exists + documented** → Why wasn't it followed? Check if the documentation is unclear, the skill description doesn't trigger properly, or examples are insufficient
-   - **Convention exists + not documented** → Suggest where to document it: repo CLAUDE.md, `.claude/rules/`, or as a skill improvement
+   - **Convention exists + not documented** → Suggest where to document it: repo `AGENTS.md`, the agent-specific adapter file, or as a skill improvement
    - **No consistent convention** → Suggest establishing one, and whether it belongs in the repo (team convention) or personal config (individual preference)
 3. **For positive discoveries** (practice-discoverer): same chain — the practice worked well but isn't documented, suggest codifying it before the next session forgets
 
