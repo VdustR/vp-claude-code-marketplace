@@ -39,7 +39,7 @@ User: Handle the comments on this PR: https://github.com/owner/repo/pull/123
 ```
 
 Workflow:
-1. Fetch all unresolved review comments
+1. Fetch all unresolved, non-outdated review comments
 2. Present each comment for review
 3. For each comment, determine whether to fix or explain why no fix is needed
 4. Execute fixes with atomic commits
@@ -57,7 +57,7 @@ Process all comments automatically, only pausing for truly ambiguous cases.
 
 ### Phase 1: Fetch Comments
 
-Use `gh api graphql` to retrieve all unresolved review comments:
+Use `gh api graphql` to retrieve unresolved review comments, including `isOutdated` so stale threads can be skipped safely:
 
 ```bash
 gh api graphql -f query='
@@ -68,6 +68,7 @@ gh api graphql -f query='
         nodes {
           id
           isResolved
+          isOutdated
           path
           line
           comments(first: 10) {
@@ -83,14 +84,17 @@ gh api graphql -f query='
       }
     }
   }
-}' --jq '.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false)'
+}' --jq '.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false and .isOutdated == false)'
 ```
 
 Extract key information:
 - Comment ID and thread ID
+- Resolution and outdated state
 - File path and line number
 - Comment body (the feedback)
 - Author information (`login`, `__typename`)
+
+Skip outdated threads by default. They refer to superseded diff context and should not be fixed, replied to, or resolved unless the user explicitly asks for cleanup.
 
 ### Phase 1.5: Classify Author (Bot vs Human)
 
@@ -311,6 +315,7 @@ gh api graphql -f query='
         nodes {
           id
           isResolved
+          isOutdated
           path
           line
           comments(first: 10) {
@@ -322,8 +327,8 @@ gh api graphql -f query='
   }
 }'
 
-# Get unresolved threads only (add jq filter)
-# ... --jq '.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false)'
+# Get unresolved, non-outdated threads only (add jq filter)
+# ... --jq '.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false and .isOutdated == false)'
 ```
 
 ### Reply to Comment

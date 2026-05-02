@@ -17,25 +17,55 @@ git checkout <headRefName>
 git pull origin <headRefName>
 ```
 
-### Step 2: Fetch All Review Comments
+### Step 2: Fetch Active Review Comments
 
-Retrieve unresolved review threads:
+Retrieve unresolved, non-outdated review threads with GraphQL:
 
 ```bash
-gh pr view <NUMBER> --json reviewThreads --jq '
-  [.reviewThreads[] | select(.isResolved == false) | {
-    id: .id,
-    path: .path,
-    line: .line,
-    comments: [.comments[] | {
-      id: .id,
-      author: .author.login,
-      body: .body,
-      createdAt: .createdAt
-    }]
-  }]
+gh api graphql -f owner="<OWNER>" -f repo="<REPO>" -F number=<NUMBER> -f query='
+query($owner:String!, $repo:String!, $number:Int!) {
+  repository(owner:$owner, name:$repo) {
+    pullRequest(number:$number) {
+      reviewThreads(first:100) {
+        nodes {
+          id
+          isResolved
+          isOutdated
+          path
+          line
+          comments(first:20) {
+            nodes {
+              id
+              author { __typename login }
+              body
+              createdAt
+              url
+            }
+          }
+        }
+      }
+    }
+  }
+}' --jq '
+  [.data.repository.pullRequest.reviewThreads.nodes[]
+   | select(.isResolved == false and .isOutdated == false)
+   | {
+       id,
+       path,
+       line,
+       comments: [.comments.nodes[] | {
+         id,
+         author: .author.login,
+         authorType: .author.__typename,
+         body,
+         createdAt,
+         url
+       }]
+     }]
 '
 ```
+
+Skip outdated threads unless the user explicitly asks to clean them up; their diff context has already been superseded by newer commits.
 
 ### Step 3: Build Comment Queue
 
@@ -50,6 +80,7 @@ Queue Structure:
     lineNumber: 42,
     originalComment: "Add null check here",
     author: "reviewer1",
+    authorType: "User",
     status: "pending"  // pending | processing | fixed | skipped | uncertain
   },
   ...
