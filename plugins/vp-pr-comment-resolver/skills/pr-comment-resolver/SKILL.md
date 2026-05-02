@@ -39,7 +39,7 @@ User: Handle the comments on this PR: https://github.com/owner/repo/pull/123
 ```
 
 Workflow:
-1. Fetch all unresolved, non-outdated review comments
+1. Fetch all unresolved review comments
 2. Present each comment for review
 3. For each comment, determine whether to fix or explain why no fix is needed
 4. Execute fixes with atomic commits
@@ -57,7 +57,7 @@ Process all comments automatically, only pausing for truly ambiguous cases.
 
 ### Phase 1: Fetch Comments
 
-Use `gh api graphql` to retrieve unresolved review comments, including `isOutdated` so stale threads can be skipped safely:
+Use `gh api graphql` to retrieve unresolved review comments, including `isOutdated` so stale diff anchors are visible:
 
 ```bash
 gh api graphql -f query='
@@ -84,7 +84,7 @@ gh api graphql -f query='
       }
     }
   }
-}' --jq '.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false and .isOutdated == false)'
+}' --jq '.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false)'
 ```
 
 Extract key information:
@@ -94,7 +94,7 @@ Extract key information:
 - Comment body (the feedback)
 - Author information (`login`, `__typename`)
 
-Skip outdated threads by default. They refer to superseded diff context and should not be fixed, replied to, or resolved unless the user explicitly asks for cleanup.
+Do not skip outdated threads. An outdated unresolved thread still needs a decision; `isOutdated` only means the line anchor may no longer match the current diff. Re-read the current file, verify whether a newer commit already addressed the feedback, then reply and apply the normal bot/human resolution policy.
 
 ### Phase 1.5: Classify Author (Bot vs Human)
 
@@ -327,8 +327,8 @@ gh api graphql -f query='
   }
 }'
 
-# Get unresolved, non-outdated threads only (add jq filter)
-# ... --jq '.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false and .isOutdated == false)'
+# Get unresolved threads only (add jq filter)
+# ... --jq '.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false)'
 ```
 
 ### Reply to Comment
