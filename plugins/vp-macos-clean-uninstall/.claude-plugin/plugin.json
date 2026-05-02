@@ -1,14 +1,1 @@
-{
-  "name": "vp-macos-clean-uninstall",
-  "version": "1.0.2",
-  "description": "Research-driven macOS app uninstallation with thorough cleanup of all associated data",
-  "author": {
-    "name": "VdustR",
-    "url": "https://github.com/VdustR"
-  },
-  "homepage": "https://github.com/VdustR/vp-claude-code-marketplace",
-  "repository": "https://github.com/VdustR/vp-claude-code-marketplace",
-  "license": "MIT",
-  "keywords": ["uninstall", "macos", "cleanup", "remove", "app", "brew", "dmg", "pkg"],
-  "skills": "./skills/"
-}
+../.codex-plugin/plugin.json

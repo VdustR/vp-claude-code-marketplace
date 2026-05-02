@@ -5,7 +5,7 @@
 Context7 provides up-to-date documentation lookup for migration guides and breaking changes. If Context7 is not available, suggest the user install it:
 
 ```
-/plugin marketplace add upstash/context7
+Install Context7 through the current agent's plugin or MCP setup flow before using it.
 ```
 
 When available, use `resolve-library-id` + `query-docs` to look up migration guides and breaking changes for the relevant libraries. Context7 results supplement (not replace) changelog and code analysis.

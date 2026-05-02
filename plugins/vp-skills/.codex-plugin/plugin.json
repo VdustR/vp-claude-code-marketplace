@@ -1,0 +1,14 @@
+{
+  "name": "vp-skills",
+  "version": "1.0.1",
+  "description": "Manage agent skills using npx skills CLI",
+  "author": {
+    "name": "VdustR",
+    "url": "https://github.com/VdustR"
+  },
+  "homepage": "https://github.com/VdustR/vp-claude-code-marketplace",
+  "repository": "https://github.com/VdustR/vp-claude-code-marketplace",
+  "license": "MIT",
+  "keywords": ["skills", "management", "npx"],
+  "skills": "./skills/"
+}

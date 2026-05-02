@@ -1,10 +1,22 @@
-# Claude Code Marketplace
+# Agent Skills Marketplace
 
-Claude Code plugins by [VdustR](https://github.com/VdustR).
+Reusable Agent Skills and plugin adapters by [VdustR](https://github.com/VdustR).
 
 > All plugins in this marketplace use the `vp-` prefix (VdustR Plugin).
 
 ## Installation
+
+### Codex
+
+```bash
+codex plugin marketplace add VdustR/vp-claude-code-marketplace
+```
+
+Then open `/plugins` in Codex and install the plugins you want.
+
+When working inside this repository, Codex also sees the repo skills through `.agents/skills`.
+
+### Claude Code
 
 ```bash
 /plugin marketplace add VdustR/vp-claude-code-marketplace
@@ -17,6 +29,8 @@ Claude Code plugins by [VdustR](https://github.com/VdustR).
 ### vp-checklist-runner
 
 Parse and verify GitHub PR/issue checklists with auto-check and CI integration.
+
+Claude Code:
 
 ```bash
 /plugin install vp-checklist-runner@vdustr
@@ -35,6 +49,8 @@ Features:
 
 Handle cspell unknown word warnings with prioritized decision tree and config bootstrapping.
 
+Claude Code:
+
 ```bash
 /plugin install vp-cspell@vdustr
 ```
@@ -48,6 +64,8 @@ Features:
 ### vp-deps-shift
 
 Dependency upgrade and library migration with breaking change detection and test-first verification.
+
+Claude Code:
 
 ```bash
 /plugin install vp-deps-shift@vdustr
@@ -70,6 +88,8 @@ Features:
 
 Build and merge .gitignore files using github/gitignore templates.
 
+Claude Code:
+
 ```bash
 /plugin install vp-gitignore-builder@vdustr
 ```
@@ -85,6 +105,8 @@ Features:
 ### vp-guided-focus
 
 Guided focus questioning to align on requirements before planning or complex tasks.
+
+Claude Code:
 
 ```bash
 /plugin install vp-guided-focus@vdustr
@@ -103,6 +125,8 @@ Features:
 
 Research-driven macOS app uninstallation with thorough cleanup of all associated data.
 
+Claude Code:
+
 ```bash
 /plugin install vp-macos-clean-uninstall@vdustr
 ```
@@ -120,6 +144,8 @@ Features:
 
 Automate PR comment review, fix, and resolution workflow.
 
+Claude Code:
+
 ```bash
 /plugin install vp-pr-comment-resolver@vdustr
 ```
@@ -136,6 +162,8 @@ Features:
 
 Generate meaningful session names based on overall session theme.
 
+Claude Code:
+
 ```bash
 /plugin install vp-prename@vdustr
 ```
@@ -143,12 +171,13 @@ Generate meaningful session names based on overall session theme.
 Features:
 - Names sessions by overall theme and purpose, not just the last action
 - Emoji + topic format for scannable session history
-- Lightweight haiku subagent for efficient naming
-- Outputs `/rename` command for easy execution
+- Outputs a platform-specific rename command when the current agent supports one
 
 ### vp-retro
 
 Session retrospective — reflect on recent work to discover improvement opportunities through interactive dialogue.
+
+Claude Code:
 
 ```bash
 /plugin install vp-retro@vdustr
@@ -167,6 +196,8 @@ Features:
 
 Manage agent skills using the npx skills CLI.
 
+Claude Code:
+
 ```bash
 /plugin install vp-skills@vdustr
 ```
@@ -180,6 +211,8 @@ Features:
 ### vp-stacked-pr-rebase
 
 Rebase stacked PRs after parent PR is merged, preserving only your commits.
+
+Claude Code:
 
 ```bash
 /plugin install vp-stacked-pr-rebase@vdustr
@@ -197,6 +230,8 @@ Features:
 
 TypeScript coding guidelines with dos and don'ts for type design and patterns.
 
+Claude Code:
+
 ```bash
 /plugin install vp-typescript-best-practices@vdustr
 ```
@@ -212,7 +247,9 @@ Features:
 
 ## Development
 
-This marketplace is developed using the [plugin-dev](https://github.com/anthropics/claude-code/tree/main/.claude/plugins/plugin-dev) plugin.
+Each plugin is self-contained: plugin manifests live in `.codex-plugin/plugin.json`, and skill sources live under `plugins/vp-*/skills/`. The repo-root `skills/` directory is an Agent Skills index made of symlinks back to those plugin-local skills. Claude Code compatibility paths are symlinks back to canonical plugin files.
+
+See [AGENTS.md](AGENTS.md) for maintenance rules.
 
 ## License
 

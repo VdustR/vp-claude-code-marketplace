@@ -16,7 +16,7 @@ description: >-
 
 # Session Retro
 
-Review a Claude Code session to find improvement opportunities. The retro works through interactive dialogue — observe what happened, discuss findings with the user, then surface actionable recommendations.
+Review an AI agent session to find improvement opportunities. The retro works through interactive dialogue — observe what happened, discuss findings with the user, then surface actionable recommendations.
 
 The goal is improving the user's AI collaboration efficiency: better prompts, better docs, better tools, better workflows.
 

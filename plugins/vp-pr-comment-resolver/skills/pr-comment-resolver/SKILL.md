@@ -141,7 +141,7 @@ gh api users/<login>/events/public
 
 A monolithic distribution (e.g., almost entirely `IssueCommentEvent` or `PullRequestReviewCommentEvent`) strongly suggests a bot. A diverse distribution (pushes, PRs, reviews, stars, forks) suggests a human.
 
-This tier is triggered by Claude's judgment, not a mechanical rule — only fetch when it would meaningfully change the conclusion.
+This tier is triggered by the agent's judgment, not a mechanical rule — only fetch when it would meaningfully change the conclusion.
 
 #### Tier 3 — Ask user
 
@@ -240,7 +240,7 @@ After each action, reply to the comment thread. **Bot threads are always resolve
 **Files modified:**
 - `<file-path>`
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
+Generated with [pr-comment-resolver](https://github.com/VdustR/vp-claude-code-marketplace).
 ```
 
 Example:
@@ -251,7 +251,7 @@ Example:
 **Files modified:**
 - `src/auth/session.ts`
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
+Generated with [pr-comment-resolver](https://github.com/VdustR/vp-claude-code-marketplace).
 ```
 
 **Reply format for no-fix:**
@@ -261,7 +261,7 @@ No changes needed.
 
 **Reason:** <explanation of why no fix is required>
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
+Generated with [pr-comment-resolver](https://github.com/VdustR/vp-claude-code-marketplace).
 ```
 
 ### Phase 5: Summary Report

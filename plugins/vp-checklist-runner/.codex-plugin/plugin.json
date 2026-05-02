@@ -1,0 +1,14 @@
+{
+  "name": "vp-checklist-runner",
+  "version": "1.0.3",
+  "description": "Parse and verify GitHub PR/issue checklists with auto-check and CI integration",
+  "author": {
+    "name": "VdustR",
+    "url": "https://github.com/VdustR"
+  },
+  "homepage": "https://github.com/VdustR/vp-claude-code-marketplace",
+  "repository": "https://github.com/VdustR/vp-claude-code-marketplace",
+  "license": "MIT",
+  "keywords": ["checklist", "pr", "issue", "github", "verification", "ci", "automation", "checkbox"],
+  "skills": "./skills/"
+}

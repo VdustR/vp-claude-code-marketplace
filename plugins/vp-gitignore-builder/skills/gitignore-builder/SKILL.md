@@ -91,10 +91,10 @@ Allow user to:
 
 ### Step 4: Fetch and Merge
 
-Use the `merge-gitignore.sh` script located at `${CLAUDE_PLUGIN_ROOT}/scripts/merge-gitignore.sh`:
+Use the bundled `scripts/merge-gitignore.sh` script from this skill directory:
 
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/merge-gitignore.sh" Node Python macOS
+scripts/merge-gitignore.sh Node Python macOS
 ```
 
 **Merge Order (later entries have higher priority in gitignore):**
@@ -272,7 +272,7 @@ The `merge-gitignore.sh` script handles:
 
 ```bash
 # Fetch and merge templates
-"${CLAUDE_PLUGIN_ROOT}/scripts/merge-gitignore.sh" <template1> [template2] ...
+scripts/merge-gitignore.sh <template1> [template2] ...
 
 # Templates can be:
 # - Top-level: Node, Python, Rust, Go, etc.

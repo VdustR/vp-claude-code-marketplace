@@ -33,18 +33,18 @@ Manage agent skills using the `npx skills` CLI from vercel-labs/agent-skills.
 
 ### Install Globally (Recommended for Personal Use)
 
-Install skills to `~/.claude/skills/` for use across all projects:
+Install skills globally for the selected agent:
 
 ```bash
-npx -y skills add vercel-labs/agent-skills -g
+npx -y skills add vercel-labs/agent-skills -g --agent <agent-name>
 ```
 
 ### Install to Project
 
-Install skills to `.claude/skills/` for project-specific use:
+Install skills to the current project for the selected agent:
 
 ```bash
-npx -y skills add vercel-labs/agent-skills
+npx -y skills add vercel-labs/agent-skills --agent <agent-name>
 ```
 
 ### Install Specific Skills Only
@@ -120,7 +120,7 @@ npx -y skills update
 
 | Option | Description |
 |--------|-------------|
-| `-g, --global` | Install globally (~/.claude/skills/) |
+| `-g, --global` | Install globally for the selected agent |
 | `-s, --skill <names>` | Install specific skills only |
 | `-a, --agent <agents>` | Target specific agents (claude-code, cursor, etc.) |
 | `-l, --list` | List available skills without installing |

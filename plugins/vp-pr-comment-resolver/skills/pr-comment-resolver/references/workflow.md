@@ -62,7 +62,7 @@ For each comment in the queue:
 
 #### 4.1 Read Context
 
-Use the **Read tool** to read file contents:
+Use the current agent's file-reading tool to read file contents:
 
 ```
 Read file: <filePath>
@@ -71,7 +71,7 @@ Read file: <filePath>
 Read file: <filePath> (offset: <start>, limit: <count>)
 ```
 
-> **Note:** In Claude Code, always use the Read tool instead of bash commands like `cat` or `sed` for reading files. The Read tool provides better integration and avoids permission issues.
+> **Note:** Prefer the agent's structured file-reading tool when available. If the current agent does not provide one, use a focused shell read command such as `sed -n` or `rg` with a narrow range.
 
 #### 4.2 Analyze Comment
 
@@ -102,7 +102,7 @@ Read file: <filePath> (offset: <start>, limit: <count>)
 
 ```bash
 # Make changes to file
-# (Use Edit tool or manual editing)
+# (Use the current agent's edit tool or manual editing)
 
 # Stage changes
 git add <filePath>

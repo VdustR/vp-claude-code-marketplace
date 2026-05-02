@@ -1,0 +1,14 @@
+{
+  "name": "vp-prename",
+  "version": "1.1.1",
+  "description": "Generate meaningful session names based on overall session theme",
+  "author": {
+    "name": "VdustR",
+    "url": "https://github.com/VdustR"
+  },
+  "homepage": "https://github.com/VdustR/vp-claude-code-marketplace",
+  "repository": "https://github.com/VdustR/vp-claude-code-marketplace",
+  "license": "MIT",
+  "keywords": ["session", "rename", "naming", "summary", "emoji"],
+  "skills": "./skills/"
+}
