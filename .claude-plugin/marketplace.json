@@ -4,7 +4,7 @@
     "name": "VdustR"
   },
   "metadata": {
-    "description": "Agent skills and plugin adapters by VdustR"
+    "description": "Deprecated archive. Use https://github.com/VdustR/skills with npx skills."
   },
   "plugins": [
     {
